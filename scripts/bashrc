@@ -1,19 +1,21 @@
 # 主路径
-SCR="/root/scr"
+SCR="~/HyDEV/scr"
 
 # 好用的简写w
 alias ls='ls -h --color=auto'
 alias ll='ls -l'
 alias lla='ls -la'
 alias grep='grep --color'
-alias cls='clear'
-alias sctl='systemctl'
-alias jctl='journalctl'
-alias du='du -h'
-alias df='df -h'
 
 alias ports='netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
+
+alias cls='clear'
+alias sctl='systemctl'
+alias jctl='journalctl'
+
+alias du='du -h'
+alias df='df -h'
 alias dirusage='du -shc *'
 alias dirusagea='du -hc --max-depth=1'
 alias fileusage='du -ahc --max-depth=1'
@@ -22,18 +24,8 @@ alias duss='dirusage | sortsize'
 alias duass='dirusagea | sortsize'
 alias fuss='fileusage | sortsize'
 
-# 鸡肋的简写x
-alias install='dnf install'
-alias uninstall='dnf remove'
-
-# 香子兰的生日: 2018
-# alias happy-birthday='java -Dfile.encoding=UTF-8 -jar "$SCR/birthday/Vanilla-L.o.v.e.4.e Ver.-shaded.jar" "$SCR/birthday/cake-window"'
-
 # 相合伞w
 alias aiaigasa='cat $SCR/splash-precolored'
-
-# 情人节: 2019
-# alias check-valentine-2019='. $SCR/valentine-2019/gift-bashrc.sh'
 
 # 关于PS1 (指令提示格式)
 # 这个版本向上番两次就会出问题
@@ -44,8 +36,5 @@ PS1='\n\[\e[m\][\[\e[35m\]\D{%y-%m-%d} \t\[\e[m\]] [\[\e[34m\]\h\[\e[m\]] [\[\e[
 
 # 登录提示
 aiaigasa
-
-# Veracross Analyzer
-alias va-restart='sctl restart va'
-alias va-log-all='jctl -u va --output cat'
-alias va-log='va-log-all -f'
+. '$SCR/bashrc-application'
+. '$SCR/bashrc-fedora'
