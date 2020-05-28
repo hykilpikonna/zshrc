@@ -1,7 +1,7 @@
 # HyDEV Server Setup
 Notes about how to setup a Fedora 32 server for HyDEV
 
-## Wifi Connection for Potato Laptop Servers
+## 1. Wifi Connection for Potato Laptop Servers
 
 Connect to ethernet first, and then:
 
@@ -76,3 +76,31 @@ dnf install nginx certbot certbot-nginx
 # And then you copy the config files
 chron -Rt httpd_sys_content_t /app/
 ```
+
+## 4. Shadowsocks
+
+Files:
+
+`/etc/shadowsocks-libev/hydev.json`:
+
+```json
+{
+    "server": "0.0.0.0",
+    "server_port": <Port>,
+    "password": "<Password>",
+    "method": "aes-256-cfb",
+    "mode": "tcp_and_udp"
+}
+```
+
+Steps:
+
+```bash
+dnf copr enable librehat/shadowsocks
+dnf update
+dnf install shadowsocks-libev
+# And then you copy the config files
+sctl enable shadowsocks-libev-server@hydev
+sctl start shadowsocks-libev-server@hydev
+```
+
