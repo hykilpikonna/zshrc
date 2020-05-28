@@ -104,3 +104,35 @@ sctl enable shadowsocks-libev-server@hydev
 sctl start shadowsocks-libev-server@hydev
 ```
 
+## 5. Java Application Servers
+
+Files:
+
+* /app/depl/\<application\>
+* /etc/systemd/system/\<application\>.service
+
+```ini
+[Unit]
+Description=<name>
+
+[Service]
+WorkingDirectory=/app/depl/<application>/
+ExecStart=/bin/bash launch.sh
+User=jvmapps
+Type=simple
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Steps:
+
+```bash
+groupadd -r appmgr
+useradd -r -s /bin/false -g appmgr jvmapps
+chown -R jvmapps:appmgr /app/depl/<application>/
+sctl start <application>
+sctl enable <application>
+```
