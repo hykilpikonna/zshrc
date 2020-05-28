@@ -60,3 +60,19 @@ mysql -p
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'...ip...' IDENTIFIED BY '...password...' WITH GRANT OPTION;
 ```
 
+## 3. Nginx
+
+Files:
+
+* /etc/nginx/nginx.conf
+* /etc/nginx/html/*
+* /etc/letsencrypt/*
+* /app/hres/*
+
+Steps:
+
+```bash
+dnf install nginx certbot certbot-nginx
+# And then you copy the config files
+chron -Rt httpd_sys_content_t /app/
+```
