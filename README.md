@@ -45,5 +45,18 @@ reboot
 nmtui
 ```
 
+## 2. Mariadb
 
+Files: None
+
+Steps:
+
+```bash
+dnf install mariadb mariadb-server
+sctl enable mariadb
+sctl start mariadb
+mysql_secure_installation
+mysql -p
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'...ip...' IDENTIFIED BY '...password...' WITH GRANT OPTION;
+```
 
