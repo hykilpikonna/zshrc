@@ -45,6 +45,14 @@ reboot
 nmtui
 ```
 
+### Laptop Close Lid
+
+```bash
+nano /etc/systemd/logind.conf
+# Add HandleLidSwitch=ignore
+systemctl restart systemd-logind
+```
+
 ## 2. Mariadb
 
 Files: None
