@@ -1,5 +1,5 @@
 # 主路径
-SCR="~/HyDEV/scr"
+SCR="~/HyDEV/scripts"
 
 # 好用的简写w
 alias ls='ls -h --color=auto'
