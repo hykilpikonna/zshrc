@@ -36,5 +36,5 @@ PS1='\n\[\e[m\][\[\e[35m\]\D{%y-%m-%d} \t\[\e[m\]] [\[\e[34m\]\h\[\e[m\]] [\[\e[
 
 # 登录提示
 aiaigasa
-. '$SCR/bashrc-application'
-. '$SCR/bashrc-fedora'
+. $SCR/bashrc-application
+. $SCR/bashrc-fedora
