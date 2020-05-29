@@ -1,7 +1,7 @@
 # HyDEV Server Setup
 Notes about how to setup a Fedora 32 server for HyDEV
 
-## Wifi Connection for Potato Laptop Servers
+## 1. Wifi Connection for Potato Laptop Servers
 
 Connect to ethernet first, and then:
 
@@ -45,5 +45,102 @@ reboot
 nmtui
 ```
 
+### Laptop Close Lid
 
+```bash
+nano /etc/systemd/logind.conf
+# Add HandleLidSwitch=ignore
+systemctl restart systemd-logind
+```
 
+## 2. Mariadb
+
+Files: None
+
+Steps:
+
+```bash
+dnf install mariadb mariadb-server
+sctl enable mariadb
+sctl start mariadb
+mysql_secure_installation
+mysql -p
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'...ip...' IDENTIFIED BY '...password...' WITH GRANT OPTION;
+```
+
+## 3. Nginx
+
+Files:
+
+* /etc/nginx/nginx.conf
+* /etc/nginx/html/*
+* /etc/letsencrypt/*
+* /app/hres/*
+
+Steps:
+
+```bash
+dnf install nginx certbot certbot-nginx
+# And then you copy the config files
+chron -Rt httpd_sys_content_t /app/
+```
+
+## 4. Shadowsocks
+
+Files:
+
+`/etc/shadowsocks-libev/hydev.json`:
+
+```json
+{
+    "server": "0.0.0.0",
+    "server_port": <Port>,
+    "password": "<Password>",
+    "method": "aes-256-cfb",
+    "mode": "tcp_and_udp"
+}
+```
+
+Steps:
+
+```bash
+dnf copr enable librehat/shadowsocks
+dnf update
+dnf install shadowsocks-libev
+# And then you copy the config files
+sctl enable shadowsocks-libev-server@hydev
+sctl start shadowsocks-libev-server@hydev
+```
+
+## 5. Java Application Servers
+
+Files:
+
+* /app/depl/\<application\>
+* /etc/systemd/system/\<application\>.service
+
+```ini
+[Unit]
+Description=<name>
+
+[Service]
+WorkingDirectory=/app/depl/<application>/
+ExecStart=/bin/bash launch.sh
+User=jvmapps
+Type=simple
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Steps:
+
+```bash
+groupadd -r appmgr
+useradd -r -s /bin/false -g appmgr jvmapps
+chown -R jvmapps:appmgr /app/depl/<application>/
+sctl start <application>
+sctl enable <application>
+```
