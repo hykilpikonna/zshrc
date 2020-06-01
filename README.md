@@ -172,3 +172,13 @@ sctl start smb
 sctl enable nmb
 sctl start nmb
 ```
+
+If you are still using an NTFS drive:
+
+```bash
+dnf install ntfs-3g fuse
+modprobe fuse
+mount -t ntfs-3g /dev/sdb1 /mnt/data
+nano /etc/fstab
+# Add line: /dev/sdb1	        /mnt/data	        ntfs-3g	defaults        0 0
+```
