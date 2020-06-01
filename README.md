@@ -144,3 +144,31 @@ chown -R jvmapps:appmgr /app/depl/<application>/
 sctl start <application>
 sctl enable <application>
 ```
+
+## 6. LAN File Servers (SMB)
+
+Files:
+
+* /etc/samba/smb.conf
+
+```ini
+[MySMB]
+path = /app/depl/smb
+writeable = yes
+browseable = yes
+valid users = smb-user
+```
+
+Steps:
+
+```bash
+dnf install samba
+nano /etc/samba/smb.conf
+groupadd -r samba
+useradd -r -s /bin/false -g samba smb-user
+smbpasswd -a smb-user
+sctl enable smb
+sctl start smb
+sctl enable nmb
+sctl start nmb
+```
