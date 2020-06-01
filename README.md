@@ -204,7 +204,7 @@ nano /etc/fstab
 # Add line: /dev/sdb1	        /mnt/data	        ntfs-3g	defaults        0 0
 ```
 
-# 7. Firewall (UFW)
+## 7. Firewall (UFW)
 
 ```bash
 sctl disable firewalld
@@ -213,4 +213,10 @@ dnf install ufw
 sctl enable ufw
 sctl start ufw
 ufw status
+```
+
+Allow all traffic from LAN:
+
+```bash
+ufw allow from 192.168.0.0/16
 ```
