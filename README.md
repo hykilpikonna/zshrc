@@ -154,11 +154,23 @@ Files:
 * /etc/samba/smb.conf
 
 ```ini
-[MySMB]
-path = /app/depl/smb
-writeable = yes
-browseable = yes
-valid users = smb-user
+[global]
+    workgroup = HYDEV
+    security = user
+    passdb backend = tdbsam
+
+[data]
+    comment = Shared data
+    path = /mnt/data
+    public = no
+    admin users = admin
+    valid users = @admin smb-user
+    browseable = yes
+    writable = yes
+    create mask = 0777
+    directory mask = 0777
+    force directory mode = 0777
+    force create mode = 0777
 ```
 
 Steps:
