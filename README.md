@@ -147,6 +147,8 @@ sctl enable <application>
 
 ## 6. LAN File Servers (SMB)
 
+https://www.jianshu.com/p/cc9da3a154a0
+
 Files:
 
 * /etc/samba/smb.conf
