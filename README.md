@@ -167,10 +167,8 @@ nano /etc/samba/smb.conf
 groupadd -r samba
 useradd -r -s /bin/false -g samba smb-user
 smbpasswd -a smb-user
-sctl enable smb
-sctl start smb
-sctl enable nmb
-sctl start nmb
+sctl enable smb nmb
+sctl start smb nmb
 ```
 
 If you are still using an NTFS drive:
