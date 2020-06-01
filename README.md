@@ -194,3 +194,14 @@ mount -t ntfs-3g /dev/sdb1 /mnt/data
 nano /etc/fstab
 # Add line: /dev/sdb1	        /mnt/data	        ntfs-3g	defaults        0 0
 ```
+
+# 7. Firewall (UFW)
+
+```bash
+sctl disable firewalld
+sctl stop firewalld
+dnf install ufw
+sctl enable ufw
+sctl start ufw
+ufw status
+```
