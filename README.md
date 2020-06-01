@@ -185,6 +185,15 @@ sctl enable smb nmb
 sctl start smb nmb
 ```
 
+Allow smb access with SELinux enabled  
+https://www.lisenet.com/2016/samba-server-on-rhel-7/
+
+```bash
+setsebool -P samba_export_all_ro=1 samba_export_all_rw=1
+semanage fcontext –at samba_share_t "/mnt/data(/.*)?"
+restorecon -Rv /mnt/data
+```
+
 If you are still using an NTFS drive:
 
 ```bash
