@@ -34,6 +34,10 @@ alias aiaigasa='cat $SCR/splash-precolored'
 # 替换成: \\[$&\\]
 PS1='\n\[\e[m\][\[\e[35m\]\D{%y-%m-%d} \t\[\e[m\]] [\[\e[34m\]\h\[\e[m\]] [\[\e[33m\]\u\[\e[m\]] \[\e[37m\]\w \n\[\e[m\]$ '
 
+# ZSH
+LINE=$'\n'
+PROMPT="${LINE}%F{reset}[%F{magenta}%D%F{reset}] [%F{blue}%m%F{reset}] [%F{yellow}%n%F{reset}] %F{white}%~${LINE}$ "
+
 # 登录提示
 aiaigasa
 . $SCR/bashrc-application
