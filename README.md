@@ -135,6 +135,12 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
+* /app/depl/\<application\>/launch.sh
+
+```sh
+/usr/bin/java -cp <application>.jar:./lib/* -Xms1024M -Xmx2048M org.hydev.Main
+```
+
 Steps:
 
 ```bash
