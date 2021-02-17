@@ -27,6 +27,11 @@ alias fuss='fileusage | sortsize'
 # 相合伞w
 alias aiaigasa='cat $SCR/splash-precolored'
 
+# Lisp wrapper
+lisp() {
+    ros run --load $1 --quit
+}
+
 # 关于PS1 (指令提示格式)
 # 这个版本向上番两次就会出问题
 # PS1='\n\e[m[\e[35m\D{%y-%m-%d} \t\e[m] [\e[34m\h\e[m] [\e[33m\u\e[m] \e[37m\w \n\e[m$ '
