@@ -14,6 +14,9 @@ alias cls='clear'
 alias sctl='systemctl'
 alias jctl='journalctl'
 
+alias tar-create='tar -cvf'
+alias tar-expand='tar -zxvf'
+
 alias du='du -h'
 alias df='df -h'
 alias dirusage='du -shc *'
