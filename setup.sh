@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-mv ~/HydevServerSetup ~/HyDEV
+mv ~/HyServerSetup ~/HyDEV
 echo '. ~/HyDEV/scripts/bashrc' >> ~/.bashrc
