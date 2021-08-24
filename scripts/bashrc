@@ -34,17 +34,17 @@ lisp() {
 
 # Git commit wrapper
 commit() {
-    git commit -m "$1"
+    git commit -m "$@"
 }
 
 commitall() {
     git add .
-    commit $1
+    commit "$@"
 }
 alias commita="commitall"
 
 compush() {
-    commitall $1
+    commitall "$@"
     git push
 }
 
