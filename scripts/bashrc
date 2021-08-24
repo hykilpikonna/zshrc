@@ -36,7 +36,17 @@ lisp() {
 commit() {
     git commit -m "$1"
 }
-alias commit-all='git add .; commit'
+
+commitall() {
+    git add .
+    commit $1
+}
+alias commita="commitall"
+
+compush() {
+    commitall $1
+    git push
+}
 
 # 关于PS1 (指令提示格式)
 # 这个版本向上番两次就会出问题
