@@ -12,7 +12,8 @@ nix-git-update() {
         update-nix-fetchgit *.nix
         
         # If there are changes after updating
-        if git diff-index --quiet HEAD --; then
+        if ! git diff-index --quiet HEAD --; then
+            # Has changes
             rebuild-gc
             git add *.nix
             git commit -m "[U] Update fetchgit refs"
