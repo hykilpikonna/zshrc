@@ -34,7 +34,8 @@ lisp() {
 
 # Git commit wrapper
 commit() {
-    git commit -m "$@"
+    msg="$@"
+    git commit -m "$msg"
 }
 
 commitall() {
