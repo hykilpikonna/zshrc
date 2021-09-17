@@ -26,7 +26,9 @@ def cli(ctx, var: str):
 @cli.command()
 @click.pass_context
 def show(ctx):
-    print(ctx.obj['parts'])
+    parts = ctx.obj['parts']
+    parts.sort(key=lambda p: p[0])
+    print(''.join([p[1] for p in parts]))   
 
 
 @cli.command()
