@@ -24,9 +24,6 @@ alias duss='dirusage | sortsize'
 alias duass='dirusagea | sortsize'
 alias fuss='fileusage | sortsize'
 
-# 相合伞w
-alias aiaigasa='cat $SCR/splash-precolored'
-
 # Lisp wrapper
 lisp() {
     ros run --load $1 --quit
