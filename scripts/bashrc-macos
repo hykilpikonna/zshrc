@@ -1,6 +1,0 @@
-
-# Mac Specific
-alias ds_clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
-alias ports="netstat -ap tcp | grep -i \"listen\""
-alias trash="rmtrash"
-alias checkrain="/Applications/checkra1n.app/Contents/MacOS/checkra1n"
