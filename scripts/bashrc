@@ -27,6 +27,14 @@ alias fuss='fileusage | sortsize'
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
+# Mac-only commands
+if [[ $OSTYPE == 'darwin'* ]]; then
+    alias ports="netstat -ap tcp | grep -i \"listen\""
+    alias trash="rmtrash"
+    alias checkrain="/Applications/checkra1n.app/Contents/MacOS/checkra1n"
+    alias obs="open -n -a OBS.app"
+fi
+
 # 相合伞w
 alias aiaigasa='cat ~/.splash-precolored'
 
@@ -95,14 +103,6 @@ mac-hostname() {
     sudo scutil --set LocalHostName "$name"
     sudo scutil --set ComputerName "$name"
 }
-
-# Mac-only commands
-if [[ $OSTYPE == 'darwin'* ]]; then
-    alias ports="netstat -ap tcp | grep -i \"listen\""
-    alias trash="rmtrash"
-    alias checkrain="/Applications/checkra1n.app/Contents/MacOS/checkra1n"
-    #export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles
-fi
 
 # Cut videos - cut <file name> <end time> [start time (default 00:00:00)]
 cut() {
