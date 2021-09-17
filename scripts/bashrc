@@ -3,6 +3,7 @@ alias ls='ls -h --color=auto'
 alias ll='ls -l'
 alias lla='ls -la'
 alias grep='grep --color'
+alias rm='rm -ir'
 
 alias ports='netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
