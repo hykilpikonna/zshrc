@@ -7,7 +7,9 @@ PROMPT_RAW=""
 prompt-set() {
     PROMPT_RAW=$(prompt "$PROMPT_RAW" set $1 $2)
 }
-alias prompt-show="prompt $PROMPT_RAW show"
+prompt-show() {
+    prompt "$PROMPT_RAW" show
+}
 
 # ZSH
 DEFAULT_USER="hykilpikonna"
