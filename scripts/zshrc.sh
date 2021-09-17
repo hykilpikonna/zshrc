@@ -35,9 +35,6 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     alias obs="open -n -a OBS.app"
 fi
 
-# 相合伞w
-alias aiaigasa='cat ~/.splash-precolored'
-
 # Lisp wrapper
 lisp() {
     ros run --load $1 --quit
@@ -107,11 +104,7 @@ cut() {
     ffmpeg -i $1 -codec copy -ss $start -t $2 Cut\ $1
 }
 
-# 关于PS1 (指令提示格式)
-# 这个版本向上番两次就会出问题
-# PS1='\n\e[m[\e[35m\D{%y-%m-%d} \t\e[m] [\e[34m\h\e[m] [\e[33m\u\e[m] \e[37m\w \n\e[m$ '
-# 替换掉: \\e\[.*?m
-# 替换成: \\[$&\\]
+# Bash PS1 (Not updated)
 PS1='\n\[\e[m\][\[\e[35m\]\D{%y-%m-%d} \t\[\e[m\]] [\[\e[34m\]\h\[\e[m\]] [\[\e[33m\]\u\[\e[m\]] \[\e[37m\]\w \n\[\e[m\]$ '
 
 # ZSH
@@ -138,6 +131,6 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     export PATH="${JDK11}/bin:$PATH"
 fi
 
-# Imports
-. $SCR/bashrc-application.sh
-. $SCR/bashrc-git.sh
+# Includes
+. $SCR/includes/application.sh
+. $SCR/includes/git.sh
