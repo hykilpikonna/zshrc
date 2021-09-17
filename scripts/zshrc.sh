@@ -134,3 +134,6 @@ fi
 # Includes
 . $SCR/includes/application.sh
 . $SCR/includes/git.sh
+
+# include if it exists
+[ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
