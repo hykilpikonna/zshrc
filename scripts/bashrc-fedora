@@ -1,3 +1,0 @@
-
-alias install='dnf install'
-alias uninstall='dnf remove'
