@@ -63,6 +63,9 @@ color() {
     echo $tmp
 }
 
+# Includes
+for f in $SCR/includes/*; do source $f; done
+
 # Set proxy
 setproxy() {
     addr=${1:-127.0.0.1}
@@ -72,6 +75,9 @@ setproxy() {
     export http_proxy="http://$full"
     export all_proxy="socks5://$full"
     color "&aUsing proxy! $full&r"
+
+    prompt-set 30 "🌎 "
+    prompt-update
 }
 
 # Mac hostname
@@ -95,9 +101,6 @@ cut() {
     echo $start
     ffmpeg -i $1 -codec copy -ss $start -t $2 Cut\ $1
 }
-
-# Includes
-for f in $SCR/includes/*; do source $f; done
 
 # include if it exists
 [ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
