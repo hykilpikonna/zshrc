@@ -43,23 +43,6 @@ lisp() {
     ros run --load $1 --quit
 }
 
-# Git commit wrapper
-commit() {
-    msg="$@"
-    git commit -m "$msg"
-}
-
-commitall() {
-    git add .
-    commit "$@"
-}
-alias commita="commitall"
-
-compush() {
-    commitall "$@"
-    git push
-}
-
 # Minecraft coloring
 color() {
     tmp="$@"
@@ -132,3 +115,4 @@ PROMPT="${LINE}%F{reset}[%F{magenta}%D %*%F{reset}] [%F{blue}%m%F{reset}] [%F{ye
 # 登录提示
 . $SCR/bashrc-application
 . $SCR/bashrc-fedora
+. $SCR/bashrc-git.sh
