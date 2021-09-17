@@ -113,6 +113,5 @@ LINE=$'\n'
 PROMPT="${LINE}%F{reset}[%F{magenta}%D %*%F{reset}] [%F{blue}%m%F{reset}] [%F{yellow}%n%F{reset}] %F{white}%~${LINE}$ "
 
 # 登录提示
-. $SCR/bashrc-application
-. $SCR/bashrc-fedora
+. $SCR/bashrc-application.sh
 . $SCR/bashrc-git.sh
