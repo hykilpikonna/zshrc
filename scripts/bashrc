@@ -43,6 +43,12 @@ lisp() {
     ros run --load $1 --quit
 }
 
+# Remote adb
+adblan() {
+    adb connect $1:16523
+}
+alias adblan-start="adb tcpip 16523"
+
 # Minecraft coloring
 color() {
     tmp="$@"
