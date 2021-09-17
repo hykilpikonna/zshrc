@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import json
-import base64
+import sys
+import time
 from typing import Tuple, List
-
-import click
 
 
 def replace_color(msg: str) -> str:
@@ -13,49 +12,36 @@ def replace_color(msg: str) -> str:
     return msg
 
 
-@click.group()
-@click.argument('var')
-@click.pass_context
-def cli(ctx, var: str):
-    # Get saved parts
-    parts: List[Tuple[int, str]] = json.loads(base64.b64decode(var.encode()).decode()) if var != '' else []
-    ctx.obj['parts'] = parts
-    pass
-
-
-@cli.command()
-@click.pass_context
-@click.option('--color', default=True)
-def show(ctx, color: bool):
-    parts = ctx.obj['parts']
+def show():
     parts.sort(key=lambda p: p[0])
     s = ''.join([p[1] for p in parts])
-    if color:
-        s = replace_color(s)
-    print(s)
+    print(replace_color(s))
 
 
-@cli.command()
-@click.pass_context
-def debug(ctx):
-    print(ctx.obj['parts'])
-
-
-@cli.command()
-@click.argument('order')
-@click.argument('format')
-@click.pass_context
-def set(ctx, order: str, format: str):
-    order = int(order)
-    parts = ctx.obj['parts']
-
+def set():
     # Create new parts list
     existing = [p for p in parts if p[0] == order]
     if existing:
         parts.remove(existing[0])
     parts.append((order, format))
-    print(base64.b64encode(json.dumps(parts).encode()).decode())
+    print(json.dumps(parts))
 
 
 if __name__ == '__main__':
-    cli(obj={})
+    start_time = time.time()
+
+    args = sys.argv[1:]
+    parts_raw = args.pop(0)
+    parts: List[Tuple[int, str]] = json.loads(parts_raw) if parts_raw != '' else []
+    cmd = args.pop(0).lower()
+
+    if cmd == 'show':
+        show()
+    elif cmd == 'debug':
+        print(parts)
+    elif cmd == 'set':
+        order = int(args.pop(0))
+        format = ' '.join(args)
+        set()
+    # print("--- %s seconds ---" % (time.time() - start_time), file=sys.stderr)
+
