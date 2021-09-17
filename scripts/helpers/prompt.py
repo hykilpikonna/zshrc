@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import json
-import os
+import base64
 from typing import Tuple, List
 
 import click
@@ -18,7 +18,7 @@ def replace_color(msg: str) -> str:
 @click.pass_context
 def cli(ctx, var: str):
     # Get saved parts
-    parts: List[Tuple[int, str]] = json.loads(var)
+    parts: List[Tuple[int, str]] = json.loads(base64.b64decode(var.encode()).decode()) if var != '' else []
     ctx.obj['parts'] = parts
     pass
 
@@ -45,7 +45,7 @@ def set(ctx, order: int, format: str, color: bool):
         parts.remove(existing[0])
     parts.append((order, format))
     parts.sort(key=lambda p: p[0])
-    print(json.dumps(parts))
+    print(base64.b64encode(json.dumps(parts).encode()).decode())
 
 
 if __name__ == '__main__':
