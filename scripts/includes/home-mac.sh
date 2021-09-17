@@ -1,4 +1,5 @@
-if [[ $OSTYPE == 'darwin'* ]]; then
+# Home mac only
+if [[ $OSTYPE == 'darwin'* ]] && [ -d "/Volumes/External" ]; then
     # Minecraft
     export MC_DIR="/Volumes/External/Minecraft"
     alias minecraft="pushd $MC_DIR; java8 -jar $MC_DIR/HMCL-*.jar; popd"
