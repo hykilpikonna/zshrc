@@ -97,7 +97,7 @@ cut() {
 }
 
 # Includes
-. $SCR/includes/*
+for f in $SCR/includes/*; do source $f; done
 
 # include if it exists
 [ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
