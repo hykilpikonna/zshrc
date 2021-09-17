@@ -25,28 +25,29 @@ def cli(ctx, var: str):
 
 @cli.command()
 @click.pass_context
-def show(ctx):
+@click.option('--color', default=True)
+def show(ctx, color: bool):
     parts = ctx.obj['parts']
     parts.sort(key=lambda p: p[0])
-    print(''.join([p[1] for p in parts]))   
+    s = ''.join([p[1] for p in parts])
+    if color:
+        s = replace_color(s)
+    print(s)
+    print(parts)
 
 
 @cli.command()
 @click.argument('order')
 @click.argument('format')
-@click.option('--color', default=True)
 @click.pass_context
-def set(ctx, order: int, format: str, color: bool):
+def set(ctx, order: int, format: str):
     parts = ctx.obj['parts']
-    if color:
-        format = replace_color(format)
 
     # Create new parts list
     existing = [p for p in parts if p[0] == order]
     if existing:
         parts.remove(existing[0])
     parts.append((order, format))
-    parts.sort(key=lambda p: p[0])
     print(base64.b64encode(json.dumps(parts).encode()).decode())
 
 
