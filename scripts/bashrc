@@ -71,6 +71,20 @@ color() {
     echo $tmp
 }
 
+# Cut videos - cut <file name> <end time> [start time (default 00:00:00)]
+cut() {
+    if [ "$#" -lt 2 ]; then
+        echo "Usage: cut <file name> <end time (hh:mm:ss)> [start time (00:00:00)]"
+        return -1
+    fi
+
+    local start="${3:-00:00:00}"
+    echo $1
+    echo $2
+    echo $start
+    ffmpeg -i $1 -codec copy -ss $start -t $2 Cut\ $1
+}
+
 # 关于PS1 (指令提示格式)
 # 这个版本向上番两次就会出问题
 # PS1='\n\e[m[\e[35m\D{%y-%m-%d} \t\e[m] [\e[34m\h\e[m] [\e[33m\u\e[m] \e[37m\w \n\e[m$ '
