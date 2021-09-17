@@ -86,6 +86,14 @@ setproxy() {
     color "&aUsing proxy! $full&r"
 }
 
+# Mac hostname
+mac-hostname() {
+    name="$@"
+    sudo scutil --set HostName "$name"
+    sudo scutil --set LocalHostName "$name"
+    sudo scutil --set ComputerName "$name"
+}
+
 # Cut videos - cut <file name> <end time> [start time (default 00:00:00)]
 cut() {
     if [ "$#" -lt 2 ]; then
