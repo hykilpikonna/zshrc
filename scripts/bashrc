@@ -27,6 +27,9 @@ alias fuss='fileusage | sortsize'
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
+# 相合伞w
+alias aiaigasa='cat ~/.splash-precolored'
+
 # Lisp wrapper
 lisp() {
     ros run --load $1 --quit
@@ -127,6 +130,5 @@ LINE=$'\n'
 PROMPT="${LINE}%F{reset}[%F{magenta}%D %*%F{reset}] [%F{blue}%m%F{reset}] [%F{yellow}%n%F{reset}] %F{white}%~${LINE}$ "
 
 # 登录提示
-aiaigasa
 . $SCR/bashrc-application
 . $SCR/bashrc-fedora
