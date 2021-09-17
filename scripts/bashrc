@@ -49,6 +49,28 @@ compush() {
     git push
 }
 
+# Minecraft coloring
+color() {
+    tmp="$@"
+    tmp=$(echo "${tmp/&0/\033[0;30m}")
+    tmp=$(echo "${tmp/&1/\033[0;34m}")
+    tmp=$(echo "${tmp/&2/\033[0;32m}")
+    tmp=$(echo "${tmp/&3/\033[0;36m}")
+    tmp=$(echo "${tmp/&4/\033[0;31m}")
+    tmp=$(echo "${tmp/&5/\033[0;35m}")
+    tmp=$(echo "${tmp/&6/\033[0;33m}")
+    tmp=$(echo "${tmp/&7/\033[0;37m}")
+    tmp=$(echo "${tmp/&8/\033[1;30m}")
+    tmp=$(echo "${tmp/&9/\033[1;34m}")
+    tmp=$(echo "${tmp/&a/\033[1;32m}")
+    tmp=$(echo "${tmp/&b/\033[1;36m}")
+    tmp=$(echo "${tmp/&c/\033[1;31m}")
+    tmp=$(echo "${tmp/&d/\033[1;35m}")
+    tmp=$(echo "${tmp/&e/\033[1;33m}")
+    tmp=$(echo "${tmp/&f/\033[1;37m}")
+    echo $tmp
+}
+
 # 关于PS1 (指令提示格式)
 # 这个版本向上番两次就会出问题
 # PS1='\n\e[m[\e[35m\D{%y-%m-%d} \t\e[m] [\e[34m\h\e[m] [\e[33m\u\e[m] \e[37m\w \n\e[m$ '
