@@ -10,3 +10,30 @@ def color(msg: str) -> str:
     for r in replacements:
         msg = msg.replace(r[:2], r[3:])
     return msg
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def show():
+    print(parts)
+
+
+@cli.command()
+def add():
+    print("todo")
+
+
+if __name__ == '__main__':
+    # Get saved parts
+    key = 'prompt-part-list'
+    os.environ.setdefault(key, '{}')
+    parts = os.environ.get(key)
+
+    # Parse saved parts
+    parts = json.loads(parts)
+
+    cli()
