@@ -11,13 +11,21 @@ prompt-show() {
     prompt "$PROMPT_RAW" show
 }
 
-# ZSH
-DEFAULT_USER="hykilpikonna"
-PROMPT=$(color "&n&5%D{%a %m-%d %H:%M}&r | &1%m&r |")
-# Shows a cat if I'm hykilpikonna
-if [[ "$USER" != "$DEFAULT_USER" ]]; then
-    PROMPT=$(color "$PROMPT &e%n&r")
-else
-    PROMPT=$(color "$PROMPT 🐱")
-fi
-PROMPT=$(color "$PROMPT &r%~&n> ")
+########### Build a zsh prompt
+# New line first
+prompt-set 0 "&n"
+# Time stamp
+prompt-set 10 "&5%D{%a %m-%d %H:%M}&r "
+# Hostname
+prompt-set 20 "&1%m&r "
+# Username, or show a cat if I'm hykilpikonna
+prompt-set 30 "&e%n&r "
+[[ "$USER" == "hykilpikonna" ]] && prompt-set 30 "🐱 "
+# Directory
+prompt-set 40 "&r%~ "
+# New line after the prompt header
+prompt-set 1000 "&n"
+# Before input
+prompt-set 1100 "> "
+# Create prompt
+PROMPT=$(prompt-show)
