@@ -132,8 +132,7 @@ if [[ $OSTYPE == 'darwin'* ]]; then
 fi
 
 # Includes
-. $SCR/includes/application.sh
-. $SCR/includes/git.sh
+. $SCR/includes/*
 
 # include if it exists
 [ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
