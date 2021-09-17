@@ -112,6 +112,19 @@ PS1='\n\[\e[m\][\[\e[35m\]\D{%y-%m-%d} \t\[\e[m\]] [\[\e[34m\]\h\[\e[m\]] [\[\e[
 LINE=$'\n'
 PROMPT="${LINE}%F{reset}[%F{magenta}%D %*%F{reset}] [%F{blue}%m%F{reset}] [%F{yellow}%n%F{reset}] %F{white}%~${LINE}$ "
 
-# 登录提示
+# Mac-only paths
+if [[ $OSTYPE == 'darwin'* ]]; then
+    # Java
+    export JDK8="/usr/local/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home"
+    export JDK11="/usr/local/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home"
+    export JDK16="/usr/local/opt/openjdk@16/libexec/openjdk.jdk/Contents/Home"
+    alias java8="${JDK8}/bin/java"
+    alias java11="${JDK11}/bin/java"
+    alias java16="${JDK16}/bin/java"
+    export JAVA_HOME=${JDK11}
+    export PATH="${JDK11}/bin:$PATH"
+fi
+
+# Imports
 . $SCR/bashrc-application.sh
 . $SCR/bashrc-git.sh
