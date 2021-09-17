@@ -24,6 +24,9 @@ alias duss='dirusage | sortsize'
 alias duass='dirusagea | sortsize'
 alias fuss='fileusage | sortsize'
 
+# Mac Specific
+alias ds_clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
+
 # Lisp wrapper
 lisp() {
     ros run --load $1 --quit
