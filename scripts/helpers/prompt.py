@@ -33,7 +33,12 @@ def show(ctx, color: bool):
     if color:
         s = replace_color(s)
     print(s)
-    print(parts)
+
+
+@cli.command()
+@click.pass_context
+def debug(ctx):
+    print(ctx.obj['parts'])
 
 
 @cli.command()
