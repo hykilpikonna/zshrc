@@ -45,7 +45,8 @@ def debug(ctx):
 @click.argument('order')
 @click.argument('format')
 @click.pass_context
-def set(ctx, order: int, format: str):
+def set(ctx, order: str, format: str):
+    order = int(order)
     parts = ctx.obj['parts']
 
     # Create new parts list
