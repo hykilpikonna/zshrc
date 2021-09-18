@@ -1,6 +1,12 @@
 # Go to home directory
 pushd $HOME
 
+# Check if already installed
+if [ -d "zshrc" ]; then
+  echo "Already installed."
+  exit -1
+fi
+
 # Clone repo
 git clone "https://github.com/hykilpikonna/zshrc"
 
