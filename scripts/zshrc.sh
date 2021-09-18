@@ -43,6 +43,14 @@ addline() {
   grep -qxF "$2" "$1" || echo "$2" >> $1
 }
 
+# Silent pushd and popd
+spushd () {
+    command pushd "$@" > /dev/null
+}
+spopd () {
+    command popd "$@" > /dev/null
+}
+
 # Minecraft coloring
 color() {
     tmp="$@"
