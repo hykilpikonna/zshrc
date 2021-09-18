@@ -27,6 +27,8 @@ alias fuss='fileusage | sortsize'
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
+alias catt="echo 🐱"
+
 # Lisp wrapper
 lisp() {
     ros run --load $1 --quit
