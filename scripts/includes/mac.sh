@@ -15,4 +15,13 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     alias java16="${JDK16}/bin/java"
     export JAVA_HOME=${JDK11}
     export PATH="${JDK11}/bin:$PATH"
+
+    # Autosuggestions
+    autosug="/usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    if [ -f $autosug ]; then
+        source $autosug
+    else
+        brew install zsh-autosuggestions
+        source $autosug
+    fi
 fi
