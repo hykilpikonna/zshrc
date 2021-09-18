@@ -76,6 +76,7 @@ color() {
     tmp=$(echo "${tmp//&n/$newline}")
     echo $tmp
 }
+alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
 
 # Includes
 for f in $SCR/includes/*; do source $f; done
