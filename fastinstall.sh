@@ -19,6 +19,12 @@ addline() {
 addline .zshrc 'SCR="$HOME/zshrc/scripts"'
 addline .zshrc '. $SCR/zshrc.sh'
 
+# Check fish
+fish=".config/fish/config.fish"
+if [ -d $fish ]; then
+  echo 'source $HOME/.zshrc; clear;' > $fish 
+fi
+
 # Source file
 . .zshrc
 
