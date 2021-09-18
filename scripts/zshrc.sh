@@ -45,10 +45,10 @@ addline() {
 
 # Silent pushd and popd
 spushd () {
-    command pushd "$@" > /dev/null
+    pushd "$@" > /dev/null
 }
 spopd () {
-    command popd "$@" > /dev/null
+    popd "$@" > /dev/null
 }
 
 # Minecraft coloring
