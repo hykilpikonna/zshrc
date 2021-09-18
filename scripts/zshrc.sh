@@ -54,6 +54,7 @@ spopd () {
 # Minecraft coloring
 color() {
     tmp="$@"
+    tmp="$tmp&r"
     tmp=$(echo "${tmp//&0/\033[0;30m}")
     tmp=$(echo "${tmp//&1/\033[0;34m}")
     tmp=$(echo "${tmp//&2/\033[0;32m}")
