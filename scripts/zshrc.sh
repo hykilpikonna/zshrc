@@ -50,6 +50,7 @@ spushd () {
 spopd () {
     command popd "$@" > /dev/null
 }
+alias test="echo 🌸"
 
 # Minecraft coloring
 color() {
