@@ -3,7 +3,7 @@ pushd $SCR
 prefix="&7[&3zshrc&7]"
 
 # Check for updates
-git fetch origin
+git fetch origin --quiet
 reslog=$(git log HEAD..origin/master --oneline)
 if [[ "${reslog}" != "" ]] ; then
 
