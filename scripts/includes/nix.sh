@@ -1,4 +1,6 @@
+# Nixos only
 if command -v nixos-rebuild &> /dev/null; then
+
     alias rebuild="nixos-rebuild switch"
     alias gc="nix-collect-garbage -d"
     alias rebuild-gc="rebuild; gc"

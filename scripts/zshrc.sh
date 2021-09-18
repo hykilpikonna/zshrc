@@ -38,6 +38,11 @@ adblan() {
 }
 alias adblan-start="adb tcpip 16523"
 
+# Add line if it doesn't exist in a file
+addline() {
+  grep -qxF "$2" "$1" || echo "$2" >> $1
+}
+
 # Minecraft coloring
 color() {
     tmp="$@"
