@@ -12,6 +12,7 @@ if [[ "${reslog}" != "" ]] ; then
 
     # Try to pull
     if git pull; then
+        . $SCR/zshrc.sh
         color "$prefix &aUpdated!"
     else
         color "$prefix &cUpdate failed!"
