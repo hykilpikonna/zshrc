@@ -19,8 +19,12 @@ addline() {
 addline .zshrc 'SCR="$HOME/zshrc/scripts"'
 addline .zshrc '. $SCR/zshrc.sh'
 
-# Source file
-. .zshrc
+# Initialize submodules
+git submodule init
+git submodule update
 
 # Return to the previous directory
 popd
+
+# Open a new zsh instance
+zsh
