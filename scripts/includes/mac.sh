@@ -1,6 +1,6 @@
 # Mac-only commands
 if [[ $OSTYPE == 'darwin'* ]]; then
-    alias ls='ls -h'
+    alias ls='ls -hG'
     alias ports="netstat -ap tcp | grep -i \"listen\""
     alias trash="rmtrash"
     alias checkrain="/Applications/checkra1n.app/Contents/MacOS/checkra1n"
