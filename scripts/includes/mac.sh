@@ -10,9 +10,11 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     export JDK8="/usr/local/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home"
     export JDK11="/usr/local/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home"
     export JDK16="/usr/local/opt/openjdk@16/libexec/openjdk.jdk/Contents/Home"
+    export JDK17="/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
     alias java8="${JDK8}/bin/java"
     alias java11="${JDK11}/bin/java"
     alias java16="${JDK16}/bin/java"
+    alias java17="${JDK17}/bin/java"
     export JAVA_HOME=${JDK11}
     export PATH="${JDK11}/bin:$PATH"
 fi
