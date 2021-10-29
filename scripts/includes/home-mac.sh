@@ -7,7 +7,7 @@ if [[ $OSTYPE == 'darwin'* ]] && [ -d "/Volumes/External" ]; then
     # Paths
     export PATH="$PATH:/Users/hykilpikonna/.pyenv/versions/3.8.0/bin"
     export DOTNET_ROOT="/usr/local/opt/dotnet/libexec"
-    export PATH="/Volumes/MacData/SageMath:$PATH"
+    # export PATH="/Volumes/MacData/SageMath:$PATH"
     export PATH="$PATH:/Users/hykilpikonna/.gem/ruby/2.6.0/bin" # https://stackoverflow.com/a/53388305/7346633
     export PATH="/Users/hykilpikonna/Resources/flutter/bin:$PATH"
     export ANDROID_HOME="~/Resources/AndroidSDK"
