@@ -2,6 +2,7 @@
 if [[ $OSTYPE == 'darwin'* ]]; then
     alias ls='ls -hG'
     alias ports="netstat -ap tcp | grep -i \"listen\""
+    alias ports2="sudo lsof -i -P | grep LISTEN"
     alias trash="rmtrash"
     alias checkrain="/Applications/checkra1n.app/Contents/MacOS/checkra1n"
     alias obs="open -n -a OBS.app"
