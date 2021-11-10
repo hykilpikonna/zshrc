@@ -3,6 +3,9 @@ set-alias ll ls
 function su { powershell Start-Process powershell -Verb runAs }
 function pwdd { $("$PWD".replace($HOME, '~')) }
 
+# Paths
+$env:path = "$env:path;C:\users\me\appdata\roaming\python\python39\scripts"
+
 # Minecraft coloring
 function color($tmp) {
     $033 = [char]27 
