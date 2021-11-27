@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 import json
 import sys
-from __future__ import annotations
 
 
 def ansirgb(r: int, g: int, b: int, foreground: bool = True) -> str:
