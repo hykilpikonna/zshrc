@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 
 
-def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int = 24,
+def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int = 24, br: int = 500,
          cmd: bool = False, aargs: str = '', suffix: str = 'mp4'):
     """
     Compress video
@@ -35,7 +35,7 @@ def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int
     if proc == 'c':
         c = f'ffmpeg -i "{i}" -vcodec lib{codec} -crf {crf} {aargs} "{out}"'
     elif proc == 'g':
-        c = f'ffmpeg -i "{i}" -c:v {codec}_videotoolbox -b:v 1000k {aargs} "{out}"'
+        c = f'ffmpeg -i "{i}" -c:v {codec}_videotoolbox -b:v {br}k {aargs} "{out}"'
     else:
         raise AssertionError(f'Processor is invalid ({codec}[0] not in "cg")')
     
