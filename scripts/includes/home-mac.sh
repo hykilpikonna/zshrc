@@ -2,7 +2,7 @@
 if [[ $OSTYPE == 'darwin'* ]] && [ -d "/Volumes/External" ]; then
     # Minecraft
     export MC_DIR="/Volumes/External/Minecraft"
-    alias minecraft="pushd $MC_DIR; java8 -jar $MC_DIR/HMCL-*.jar; popd"
+    alias minecraft="pushd $MC_DIR; java17 -jar $MC_DIR/HMCL-*.jar; popd"
 
     # Paths
     export PATH="$PATH:/Users/hykilpikonna/.pyenv/versions/3.8.0/bin"
