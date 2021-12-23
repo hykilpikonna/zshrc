@@ -3,6 +3,17 @@ set-alias ll ls
 function su { powershell Start-Process powershell -Verb runAs }
 function pwdd { $("$PWD".replace($HOME, '~')) }
 
+# ln -s
+function ln-s ($target, $link) {
+    New-Item -Path $link -ItemType SymbolicLink -Value $target
+}
+
+function setup-powershell-profile {
+    $docs = [Environment]::GetFolderPath("MyDocuments")
+    ln-s "~\zshrc\powershell.ps1" "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+    ln-s "~\zshrc\powershell.ps1" "$docs\PowerShell\Microsoft.PowerShell_profile.ps1"
+}
+
 # Paths
 $env:path = "$env:path" + 
     ";C:\users\me\appdata\roaming\python\python39\scripts" + 
