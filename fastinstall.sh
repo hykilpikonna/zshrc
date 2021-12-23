@@ -20,8 +20,10 @@ addline .zshrc 'SCR="$HOME/zshrc/scripts"'
 addline .zshrc '. $SCR/zshrc.sh'
 
 # Initialize submodules
+pushd zshrc
 git submodule init
 git submodule update
+popd
 
 # Return to the previous directory
 popd

@@ -4,8 +4,11 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     alias ports="netstat -ap tcp | grep -i \"listen\""
     alias ports2="sudo lsof -i -P | grep LISTEN"
     alias trash="rmtrash"
+    
     alias checkrain="/Applications/checkra1n.app/Contents/MacOS/checkra1n"
     alias obs="open -n -a OBS.app"
+    alias idea="open -a Intellij\ IDEA.app"
+    alias xcode="open -a Xcode.app"
 
     # Java
     export JDK8="/usr/local/opt/openjdk@8/libexec/openjdk.jdk/Contents/Home"

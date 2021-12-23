@@ -118,6 +118,8 @@ cut() {
     echo $start
     ffmpeg -i $1 -codec copy -ss $start -t $2 Cut\ $1
 }
+alias vcomp="$SCR/helpers/video.py"
+alias vcompy="ipython -i $SCR/helpers/video.py"
 
 # include if it exists
 [ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
