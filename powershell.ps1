@@ -8,6 +8,7 @@ function ln-s ($target, $link) {
     New-Item -Path $link -ItemType SymbolicLink -Value $target
 }
 
+# First time setup
 function setup-powershell-profile {
     $docs = [Environment]::GetFolderPath("MyDocuments")
     ln-s "~\zshrc\powershell.ps1" "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
