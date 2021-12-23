@@ -21,6 +21,13 @@ $env:path = "$env:path" +
     ";C:\Users\me\AppData\Roaming\npm" +
     ";C:\Users\me\AppData\Local\Yarn\bin"
 
+
+# Python versions
+set-alias python3.9 C:\"Program Files"\Python39\python.exe
+set-alias pip3.9 C:\"Program Files"\Python39\Scripts\pip3.exe
+set-alias python3.10 C:\Python310\python.exe
+set-alias python3.10 C:\Python310\Scripts\pip3.exe
+
 # Minecraft coloring
 function color($tmp) {
     $033 = [char]27 
