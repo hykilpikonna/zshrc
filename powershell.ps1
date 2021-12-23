@@ -4,7 +4,10 @@ function su { powershell Start-Process powershell -Verb runAs }
 function pwdd { $("$PWD".replace($HOME, '~')) }
 
 # Paths
-$env:path = "$env:path;C:\users\me\appdata\roaming\python\python39\scripts"
+$env:path = "$env:path" + 
+    ";C:\users\me\appdata\roaming\python\python39\scripts" + 
+    ";C:\Users\me\AppData\Roaming\npm" +
+    ";C:\Users\me\AppData\Local\Yarn\bin"
 
 # Minecraft coloring
 function color($tmp) {
@@ -36,6 +39,11 @@ function prompt
     color ("&n" +
     "&5$(get-date -UFormat "%a %m-%d %H:%M") &1Kevin-PC &eAzalea &r$(pwdd)&n" +
     "> ")
+}
+
+function cropv($file, $len)
+{
+    ffmpeg -i $file -filter:v "crop=$(len):1440:$([math]::floor((2560-$len)/2)):0" out.mp4
 }
 
 # ls coloring
