@@ -49,7 +49,7 @@ function color($tmp) {
 function prompt
 {
     color ("&n" +
-    "&5$(get-date -UFormat "%a %m-%d %H:%M") &1Kevin-PC &eAzalea &r$(pwdd)&n" +
+    "&5$(get-date -UFormat "%a %m-%d %H:%M") &1$($env:computername) &eAzalea &r$(pwdd)&n" +
     "> ")
 }
 
