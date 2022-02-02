@@ -1,41 +1,39 @@
-#Requires -RunAsAdministrator
+# # Install chocolatey
+# if (Get-Command choco -errorAction SilentlyContinue)
+# {
+#     echo "Choco exists"
+# }
+# else
+# {
+#     echo "Installing choco..."
+#     Set-ExecutionPolicy Bypass -Scope Process -Force
+#     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 
+#     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+# }
 
-# Install chocolatey
-if (Get-Command choco -errorAction SilentlyContinue)
-{
-    echo "Choco exists"
-}
-else
-{
-    echo "Installing choco..."
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 
-    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-}
+# function install-cmd($cmd, $pack)
+# {
+#     if (!$pack) { $pack = $cmd }
 
-function install-cmd($cmd, $pack)
-{
-    if (!$pack) { $pack = $cmd }
+#     if (-Not (Get-Command $cmd -errorAction SilentlyContinue))
+#     {
+#         echo "$cmd doesn't exist, installing $pack..."
+#         choco install $pack -y
+#     } 
+# }
 
-    if (-Not (Get-Command $cmd -errorAction SilentlyContinue))
-    {
-        echo "$cmd doesn't exist, installing $pack..."
-        choco install $pack -y
-    } 
-}
+# function install-module-safe($module)
+# {
+#     if (!(Get-Module -ListAvailable -Name $module)) {
+#         Install-Module $module
+#     }
+# }
 
-function install-module-safe($module)
-{
-    if (!(Get-Module -ListAvailable -Name $module)) {
-        Install-Module $module
-    }
-}
-
-# Install gsudo
-install-cmd gsudo
-install-cmd git
-install-cmd nano
-install-module-safe PSColor
+# # Install gsudo
+# install-cmd gsudo
+# install-cmd git
+# install-cmd nano
+# install-module-safe PSColor
 
 # ln -s
 function ln-s ($target, $link) {
@@ -44,5 +42,7 @@ function ln-s ($target, $link) {
 
 # Install 
 $docs = [Environment]::GetFolderPath("MyDocuments")
-ln-s "~\zshrc\powershell.ps1" "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
-ln-s "~\zshrc\powershell.ps1" "$docs\PowerShell\Microsoft.PowerShell_profile.ps1"
+rm "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+ln-s "$HOME\zshrc\powershell.ps1" "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+rm "$docs\PowerShell\Microsoft.PowerShell_profile.ps1"
+ln-s "$HOME\zshrc\powershell.ps1" "$docs\PowerShell\Microsoft.PowerShell_profile.ps1"
