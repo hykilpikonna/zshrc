@@ -37,12 +37,14 @@
 
 # ln -s
 function ln-s ($target, $link) {
-    New-Item -Path $link -ItemType SymbolicLink -Value $target
+    gsudo New-Item -Path $link -ItemType SymbolicLink -Value $target
 }
 
 # Install 
 $docs = [Environment]::GetFolderPath("MyDocuments")
-rm "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+mkdir "$docs\WindowsPowerShell" -Force
+rm "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" -ErrorAction Ignore
 ln-s "$HOME\zshrc\powershell.ps1" "$docs\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
-rm "$docs\PowerShell\Microsoft.PowerShell_profile.ps1"
+mkdir "$docs\PowerShell" -Force
+rm "$docs\PowerShell\Microsoft.PowerShell_profile.ps1" -ErrorAction Ignore
 ln-s "$HOME\zshrc\powershell.ps1" "$docs\PowerShell\Microsoft.PowerShell_profile.ps1"
