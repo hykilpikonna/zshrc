@@ -24,6 +24,7 @@ alias sortsize='sort -hr'
 alias duss='dirusage | sortsize'
 alias duass='dirusagea | sortsize'
 alias fuss='fileusage | sortsize'
+alias screenfetch='neofetch --ascii --source $SCR/trans.ascii --ascii_colors 6 1 7 1 6'
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
