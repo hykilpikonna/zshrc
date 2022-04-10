@@ -29,6 +29,7 @@ alias screenfetch='neofetch --ascii --source $SCR/trans.ascii --ascii_colors 6 1
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
 alias catt="echo 🐱"
+alias update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
 # Lisp wrapper
 lisp() {
