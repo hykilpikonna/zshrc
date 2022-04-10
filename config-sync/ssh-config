@@ -1,0 +1,50 @@
+Host home
+    HostName home.hydev.org
+    Port 10022
+    User hykilpikonna
+
+Host ovh
+    HostName ovh.hydev.org
+    User root
+
+Host ovh2
+    HostName ovh2.hydev.org
+    User root
+
+Host aster
+    HostName aster.hydev.org
+    User azalea
+
+Host daisy
+    HostName daisy.hydev.org
+    User azalea
+
+Host cn
+    HostName cn.hydev.org
+    User root
+
+Host nix
+    HostName nix.hydev.org
+    User root
+
+Host us
+    HostName us.hydev.org
+    User root
+
+Host lux
+    HostName lux.hydev.org
+    User root
+
+Host mir4
+    HostName 192.168.31.1
+    User root
+    KexAlgorithms +diffie-hellman-group1-sha1
+    Cipher 3des-cbc
+
+Host caspase
+    HostName caspase3kjq.terra-incognita.dev
+    User kevingaojx
+
+Host kevin
+    HostName caspase3kjq.terra-incognita.dev
+    User me@hydev.org
