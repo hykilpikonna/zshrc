@@ -25,6 +25,8 @@ alias duss='dirusage | sortsize'
 alias duass='dirusagea | sortsize'
 alias fuss='fileusage | sortsize'
 
+alias dc='docker-compose'
+
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
 alias catt="echo 🐱"
