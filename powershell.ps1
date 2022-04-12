@@ -21,6 +21,11 @@ set-alias pip3.9 C:\"Program Files"\Python39\Scripts\pip3.exe
 set-alias python3.10 C:\Python310\python.exe
 set-alias python3.10 C:\Python310\Scripts\pip3.exe
 
+# Video tools
+function vcompy() {
+    ipython -i $HOME\zshrc\scripts\helpers\video.py
+}
+
 # Minecraft coloring
 function color($tmp) {
     $033 = [char]27 

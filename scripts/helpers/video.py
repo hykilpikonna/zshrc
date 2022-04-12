@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
+import re
 import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int = 24, br: int = 500,
@@ -43,6 +47,39 @@ def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int
         print(c)
     else:
         os.system(c)
+
+
+def combine(format: str, output: str | Path):
+    """
+    Combine videos
+
+    :param format: Regex pattern
+    :param output: Output file name
+    """
+    pattern = re.compile(format)
+
+    # Find video files
+    print()
+    files = [f for f in os.listdir('.') if pattern.match(f)]
+    print(f'Combining these files: {files}')
+
+    if len(files) == 0:
+        return print('No files to combine')
+
+    # Write files to text
+    txt = Path('./temp.txt')
+    txt.write_text('\n'.join(f"file '{f}'" for f in files))
+
+    # Infer extension
+    if '.' not in output:
+        output = str(Path(output).with_suffix(Path(files[0]).suffix))
+
+    # Run FFmpeg
+    print('Running FFmpeg')
+    os.system(f'ffmpeg -f concat -safe 0 -i temp.txt -c copy {output}')
+
+    # Remove temprary file
+    os.remove(txt)
 
 
 def rename():
