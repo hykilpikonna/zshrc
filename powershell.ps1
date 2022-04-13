@@ -12,7 +12,8 @@ function ln-s ($target, $link) {
 $env:path = "$env:path" + 
     ";C:\users\me\appdata\roaming\python\python39\scripts" + 
     ";C:\Users\me\AppData\Roaming\npm" +
-    ";C:\Users\me\AppData\Local\Yarn\bin"
+    ";C:\Users\me\AppData\Local\Yarn\bin" +
+    ";C:\Programs\bin"
 
 
 # Python versions
