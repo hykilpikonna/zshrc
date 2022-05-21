@@ -1,3 +1,9 @@
+# ZSH History
+HISTFILE=~/.zsh_history
+HISTSIZE=1000
+SAVEHIST=1000
+setopt appendhistory
+
 # 好用的简写w
 alias ls='ls -h --color=auto'
 alias ll='ls -l'
