@@ -42,6 +42,8 @@ alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 alias catt="echo 🐱"
 alias update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
+export PATH="$SCR/python:$PATH"
+
 # Lisp wrapper
 lisp() {
     ros run --load $1 --quit
