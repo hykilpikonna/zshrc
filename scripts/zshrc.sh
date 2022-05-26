@@ -34,6 +34,8 @@ alias fuss='fileusage | sortsize'
 alias dc='docker-compose'
 
 alias vsucode='code --user-data-dir /root/.config/vscode --no-sandbox'
+alias gpu-temp='while sleep 1; do clear; gpustat; done'
+alias cpu-temp='s-tui'
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
