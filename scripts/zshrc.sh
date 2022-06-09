@@ -36,7 +36,8 @@ alias dc='docker-compose'
 alias vsucode='code --user-data-dir /root/.config/vscode --no-sandbox'
 alias gpu-temp='while sleep 1; do clear; gpustat; done'
 alias cpu-temp='s-tui'
-alias mine='nuxhashd --show-mining'
+# alias mine='nuxhashd --show-mining'
+alias mine='sudo lolminer --algo ETHASH --pool stratum+ssl://daggerhashimoto.auto.nicehash.com:443 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 
