@@ -21,4 +21,24 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     alias java17="${JDK17}/bin/java"
     export JAVA_HOME=${JDK11}
     export PATH="${JDK11}/bin:$PATH"
+
+    # Anaconda
+    export CONDA_PATH="/usr/local/anaconda3"
+    export PATH="$CONDA_PATH/bin:$PATH"
+    conda-init() {
+        # >>> conda initialize >>>
+        # !! Contents within this block are managed by 'conda init' !!
+        __conda_setup="$("$CONDA_PATH/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
+        if [ $? -eq 0 ]; then
+            eval "$__conda_setup"
+        else
+            if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
+                . "$CONDA_PATH/etc/profile.d/conda.sh"
+            else
+                export PATH="$CONDA_PATH/bin:$PATH"
+            fi
+        fi
+        unset __conda_setup
+        # <<< conda initialize <<<
+    }
 fi
