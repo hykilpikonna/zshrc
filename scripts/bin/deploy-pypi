@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Stop on error
+set -e
+
+# Check if setup.py is present
+[[ ! -f "setup.py" ]] && echo "Setup.py not found, please make sure you're in the correct path" && exit -1
+
+# Remove old build
+rm -rf dist
+rm -rf build
+
+# Build
+python setup.py sdist bdist_wheel
+
+# Check built files
+twine check dist/*
+
+# Upload
+twine upload dist/*

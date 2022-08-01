@@ -1,3 +1,7 @@
+Host localhost
+    HostName localhost
+    User root
+
 Host home
     HostName home.hydev.org
     Port 10022

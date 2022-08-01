@@ -36,9 +36,8 @@ alias dc='docker-compose'
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias gpu-temp='while sleep 1; do clear; gpustat; done'
 alias cpu-temp='s-tui'
-# alias mine='nuxhashd --show-mining'
 alias mine='sudo lolminer --algo ETHASH --pool stratum+ssl://daggerhashimoto.auto.nicehash.com:443 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
-# alias mine-zel='sudo lolminer --algo ZEL --pers BgoldPoW --pool stratum+tcp://zelhash.auto.nicehash.com:9200 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
+alias mine-zel='sudo lolminer --algo ZEL --pers BgoldPoW --pool stratum+tcp://zelhash.auto.nicehash.com:9200 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
 alias mount-external='sudo mount -t cifs //192.168.2.1/external /smb/external -o rw,user=azalea,uid=1000,gid=1000,pass='
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
@@ -46,7 +45,7 @@ alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 alias catt="echo 🐱"
 alias update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
-export PATH="$SCR/python:$PATH"
+export PATH="$SCR/bin:$PATH"
 
 # Lisp wrapper
 lisp() {
