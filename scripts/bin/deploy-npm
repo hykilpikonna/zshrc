@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Stop on error
+set -e
+
+# Check if package.json is present
+[[ ! -f "package.json" ]] && echo "package.json not found, please make sure you're in the correct path" && exit -1
+
+# Deploy npm
+npm publish

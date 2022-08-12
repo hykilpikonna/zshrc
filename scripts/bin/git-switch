@@ -10,6 +10,8 @@ print(f'Current url: {url}')
 if url.startswith('http'):
     print('> HTTP git remote detected, switching to SSH')
     repo = url.split('github.com/')[-1]
+    if repo.endswith('.git'):
+        repo = repo[:-4]
     print(f'> Repo detected: {repo}')
     new_url = f'git@github.com:{repo}.git'
     
