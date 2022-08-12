@@ -1,3 +1,7 @@
+Host daisy-root
+    HostName daisy.hydev.org
+    User root
+
 Host home
     HostName home.hydev.org
     Port 10022
