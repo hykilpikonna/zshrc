@@ -1,0 +1,13 @@
+# ~/.nanorc
+set tabstospaces
+set tabsize 2
+set autoindent
+set linenumbers
+set nonewlines
+
+bind ^z undo main
+bind ^y redo main
+bind ^f whereis main
+bind ^r replace main
+
+include ~/zshrc/plugins/nanorc/*.nanorc
