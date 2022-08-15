@@ -1,6 +1,6 @@
 [submodule "plugins/zsh-autosuggestions"]
 	path = plugins/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions
-[submodule "plugins/plugins/nanorc"]
-	path = plugins/plugins/nanorc
+[submodule "plugins/nanorc"]
+	path = plugins/nanorc
 	url = https://github.com/scopatz/nanorc
