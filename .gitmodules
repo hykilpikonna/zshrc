@@ -3,4 +3,4 @@
 	url = https://github.com/zsh-users/zsh-autosuggestions
 [submodule "plugins/nanorc"]
 	path = plugins/nanorc
-	url = https://github.com/scopatz/nanorc
+	url = https://github.com/hykilpikonna/nanorc
