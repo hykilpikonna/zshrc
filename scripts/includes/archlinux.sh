@@ -15,4 +15,7 @@ if [ -f "/etc/arch-release" ]; then
     alias java17="${JDK17}/bin/java"
     export JAVA_HOME=${JDK11}
     export PATH="${JDK11}/bin:$PATH"
+
+    # GPG Init
+    alias gpg-init="echo 'hi' | gpg --status-fd=2 -bsau E289FAC0DA92DD2B"
 fi
