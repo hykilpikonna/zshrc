@@ -41,6 +41,7 @@ alias mine-zel='sudo lolminer --algo ZEL --pers BgoldPoW --pool stratum+tcp://ze
 alias mount-external='sudo mount -t cifs //192.168.2.1/external /smb/external -o rw,user=azalea,uid=1000,gid=1000,pass='
 
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
+alias compress-zst="tar -I 'zstd -T36 -19' --checkpoint=.1024 --totals -c -f"
 
 alias catt="echo 🐱"
 alias update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
