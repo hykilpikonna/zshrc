@@ -43,6 +43,7 @@ alias mount-external='sudo mount -t cifs //192.168.2.1/external /smb/external -o
 alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 alias clean-empty-dir="find . -type d -empty -delete -print"
 alias compress-zst="tar -I 'zstd -T36 -19' --checkpoint=.1024 --totals -c -f"
+alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 
 alias catt="echo 🐱"
 alias update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
