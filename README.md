@@ -5,19 +5,19 @@ My zshrc
 ## Installation
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Hykilpikonna/zshrc/HEAD/fastinstall.sh)"
+bash <(curl -sL hydev.org/zsh)
 ```
 
 ## Ubuntu fast setup
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Hykilpikonna/zshrc/HEAD/ubuntu_setup.sh)"
+bash <(curl -sL https://raw.githubusercontent.com/Hykilpikonna/zshrc/HEAD/ubuntu_setup.sh)
 ```
 
 Ubuntu Install Docker:
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Hykilpikonna/zshrc/HEAD/ubuntu_docker.sh)"
+bash <(curl -fsSL https://raw.githubusercontent.com/Hykilpikonna/zshrc/HEAD/ubuntu_docker.sh)
 ```
 
 ## Add SSH Keys
