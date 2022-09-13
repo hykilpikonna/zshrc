@@ -34,7 +34,7 @@ alias fuss='fileusage | sortsize'
 alias dc='docker-compose'
 
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
-alias visucode='EDITOR="code --wait"; sudoedit'
+alias visucode='EDITOR="code --wait" sudoedit'
 alias gpu-temp='while sleep 1; do clear; gpustat; done'
 alias cpu-temp='s-tui'
 alias mine='sudo lolminer --algo ETHASH --pool stratum+ssl://daggerhashimoto.auto.nicehash.com:443 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
