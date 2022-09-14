@@ -1,7 +1,7 @@
 patch:
   "menu/pagesize": 9
 var:
-  last_build_time: 1663178926
+  last_build_time: 1663179333
   previously_selected_schema: luna_pinyin_simp
   schema_access_time:
     luna_pinyin_simp: 1663166863
