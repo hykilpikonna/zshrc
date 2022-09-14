@@ -6,6 +6,6 @@ __build_info:
 config_version: 1.0
 style:
   cursor_type: insert
-  horizontal: false
+  horizontal: true
   inline_preedit: true
   preedit_style: composition
