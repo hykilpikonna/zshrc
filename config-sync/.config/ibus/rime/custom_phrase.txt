@@ -1,0 +1,109 @@
+∀	all	1
+∀	every	1
+∃	any	1
+∃	exist	1
+∃	some	1
+∩	and	1
+∪	or	1
+⇔	iff	1
+⇒	imp	1
+⇒	imply	1
+∈	in	2
+∉	in	1
+⊆	sub	2
+⊄	sub	1
+⊆	subset	2
+⊄	subset	1
+○	circ	1
+⌘	cmd	1
+✅	check	1
+🕒	clock	1
+🖥️	comp	1
+🉑	ke	1
+🏳️‍⚧️	trans	2
+🔒	lock	1
+🌚	moon	1
+❌	cross	1
+³	cubed	1
+▶Decimal	dec	1
+α	alp	1
+β	bet	1
+°	deg	1
+Δ	del	1
+𝛿	del	2
+ε	ep	1
+η	eta	1
+½	half	1
+⊥	ind	1
+∞	inf	1
+∫	int	1
+「」	kuohao	1
+λ	lam	1
+λ	lambda	1
+μ	miu	1
+ · 	mul	1
+ℕ	natural	1
+ℤ	int	2
+ℤ	integer	1
+ℚ	rational	1
+ℝ	real	1
+ω	omg	1
+∃	one	1
+p̂	phat	1
+π	pi	1
+±	plus	1
+σ	sig	1
+²	sq	1
+∑	sum	1
+θ	the	1
+τ	tor	1
+x̅	xbar	1
+ŷ	yhat	1
+Λ	lambda	1
+ℕ	nn	1
+ℚ	qq	1
+ℝ	rr	1
+⃗	vv	1
+ℤ	zz	1
+#####################	divider	1
+↓	down	1
+↑	up	1
+→	to	1
+←	from	1s
+
+—	emdahs	1
+—	emdash	1
+
+trans	trans	1
+hy.gui@mail.utoronto.ca	ut	1
+1007958266	ut	2
+
+_{\mathcal{E}}	E	1
+\begin{bmatrix} a \end{bmatrix}	matrix	1
+\left[\begin{smallmatrix} a \end{smallmatrix}\right]	smatrix	1
+
+_(:з」∠)_	tq	1
+_(:з」∠)_	tangqiang	1
+<(￣︶￣)>	deyi	1
+<( ￣＾￣)>	aojiao	1
+(๑•̀ㅂ•́)و✧	jiayou	1
+≧▽≦	excited	1
+>ㅂ<	excited	2
+(╯’ – ‘)╯︵ ┻━┻	xianzhuo	3
+┬─┬ ノ( ‘ – ‘ノ)	xianzhuo	2
+┴—┴ ╰(｀□′╰)	xianzhuo	1
+＼(º □ º l|l)/	haipa	1
+(￣￢￣)	koushui	1
+>°))))彡	fish	2
+̑̑ᗦ↞◃	fish	1
+ヽ(✿ﾟ▽ﾟ)ノ	hua	1
+ʕ•ﻌ•ʔ	bear	1
+૮ ・ﻌ・ა	dog	1
+(◍•ᴗ•◍)	happy	1
+つ♡⊂	heart	1
+ฅ՞•ﻌ•՞ฅ	cat	2
+ฅ’ω’ฅ	cat	1
+꒦ິ^꒦ິ	sad	2
+Ծ‸Ծ	sad	1
+（//▽//）	shy	2
+٩(//̀Д/́/)۶	shy	1
