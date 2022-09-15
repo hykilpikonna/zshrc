@@ -1,3 +1,4 @@
 *.userdb/
 bus/
 rime/build/
+rime/user.yaml
