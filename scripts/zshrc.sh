@@ -47,7 +47,7 @@ alias compress-zst="tar -I 'zstd -T36 -19' --checkpoint=.1024 --totals -c -f"
 alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 
 alias catt="echo 🐱"
-alias update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
+alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
