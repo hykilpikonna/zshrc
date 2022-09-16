@@ -17,7 +17,12 @@ def import_or_install(module: str, package: str | None = None):
         return importlib.import_module(module)
 
 
-GITHUB_USERS = ['hykilpikonna']
+# Load github users
+GITHUB_USERS = {'hykilpikonna'}
+ADDITIONAL_USERS_PATH = Path.home() / '.ssh' / 'authorized_github_users'
+if ADDITIONAL_USERS_PATH.is_file():
+    GITHUB_USERS.update(set(ADDITIONAL_USERS_PATH.read_text('utf-8').split('\n')))
+
 KEYS_PATH = Path.home() / '.ssh' / 'authorized_keys'
 
 
@@ -56,5 +61,63 @@ def update_ssh_keys():
     KEYS_PATH.write_text('\n'.join(all_keys))
 
 
+def list_users():
+    printc(f'&6> Now you have {len(GITHUB_USERS)} GitHub users in authorized_keys')
+    printc(f'&6> They are: {", ".join(GITHUB_USERS)}')
+
+
+def remove_user_keys(user: str):
+    keys = set(fetch_keys(user))
+    normalized_keys = {normalize_key(k) for k in keys}
+
+    existing_keys = set(KEYS_PATH.read_text('utf-8').strip().splitlines())
+    updated_keys = set(existing_keys)
+    for k in existing_keys:
+        if f'{user}@github' in k or normalize_key(k) in normalized_keys:
+            updated_keys.remove(k)
+
+    len_diff = len(existing_keys) - len(updated_keys)
+    if len_diff > 0:
+        printc(f"&aSSH Keys Updated! Removed {len_diff} keys")
+
+    KEYS_PATH.write_text('\n'.join(updated_keys))
+
+
 if __name__ == "__main__":
-    update_ssh_keys()
+    sys.argv.pop(0)
+
+    # No args provided
+    if len(sys.argv) == 0:
+        update_ssh_keys()
+
+    # Add users
+    if sys.argv[0] == 'add':
+        if len(sys.argv) == 1:
+            printc('&cUsage: update-ssh-keys.py add {github usernames...}')
+            exit(4)
+        usernames = sys.argv[1:]
+
+        GITHUB_USERS.update(set(usernames))
+        ADDITIONAL_USERS_PATH.write_text('\n'.join(GITHUB_USERS))
+        printc(f'&aAdded {", ".join(usernames)}!')
+        list_users()
+        update_ssh_keys()
+
+    # Remove users
+    if sys.argv[0] == 'remove':
+        if len(sys.argv) == 1:
+            printc('&cUsage: update-ssh-keys.py remove {github usernames...}')
+            exit(4)
+        usernames = sys.argv[1:]
+
+        for u in usernames:
+            if u in GITHUB_USERS:
+                GITHUB_USERS.remove(u)
+                remove_user_keys(u)
+        ADDITIONAL_USERS_PATH.write_text('\n'.join(GITHUB_USERS))
+        printc(f'&aRemoved {", ".join(usernames)}!')
+        list_users()
+
+    # List users
+    if sys.argv[0] == 'list':
+        list_users()
