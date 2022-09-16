@@ -31,7 +31,7 @@ alias duss='dirusage | sortsize'
 alias duass='dirusagea | sortsize'
 alias fuss='fileusage | sortsize'
 
-alias dc='docker-compose'
+alias dc='docker compose'
 
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias visucode='EDITOR="code --wait" sudoedit'
