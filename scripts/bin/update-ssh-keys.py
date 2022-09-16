@@ -4,6 +4,8 @@ import importlib
 import subprocess
 import sys
 from pathlib import Path
+from urllib.request import Request, urlopen
+
 from color_utils import printc
 
 
@@ -15,15 +17,15 @@ def import_or_install(module: str, package: str | None = None):
         return importlib.import_module(module)
 
 
-requests = import_or_install('requests')
-
-
 GITHUB_USERS = ['hykilpikonna']
 KEYS_PATH = Path.home() / '.ssh' / 'authorized_keys'
 
 
 def fetch_keys(user: str) -> set[str]:
-    resp = requests.get(f"https://github.com/{user}.keys").text
+    req = Request(f"https://github.com/{user}.keys")
+    with urlopen(req) as response:
+        assert response.status == 200
+        resp = response.read().decode()
     return {f"{l} {user}@github" for l in resp.strip().splitlines()}
 
 
