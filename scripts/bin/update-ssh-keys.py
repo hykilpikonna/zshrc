@@ -89,6 +89,7 @@ if __name__ == "__main__":
     # No args provided
     if len(sys.argv) == 0:
         update_ssh_keys()
+        exit(0)
 
     # Add users
     if sys.argv[0] == 'add':
