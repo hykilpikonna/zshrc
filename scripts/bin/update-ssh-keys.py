@@ -18,7 +18,7 @@ def import_or_install(module: str, package: str | None = None):
 
 
 # Load github users
-GITHUB_USERS = {'hykilpikonna'}
+GITHUB_USERS = {'hykilpikonna', 'sauricat'}
 ADDITIONAL_USERS_PATH = Path.home() / '.ssh' / 'authorized_github_users'
 if ADDITIONAL_USERS_PATH.is_file():
     GITHUB_USERS.update(set(ADDITIONAL_USERS_PATH.read_text('utf-8').split('\n')))
