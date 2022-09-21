@@ -49,6 +49,14 @@ alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
+alias exa="exa -lh"
+
+# Unix permissions reset (Dangerous! This will make executable files no longer executable)
+reset-permissions-dangerous() {
+    sudo find . -type d -exec chmod 755 {} \;
+    sudo find . -type f -exec chmod 644 {} \;
+}
+
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
