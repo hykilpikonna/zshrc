@@ -4,8 +4,20 @@ HISTSIZE=1000
 SAVEHIST=1000
 setopt appendhistory
 
+# Modern unix replacements.
+# Usage: modern-replace 'new cmd' 'orig cmd' 'new cmd with args' 'orig cmd with args'
+modern-replace() {
+    if command -v "$1" &> /dev/null; then
+        alias $2="$3"
+    else
+        alias $2="$4"
+    fi
+}
+
+modern-replace 'exa' 'ls' 'exa' 'ls -h --color=auto'
+modern-replace 'duf' 'df' 'duf' 'df -h'
+
 # 好用的简写w
-alias ls='ls -h --color=auto'
 alias ll='ls -l'
 alias lla='ls -la'
 alias grep='grep --color'
@@ -22,7 +34,6 @@ alias tar-create='tar -cvf'
 alias tar-expand='tar -zxvf'
 
 alias du='du -h'
-alias df='df -h'
 alias dirusage='du -shc *'
 alias dirusagea='du -hc --max-depth=1'
 alias fileusage='du -ahc --max-depth=1'
@@ -48,8 +59,6 @@ alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 
 alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
-
-alias exa="exa -lh"
 
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
