@@ -5,17 +5,29 @@ SAVEHIST=1000
 setopt appendhistory
 
 # Modern unix replacements.
-# Usage: modern-replace 'new cmd' 'orig cmd' 'new cmd with args' 'orig cmd with args'
+# Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
 modern-replace() {
-    if command -v "$1" &> /dev/null; then
-        alias $2="$3"
+    orig_cmd="$1"
+    new_cmd="$2"
+    orig_cmd_with_args="${3:-$2}"
+    new_cmd_with_args="${4:-$2}"
+
+    if command -v "$new_cmd" &> /dev/null; then
+        alias $orig_cmd="$new_cmd_with_args"
     else
-        alias $2="$4"
+        alias $orig_cmd="$orig_cmd_with_args"
     fi
 }
 
-modern-replace 'exa' 'ls' 'exa' 'ls -h --color=auto'
-modern-replace 'duf' 'df' 'duf' 'df -h'
+modern-replace 'ls' 'exa' 'ls -h --color=auto'
+modern-replace 'df' 'duf' 'df -h'
+modern-replace 'cat' 'bat'
+modern-replace 'man' 'tldr'
+modern-replace 'top' 'btop'
+modern-replace 'ping' 'gping'
+modern-replace 'dig' 'dog'
+# modern-replace 'curl' 'curlie'
+# modern-replace 'tree' 'broot'
 
 # 好用的简写w
 alias ll='ls -l'
@@ -34,13 +46,9 @@ alias tar-create='tar -cvf'
 alias tar-expand='tar -zxvf'
 
 alias du='du -h'
-alias dirusage='du -shc *'
-alias dirusagea='du -hc --max-depth=1'
-alias fileusage='du -ahc --max-depth=1'
 alias sortsize='sort -hr'
-alias duss='dirusage | sortsize'
-alias duass='dirusagea | sortsize'
-alias fuss='fileusage | sortsize'
+alias dus='du -shc * | sortsize'
+alias dusa='du -hc --max-depth=1 | sortsize'
 
 alias dc='docker compose'
 
