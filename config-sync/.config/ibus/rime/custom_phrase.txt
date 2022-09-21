@@ -82,6 +82,14 @@ _{\mathcal{E}}	E	1
 \begin{bmatrix} a \end{bmatrix}	matrix	1
 \left[\begin{smallmatrix} a \end{smallmatrix}\right]	smatrix	1
 
+\frac{}{}	frac	1
+\frac{d}{dx}	ddx	10
+\frac{d}{dt}	ddt	10
+\frac{dy}{dx}	dydx	10
+\frac{dx}{dt}	dxdt	10
+\frac{dy}{dt}	dydt	10
+\frac{d^2y}{dx^2}	dydx	9
+
 _(:з」∠)_	tq	1
 _(:з」∠)_	tangqiang	1
 <(￣︶￣)>	deyi	1
