@@ -36,4 +36,13 @@ if [ -f "/etc/arch-release" ]; then
         fi
         unset __conda_setup
     }
+
+    # Remove orphan packages
+    alias autoremove='yay -c'
+
+    # Free up cache
+    clean-cache() {
+        yay -Sc --noconfirm
+        sudo pacman -Sc --noconfirm
+    }
 fi
