@@ -9,7 +9,7 @@ setopt appendhistory
 modern-replace() {
     orig_cmd="$1"
     new_cmd="$2"
-    orig_cmd_with_args="${3:-$2}"
+    orig_cmd_with_args="${3:-$1}"
     new_cmd_with_args="${4:-$2}"
 
     if command -v "$new_cmd" &> /dev/null; then
