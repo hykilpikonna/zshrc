@@ -2,3 +2,5 @@
 bus/
 rime/build/
 rime/user.yaml
+rime/installation.yaml
+rime/sync
