@@ -31,6 +31,7 @@ modern-replace 'dig' 'dog'
 
 # 好用的简写w
 alias ll='ls -l'
+alias l='ll'
 alias lla='ls -la'
 alias grep='grep --color'
 alias rm='rm -ir'
