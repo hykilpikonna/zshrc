@@ -29,6 +29,11 @@ modern-replace 'dig' 'dog'
 # modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
 
+# Initialize fuck
+if command -v 'fuck' &> /dev/null; then 
+    eval $(thefuck --alias)
+fi
+
 # 好用的简写w
 alias ll='ls -l'
 alias l='ll'
