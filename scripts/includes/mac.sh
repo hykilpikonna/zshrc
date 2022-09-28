@@ -1,6 +1,6 @@
-# Mac-only commands
+# Mac-only commands 
 if [[ $OSTYPE == 'darwin'* ]]; then
-    alias ls='ls -hG'
+    modern-replace 'ls' 'exa' 'ls -hG'
     alias ports="netstat -ap tcp | grep -i \"listen\""
     alias ports2="sudo lsof -i -P | grep LISTEN"
     alias trash="rmtrash"
@@ -40,5 +40,13 @@ if [[ $OSTYPE == 'darwin'* ]]; then
         fi
         unset __conda_setup
         # <<< conda initialize <<<
+    }
+
+    # Clear cache to free up disk space
+    clean-cache() {
+        sudo rm -rf "/Users/hykilpikonna/Library/Caches/Homebrew/downloads"
+        sudo rm -rf "/Users/hykilpikonna/Library/Caches/Yarn"
+        sudo rm -rf "/Users/hykilpikonna/Library/Caches/JetBrains/Toolbox/download"
+
     }
 fi
