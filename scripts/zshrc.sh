@@ -76,8 +76,9 @@ alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh
 compress-zst() {
     cores=$(grep -c ^processor /proc/cpuinfo)
     echo "Starting ZSTD compression with $cores cores"
-    tar -I 'zstd -T36 -15' --checkpoint=.1024 --totals -c -f "$@"
+    tar -I 'zstd -T36 -15' --checkpoint=.1024 --totals --totals=SIGUSR1 -c -f "$@"
 }
+alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
