@@ -46,5 +46,8 @@ if [ -f "/etc/arch-release" ]; then
     clean-cache() {
         yay -Sc --noconfirm
         sudo pacman -Sc --noconfirm
+        yarn cache clean
+        conda clean -a
+        pip cache remove '*'
     }
 fi
