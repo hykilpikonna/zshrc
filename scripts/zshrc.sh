@@ -70,6 +70,10 @@ alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
 alias clean-empty-dir="find . -type d -empty -delete -print"
 alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 
+alias mkfs.fat32="sudo mkfs.fat -F 32"
+alias btrfs-fs-progress="sudo watch -d sudo btrfs fi us"
+alias btrfs-balance-progress="sudo watch -d btrfs balance status"
+
 alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
