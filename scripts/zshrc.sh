@@ -66,7 +66,8 @@ alias mine='sudo lolminer --algo ETHASH --pool stratum+ssl://daggerhashimoto.aut
 alias mine-zel='sudo lolminer --algo ZEL --pers BgoldPoW --pool stratum+tcp://zelhash.auto.nicehash.com:9200 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
 alias mount-external='sudo mount -t cifs //192.168.2.1/external /smb/external -o rw,user=azalea,uid=1000,gid=1000,pass='
 
-alias ds-clean="sudo find ./ -name \".DS_Store\" -depth -exec rm {} \;"
+alias ds-clean="find . -name '.DS_Store' -delete -print"
+alias dotclean="find . -name '._*' -delete -print"
 alias clean-empty-dir="find . -type d -empty -delete -print"
 alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 
