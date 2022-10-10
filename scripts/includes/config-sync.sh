@@ -39,10 +39,13 @@ check-inject()
     fi
 }
 
+CFGSYNC="$SCR/../config-sync"
+
 # Sync SSH Config
-alias check-ssh-config="check-config $HOME/.ssh/config $SCR/../config-sync/ssh-config"
+alias check-ssh-config="check-config $HOME/.ssh/config $CFGSYNC/ssh-config"
 check-ssh-config
 
 # Check nanorc includes
 # check-inject "$HOME/.nanorc" "include $SCR/../config-sync/nanorc"
-check-config "$HOME/.nanorc" "$SCR/../config-sync/nanorc"
+check-config "$HOME/.nanorc" "$CFGSYNC/nanorc"
+check-config "$HOME/.java/.userPrefs/com/cburch/logisim/prefs.xml" "$CFGSYNC/.java/.userPrefs/com/cburch/logisim/prefs.xml"
