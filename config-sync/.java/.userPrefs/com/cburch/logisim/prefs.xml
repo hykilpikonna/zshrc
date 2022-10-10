@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE map SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<map MAP_XML_VERSION="1.0">
+  <entry key="LookAndFeel" value="com.formdev.flatlaf.FlatIntelliJLaf"/>
+  <entry key="SelectedBoard" value="BASYS2"/>
+  <entry key="SimBusColor" value="-7915721"/>
+  <entry key="SimErrorChar" value="!"/>
+  <entry key="SimFalseColor" value="-16762788"/>
+  <entry key="SimTrueColor" value="-24658"/>
+  <entry key="SimUnknownChar" value="?"/>
+  <entry key="SimUnknownColor" value="-24510"/>
+  <entry key="attributeHalo" value="true"/>
+  <entry key="canvasBgColor" value="-4877"/>
+  <entry key="defaultAppearance" value="logisim_evolution"/>
+  <entry key="dialogDirectory" value="/home/azalea/ws/Fall-2022/CSC258/Labs/Lab 2 Design Hierarchy"/>
+  <entry key="gateShape" value="shaped"/>
+  <entry key="gridBgColor" value="-3086"/>
+  <entry key="gridDotColor" value="-8050361"/>
+  <entry key="layoutZoom" value="1.5"/>
+  <entry key="locale" value="en"/>
+  <entry key="oldIO" value="true"/>
+  <entry key="pinAppearance" value="dot-small"/>
+  <entry key="pokeRadix2" value="10signed"/>
+  <entry key="printerView" value="false"/>
+  <entry key="recent0" value="1665380185170;/workspace/Fall-2022/CSC258/Labs/Lab 3 Arithmetic Logic Unit/lab3_part1.circ"/>
+  <entry key="recent1" value="1664749887465;/workspace/Fall-2022/CSC258/Labs/Lab 2 Design Hierarchy/lab2_part2.circ"/>
+  <entry key="recent2" value="1664403881501;/workspace/Fall-2022/CSC258/Labs/Lab 1 Building Circuits/Circuits/lab1_part1.circ"/>
+  <entry key="recent3" value="1663973077437;/workspace/Fall-2022/CSC258/Labs/Lab 1 Building Circuits/Circuits/Lab1_q1p2.circ"/>
+  <entry key="recent4" value="1663971060978;/workspace/Logisim/Lab1_q3.circ"/>
+  <entry key="recent5" value="1663948536520;/workspace/Logisim/Lab1_q2p3.circ"/>
+  <entry key="recent6" value="1663947788940;/workspace/Logisim/Lab1_q2p2.circ"/>
+  <entry key="recent7" value="1663945738300;/workspace/Logisim/Lab1_q1p3.circ"/>
+  <entry key="recent8" value="1663945518058;/workspace/Logisim/Lab1_q1p2.circ"/>
+  <entry key="recent9" value="1663173455028;/home/azalea/OR.circ"/>
+  <entry key="showTickRate" value="false"/>
+  <entry key="toolbarPlacement" value="west"/>
+  <entry key="windowHeight" value="1168"/>
+  <entry key="windowLocation" value="0,32"/>
+  <entry key="windowMainSplit" value="0.146875"/>
+  <entry key="windowState" value="6"/>
+  <entry key="windowWidth" value="1920"/>
+</map>

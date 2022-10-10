@@ -40,6 +40,7 @@ alias l='ll'
 alias lla='ls -la'
 alias grep='grep --color'
 alias rm='rm -ir'
+alias mkdirs='mkdir -p'
 
 alias ports='netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
