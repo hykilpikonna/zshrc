@@ -42,6 +42,8 @@ alias grep='grep --color'
 alias rm='rm -ir'
 alias mkdirs='mkdir -p'
 
+[[ "$(uname)" == 'Linux' ]] alias open="xdg-open"
+
 alias ports='netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
 
