@@ -34,6 +34,10 @@ if command -v 'fuck' &> /dev/null; then
     eval $(thefuck --alias)
 fi
 
+if command -v 'xdg-open' &> /dev/null; then 
+    alias open="xdg-open"
+fi
+
 # 好用的简写w
 alias ll='ls -l'
 alias l='ll'
@@ -41,8 +45,6 @@ alias lla='ls -la'
 alias grep='grep --color'
 alias rm='rm -ir'
 alias mkdirs='mkdir -p'
-
-[[ "$(uname)" == 'Linux' ]] alias open="xdg-open"
 
 alias ports='netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
