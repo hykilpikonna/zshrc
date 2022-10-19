@@ -24,6 +24,7 @@ if ADDITIONAL_USERS_PATH.is_file():
     GITHUB_USERS.update(set(ADDITIONAL_USERS_PATH.read_text('utf-8').split('\n')))
 
 KEYS_PATH = Path.home() / '.ssh' / 'authorized_keys'
+KEYS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
 def fetch_keys(user: str) -> set[str]:
@@ -49,7 +50,8 @@ def update_ssh_keys():
     all_keys = list(fetch_all_keys())
     normalized_keys = {normalize_key(k) for k in all_keys}
 
-    existing_keys = set(KEYS_PATH.read_text('utf-8').strip().splitlines())
+    existing_keys = set(KEYS_PATH.read_text('utf-8').strip().splitlines()) \
+        if KEYS_PATH.is_file() else set()
     for k in existing_keys:
         if normalize_key(k) not in normalized_keys:
             all_keys.append(k)
