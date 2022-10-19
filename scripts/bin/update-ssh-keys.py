@@ -4,6 +4,7 @@ import importlib
 import subprocess
 import sys
 from pathlib import Path
+import textwrap
 from urllib.request import Request, urlopen
 
 from color_utils import printc
@@ -94,7 +95,7 @@ if __name__ == "__main__":
         exit(0)
 
     # Add users
-    if sys.argv[0] == 'add':
+    elif sys.argv[0] == 'add':
         if len(sys.argv) == 1:
             printc('&cUsage: update-ssh-keys.py add {github usernames...}')
             exit(4)
@@ -107,7 +108,7 @@ if __name__ == "__main__":
         update_ssh_keys()
 
     # Remove users
-    if sys.argv[0] == 'remove':
+    elif sys.argv[0] == 'remove':
         if len(sys.argv) == 1:
             printc('&cUsage: update-ssh-keys.py remove {github usernames...}')
             exit(4)
@@ -122,5 +123,13 @@ if __name__ == "__main__":
         list_users()
 
     # List users
-    if sys.argv[0] == 'list':
+    elif sys.argv[0] == 'list':
         list_users()
+
+    # Unknown argument
+    else:
+        print(textwrap.dedent("""
+            Usage: update-ssh-keys.py
+            - add/remove [github username]
+            - list
+            """))
