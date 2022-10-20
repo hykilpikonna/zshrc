@@ -61,7 +61,7 @@ alias sortsize='sort -hr'
 alias dus='du -shc * | sortsize'
 alias dusa='du -hc --max-depth=1 | sortsize'
 
-if commnad -v 'docker-compose' &> /dev/null; then
+if command -v 'docker-compose' &> /dev/null; then
     alias dc='docker-compose'
 else
     alias dc='docker compose'
