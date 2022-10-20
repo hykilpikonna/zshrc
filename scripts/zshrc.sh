@@ -61,7 +61,11 @@ alias sortsize='sort -hr'
 alias dus='du -shc * | sortsize'
 alias dusa='du -hc --max-depth=1 | sortsize'
 
-alias dc='docker compose'
+if commnad -v 'docker-compose' &> /dev/null; then
+    alias dc='docker-compose'
+else
+    alias dc='docker compose'
+fi
 
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias visucode='EDITOR="code --wait" sudoedit'
