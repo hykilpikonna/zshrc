@@ -61,6 +61,9 @@ alias sortsize='sort -hr'
 alias dus='du -shc * | sortsize'
 alias dusa='du -hc --max-depth=1 | sortsize'
 
+alias ts='tailscale'
+alias ts-install='curl -fsSL https://tailscale.com/install.sh | sh'
+
 if command -v 'docker-compose' &> /dev/null; then
     alias dc='docker-compose'
 else
