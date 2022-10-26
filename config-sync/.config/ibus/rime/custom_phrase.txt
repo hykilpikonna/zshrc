@@ -14,6 +14,8 @@
 ⊄	sub	1
 ⊆	subset	2
 ⊄	subset	1
+≤	leq	1
+≥	geq	1
 ○	circ	1
 ⌘	cmd	1
 ✅	check	1
@@ -40,6 +42,7 @@
 「」	kuohao	1
 λ	lam	1
 λ	lambda	1
+μ	mu	1
 μ	miu	1
  · 	mul	1
 ℕ	natural	1
