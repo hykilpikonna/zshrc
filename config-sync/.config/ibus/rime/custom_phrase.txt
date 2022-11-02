@@ -92,6 +92,8 @@ _{\mathcal{E}}	E	1
 \frac{dx}{dt}	dxdt	10
 \frac{dy}{dt}	dydt	10
 \frac{d^2y}{dx^2}	dydx	9
+\frac{\partial f}{\partial x}	dfdx	10
+\frac{\partial f}{\partial y}	dfdy	10
 
 _(:з」∠)_	tq	1
 _(:з」∠)_	tangqiang	1
