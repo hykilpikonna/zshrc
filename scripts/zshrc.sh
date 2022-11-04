@@ -103,6 +103,33 @@ reset-permissions-dangerous() {
     sudo find . -type f -exec chmod 644 {} \;
 }
 
+# Mamba (conda replacement)
+alias mamba=micromamba
+export MAMBA_ROOT_PREFIX="$HOME/.conda"
+
+# Mamba initialize function
+mamba-init()
+{
+    export MAMBA_EXE="$HOME/.local/bin/micromamba";
+    __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__mamba_setup"
+    else
+        if [ -f "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh" ]; then
+            . "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh"
+        else
+            export PATH="$MAMBA_ROOT_PREFIX/bin:$PATH"
+        fi
+    fi
+    unset __mamba_setup
+}
+
+# Pyenv
+if command -v 'pyenv' &> /dev/null; then
+    eval "$(pyenv init -)"
+    PATH=$(pyenv root)/shims:$PATH
+fi
+
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
