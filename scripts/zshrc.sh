@@ -110,7 +110,7 @@ export MAMBA_ROOT_PREFIX="$HOME/.conda"
 # Mamba initialize function
 mamba-init()
 {
-    export MAMBA_EXE="$HOME/.local/bin/micromamba";
+    export MAMBA_EXE="$(which micromamba)";
     __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
     if [ $? -eq 0 ]; then
         eval "$__mamba_setup"
