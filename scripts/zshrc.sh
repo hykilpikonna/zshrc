@@ -211,6 +211,26 @@ setproxy() {
     prompt-update
 }
 
+# Git identity
+git-id() {
+    export GIT_USER="$1"
+    export GIT_EMAIL="$2"
+    git-id-prompt
+}
+git-id-prompt() {
+    if [[ -z "$GIT_USER" ]] && [[ -z "$GIT_EMAIL" ]]; then
+        prompt-reset
+    else
+        prompt-set 30 "&cGit ID: $GIT_USER | $GIT_EMAIL "
+        prompt-update
+    fi
+}
+git-id-prompt
+export GIT_BIN=$(which git)
+git() {
+    [[ -z "$GIT_USER" ]] && $GIT_BIN "$@" || $GIT_BIN -c "user.name=$GIT_USER" -c "user.email=$GIT_EMAIL" "$@"
+}
+
 # Mac hostname
 mac-hostname() {
     name="$@"
