@@ -97,6 +97,12 @@ compress-zst() {
 }
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
+# Gradle with auto environment detection
+GRADLE="$(which gradle)"
+gradle() {
+    [[ -f "./gradlew" ]] && ./gradlew "$@" || $GRADLE "$@"
+}
+
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
     sudo find . -type d -exec chmod 755 {} \;
