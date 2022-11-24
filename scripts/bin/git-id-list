@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import sys
+from pathlib import Path
+from subprocess import check_output
+
+CONFIG = Path.home() / ".config" / "git-ids.json"
+
+
+def load() -> dict[str, list[str]]:
+    if not CONFIG.is_file():
+        return {}
+    return json.loads(CONFIG.read_text())
+
+
+def store(d: dict[str, list[str]]):
+    CONFIG.parent.mkdir(parents=True, exist_ok=True)
+    CONFIG.write_text(json.dumps(d, indent=2))
+    print("Saved.")
+    
+
+def cmd_get(args: argparse.Namespace):
+    n = load().get(args.alias)
+    if n is None:
+        exit(128)
+    print("\n".join(n))
+
+
+def cmd_add(args: argparse.Namespace):
+    store({args.alias: [args.name, args.email], **load()})
+
+
+def cmd_add_all(_):
+    f = load()
+    log = check_output('git log --pretty="%an%n%ae%n%n"', shell=True).decode().strip().split("\n\n")
+    log = {tuple(l.strip().split('\n')) for l in log}
+    log = {l for l in log if l not in f.values()}
+    print(log)
+    
+    # Filter out no-reply
+    new_log = []
+    for n, _ in log:
+        same_name = [(n1, e) for n1, e in log if n1 == n]
+        filtered = [(n, e) for n, e in same_name if "noreply.github.com" not in e]
+        if len(filtered):
+            new_log += filtered
+        else:
+            new_log += same_name
+    log = new_log
+    
+    for l in log:
+        a = input(f"Do you want {l} to be added?\nType in an alias if yes, otherwise type enter.\n> ").strip()
+        if a:
+            f[a] = l
+    store(f)
+    
+    
+def cmd_list(_):
+    print("\n".join(f"{n}: {e[0]}, {e[1]}" for n, e in load().items()))
+
+
+if __name__ == '__main__':
+    raw_args = sys.argv[1:]
+    if not raw_args:
+        raw_args = ['-h']
+    
+    par = argparse.ArgumentParser("Git ID List")
+    sp = par.add_subparsers()
+    
+    get = sp.add_parser("get", usage="Get an identity")
+    get.set_defaults(handler=cmd_get)
+    get.add_argument("alias", help="Alias of the author")
+    
+    add = sp.add_parser("add", usage="Add an identity")
+    add.set_defaults(handler=cmd_add)
+    add.add_argument("alias", help="Short alias of the author")
+    add.add_argument("name", help="Name shown in git log")
+    add.add_argument("email", help="Email shown in git log")
+
+    add = sp.add_parser("add-all", usage="Ask to add each identity from current git log")
+    add.set_defaults(handler=cmd_add_all)
+
+    add = sp.add_parser("list", usage="List identities")
+    add.set_defaults(handler=cmd_list)
+
+    args = par.parse_args(raw_args)
+    if hasattr(args, "handler"):
+        args.handler(args)

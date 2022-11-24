@@ -212,6 +212,11 @@ setproxy() {
 }
 
 # Git identity
+git-ida() {
+    # Zsh only
+    TMP_ARR=("${(@f)$(git-id-list get "$1")}")
+    git-id "${TMP_ARR[1]}" "${TMP_ARR[2]}"
+}
 git-id() {
     export GIT_USER="$1"
     export GIT_EMAIL="$2"
