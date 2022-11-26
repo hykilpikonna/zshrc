@@ -231,9 +231,13 @@ git-id-prompt() {
     fi
 }
 git-id-prompt
-export GIT_BIN=$(which git)
+GIT_BIN=$(which git)
 git() {
-    [[ -z "$GIT_USER" ]] && $GIT_BIN "$@" || $GIT_BIN -c "user.name=$GIT_USER" -c "user.email=$GIT_EMAIL" "$@"
+    if [[ -z "$GIT_USER" ]]; then 
+        $GIT_BIN "$@"
+    else
+        $GIT_BIN -c "user.name=$GIT_USER" -c "user.email=$GIT_EMAIL" -c "commit.gpgsign=false" "$@"
+    fi
 }
 
 # Mac hostname
