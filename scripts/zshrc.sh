@@ -104,7 +104,8 @@ reset-permissions-dangerous() {
 }
 
 # Mamba (conda replacement)
-alias mamba=micromamba
+alias mamba="micromamba"
+alias mamba-install="curl micro.mamba.pm/install.sh | zsh"
 export MAMBA_ROOT_PREFIX="$HOME/.conda"
 
 # Mamba initialize function
