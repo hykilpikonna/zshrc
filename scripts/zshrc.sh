@@ -5,7 +5,6 @@ SAVEHIST=1000
 setopt appendhistory
 
 BASEDIR="$(dirname "$(dirname "$0")")"
-echo "$BASEDIR"
 
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
