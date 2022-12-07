@@ -4,6 +4,9 @@ HISTSIZE=1000
 SAVEHIST=1000
 setopt appendhistory
 
+BASEDIR="$(dirname "$(dirname "$0")")"
+echo "$BASEDIR"
+
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
 modern-replace() {
@@ -13,9 +16,9 @@ modern-replace() {
     new_cmd_with_args="${4:-$2}"
 
     if command -v "$new_cmd" &> /dev/null; then
-        alias $orig_cmd="$new_cmd_with_args"
+        alias "$orig_cmd=$new_cmd_with_args"
     else
-        alias $orig_cmd="$orig_cmd_with_args"
+        alias "$orig_cmd=$orig_cmd_with_args"
     fi
 }
 
@@ -26,12 +29,15 @@ modern-replace 'man' 'tldr'
 modern-replace 'top' 'btop'
 modern-replace 'ping' 'gping'
 modern-replace 'dig' 'dog'
+modern-replace 'grep' 'rg'
 # modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
 
+source "$BASEDIR/plugins/zsh-z.plugin.zsh"
+
 # Initialize fuck
 if command -v 'fuck' &> /dev/null; then 
-    eval $(thefuck --alias)
+    eval "$(thefuck --alias)"
 fi
 
 if command -v 'xdg-open' &> /dev/null; then 
@@ -161,10 +167,10 @@ addline() {
 
 # Silent pushd and popd
 spushd () {
-    pushd "$@" > /dev/null
+    pushd "$@" > /dev/null || exit
 }
 spopd () {
-    popd "$@" > /dev/null
+    popd "$@" > /dev/null || exit
 }
 
 # Minecraft coloring
@@ -252,17 +258,17 @@ mac-hostname() {
 cut() {
     if [ "$#" -lt 2 ]; then
         echo "Usage: cut <file name> <end time (hh:mm:ss)> [start time (00:00:00)]"
-        return -1
+        return 2
     fi
 
     local start="${3:-00:00:00}"
-    echo $1
-    echo $2
-    echo $start
-    ffmpeg -i $1 -codec copy -ss $start -t $2 Cut\ $1
+    echo "$1"
+    echo "$2"
+    echo "$start"
+    ffmpeg -i "$1" -codec copy -ss "$start" -t "$2" Cut\ "$1"
 }
-alias vcomp="$SCR/helpers/video.py"
-alias vcompy="ipython -i $SCR/helpers/video.py"
+alias vcomp="$BASEDIR/scripts/helpers/video.py"
+alias vcompy="ipython -i $BASEDIR/scripts/helpers/video.py"
 
 # include if it exists
-[ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
+[ -f "$HOME/extra.rc.sh" ] && . "$HOME/extra.rc.sh"
