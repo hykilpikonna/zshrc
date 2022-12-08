@@ -245,6 +245,24 @@ git() {
     fi
 }
 
+# Git environment
+git-env() {
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag )
+    for i in "${git_commands[@]}"
+    do
+        alias "$i"="git $i"
+    done
+    alias 'grm'='git rm'
+    alias 'gmv'='git mv'
+}
+git-unenv() {
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag grm gmv )
+    for i in "${git_commands[@]}"
+    do
+        unalias "$i"
+    done
+}
+
 # Mac hostname
 mac-hostname() {
     name="$@"
