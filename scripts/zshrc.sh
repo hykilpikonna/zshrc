@@ -135,6 +135,11 @@ mamba-init()
     unset __mamba_setup
 }
 
+# Auto init mamba
+if command -v 'micromamba' &> /dev/null; then
+    mamba-init
+fi
+
 # Pyenv
 if command -v 'pyenv' &> /dev/null; then
     eval "$(pyenv init -)"
