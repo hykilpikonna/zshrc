@@ -4,6 +4,8 @@ HISTSIZE=1000
 SAVEHIST=1000
 setopt appendhistory
 
+BASEDIR="$(dirname "$(dirname "$0")")"
+
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
 modern-replace() {
@@ -13,9 +15,9 @@ modern-replace() {
     new_cmd_with_args="${4:-$2}"
 
     if command -v "$new_cmd" &> /dev/null; then
-        alias $orig_cmd="$new_cmd_with_args"
+        alias "$orig_cmd=$new_cmd_with_args"
     else
-        alias $orig_cmd="$orig_cmd_with_args"
+        alias "$orig_cmd=$orig_cmd_with_args"
     fi
 }
 
@@ -26,12 +28,15 @@ modern-replace 'man' 'tldr'
 modern-replace 'top' 'btop'
 modern-replace 'ping' 'gping'
 modern-replace 'dig' 'dog'
+modern-replace 'grep' 'rg'
 # modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
 
+source "$BASEDIR/plugins/zsh-z.plugin.zsh"
+
 # Initialize fuck
 if command -v 'fuck' &> /dev/null; then 
-    eval $(thefuck --alias)
+    eval "$(thefuck --alias)"
 fi
 
 if command -v 'xdg-open' &> /dev/null; then 
@@ -97,6 +102,12 @@ compress-zst() {
 }
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
+# Gradle with auto environment detection
+GRADLE="$(which gradle)"
+gradle() {
+    [[ -f "./gradlew" ]] && ./gradlew "$@" || $GRADLE "$@"
+}
+
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
     sudo find . -type d -exec chmod 755 {} \;
@@ -111,7 +122,7 @@ export MAMBA_ROOT_PREFIX="$HOME/.conda"
 # Mamba initialize function
 mamba-init()
 {
-    export MAMBA_EXE="$HOME/.local/bin/micromamba";
+    export MAMBA_EXE="$(which micromamba)";
     __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
     if [ $? -eq 0 ]; then
         eval "$__mamba_setup"
@@ -124,6 +135,11 @@ mamba-init()
     fi
     unset __mamba_setup
 }
+
+# Auto init mamba
+if command -v 'micromamba' &> /dev/null; then
+    mamba-init
+fi
 
 # Pyenv
 if command -v 'pyenv' &> /dev/null; then
@@ -156,10 +172,10 @@ addline() {
 
 # Silent pushd and popd
 spushd () {
-    pushd "$@" > /dev/null
+    pushd "$@" > /dev/null || exit
 }
 spopd () {
-    popd "$@" > /dev/null
+    popd "$@" > /dev/null || exit
 }
 
 # Minecraft coloring
@@ -206,6 +222,53 @@ setproxy() {
     prompt-update
 }
 
+# Git identity
+git-ida() {
+    # Zsh only
+    TMP_ARR=("${(@f)$(git-id-list get "$1")}")
+    git-id "${TMP_ARR[1]}" "${TMP_ARR[2]}"
+}
+git-id() {
+    export GIT_USER="$1"
+    export GIT_EMAIL="$2"
+    git-id-prompt
+}
+git-id-prompt() {
+    if [[ -z "$GIT_USER" ]] && [[ -z "$GIT_EMAIL" ]]; then
+        prompt-reset
+    else
+        prompt-set 30 "&cGit ID: $GIT_USER | $GIT_EMAIL "
+        prompt-update
+    fi
+}
+git-id-prompt
+GIT_BIN=$(which git)
+git() {
+    if [[ -z "$GIT_USER" ]]; then 
+        $GIT_BIN "$@"
+    else
+        $GIT_BIN -c "user.name=$GIT_USER" -c "user.email=$GIT_EMAIL" -c "commit.gpgsign=false" "$@"
+    fi
+}
+
+# Git environment
+git-env() {
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag )
+    for i in "${git_commands[@]}"
+    do
+        alias "$i"="git $i"
+    done
+    alias 'grm'='git rm'
+    alias 'gmv'='git mv'
+}
+git-unenv() {
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag grm gmv )
+    for i in "${git_commands[@]}"
+    do
+        unalias "$i"
+    done
+}
+
 # Mac hostname
 mac-hostname() {
     name="$@"
@@ -218,17 +281,17 @@ mac-hostname() {
 cut() {
     if [ "$#" -lt 2 ]; then
         echo "Usage: cut <file name> <end time (hh:mm:ss)> [start time (00:00:00)]"
-        return -1
+        return 2
     fi
 
     local start="${3:-00:00:00}"
-    echo $1
-    echo $2
-    echo $start
-    ffmpeg -i $1 -codec copy -ss $start -t $2 Cut\ $1
+    echo "$1"
+    echo "$2"
+    echo "$start"
+    ffmpeg -i "$1" -codec copy -ss "$start" -t "$2" Cut\ "$1"
 }
-alias vcomp="$SCR/helpers/video.py"
-alias vcompy="ipython -i $SCR/helpers/video.py"
+alias vcomp="$BASEDIR/scripts/helpers/video.py"
+alias vcompy="ipython -i $BASEDIR/scripts/helpers/video.py"
 
 # include if it exists
-[ -f $HOME/extra.rc.sh ] && . $HOME/extra.rc.sh
+[ -f "$HOME/extra.rc.sh" ] && . "$HOME/extra.rc.sh"
