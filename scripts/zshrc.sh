@@ -32,6 +32,9 @@ modern-replace 'grep' 'rg'
 # modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
 
+# for macOS
+modern-replace 'tar' 'gtar'
+
 source "$BASEDIR/plugins/zsh-z.plugin.zsh"
 
 # Initialize fuck
