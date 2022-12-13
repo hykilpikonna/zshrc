@@ -3,18 +3,50 @@
 # Stop on error
 set -e
 
-# Check if setup.py is present
-[[ ! -f "setup.py" ]] && echo "Setup.py not found, please make sure you're in the correct path" && exit -1
+# 1. Legacy Setup.py method
+deploy_setup_py() {
 
-# Remove old build
-rm -rf dist
-rm -rf build
+    # Check if setup.py is present
+    [[ ! -f "setup.py" ]] && echo "Setup.py not found, please make sure you're in the correct path" && exit 4
+    
+    # Remove old build
+    rm -rf dist
+    rm -rf build
 
-# Build
-python setup.py sdist bdist_wheel
+    # Build
+    python setup.py sdist bdist_wheel
 
-# Check built files
-twine check dist/*
+    # Check built files
+    twine check dist/*
 
-# Upload
-twine upload dist/*
+    # Upload
+    twine upload dist/*
+}
+
+# 2. New pyproject.toml method
+deploy_pyproject() {
+
+    # Check if pyproject.toml is present
+    [[ ! -f "pyproject.toml" ]] && echo "pyproject.toml not found, please make sure you're in the correct path" && exit 4
+    
+    # Remove old build
+    rm -rf dist
+    rm -rf build
+
+    # Build
+    pip install pip-tools build twine
+    python -m build
+
+    # Check built files
+    twine check dist/*
+
+    # Upload
+    twine upload dist/*
+}
+
+# Check which file is present
+if [[ -f "setup.py" ]]; then
+    deploy_setup_py
+elif [[ -f "pyproject.toml" ]]; then
+    deploy_pyproject
+fi
