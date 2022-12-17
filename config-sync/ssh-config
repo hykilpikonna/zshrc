@@ -11,10 +11,6 @@ Host ovh
     HostName ovh.hydev.org
     User root
 
-Host ovh2
-    HostName ovh2.hydev.org
-    User root
-
 Host aster
     HostName aster.hydev.org
     User azalea
