@@ -10,9 +10,13 @@ if [ -f "/etc/arch-release" ]; then
     export JDK8="/usr/lib/jvm/java-8-openjdk/"
     export JDK11="/usr/lib/jvm/java-11-openjdk/"
     export JDK17="/usr/lib/jvm/java-17-openjdk/"
+    export JDK18="/usr/lib/jvm/java-18-j9/"
+    export JDK19="/usr/lib/jvm/java-19-openjdk/"
     alias java8="${JDK8}/bin/java"
     alias java11="${JDK11}/bin/java"
     alias java17="${JDK17}/bin/java"
+    alias java18="${JDK18}/bin/java"
+    alias java19="${JDK19}/bin/java"
     export JAVA_HOME=${JDK11}
     export PATH="${JDK11}/bin:$PATH"
 
