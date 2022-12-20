@@ -6,5 +6,9 @@ set -e
 # Check if package.json is present
 [[ ! -f "package.json" ]] && echo "package.json not found, please make sure you're in the correct path" && exit -1
 
+# Build
+[[ -f "yarn.lock" ]] && yarn build
+[[ -f "package-lock.json" ]] && npm build
+
 # Deploy npm
 npm publish
