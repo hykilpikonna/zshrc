@@ -296,5 +296,7 @@ cut() {
 alias vcomp="$BASEDIR/scripts/helpers/video.py"
 alias vcompy="ipython -i $BASEDIR/scripts/helpers/video.py"
 
+alias flac2mp3='for file in *.flac; do $(flac -cd "$file" | lame -h - "${file%.flac}.mp3"); done'
+
 # include if it exists
 [ -f "$HOME/extra.rc.sh" ] && . "$HOME/extra.rc.sh"
