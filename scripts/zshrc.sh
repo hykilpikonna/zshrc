@@ -98,11 +98,6 @@ alias btrfs-balance-progress="sudo watch -d btrfs balance status"
 alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
-compress-zst() {
-    cores=$(grep -c ^processor /proc/cpuinfo)
-    echo "Starting ZSTD compression with $cores cores"
-    tar -I 'zstd -T36 -15' --checkpoint=.1024 --totals --totals=SIGUSR1 -c -f "$@"
-}
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
 # Gradle with auto environment detection
