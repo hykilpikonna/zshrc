@@ -54,4 +54,8 @@ if [ -f "/etc/arch-release" ]; then
         conda clean -a
         pip cache remove '*'
     }
+
+    # Command-not-found install prompt
+    SCRIPTS_DIR="$(dirname "$(dirname "$0")")"
+    source "$SCRIPTS_DIR/../plugins/find-the-command/usr/share/doc/find-the-command/ftc.zsh"
 fi

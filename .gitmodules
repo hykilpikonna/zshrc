@@ -4,3 +4,6 @@
 [submodule "plugins/nanorc"]
 	path = plugins/nanorc
 	url = https://github.com/hykilpikonna/nanorc
+[submodule "plugins/find-the-command"]
+	path = plugins/find-the-command
+	url = https://github.com/pkasemir/find-the-command
