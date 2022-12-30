@@ -6,7 +6,7 @@ check-config()
     file=$1
     sync=$2
 
-    if ! [[ -L "$file" && -f "$file" ]]
+    if ! [[ -L "$file" ]]
     then
         set -e
         color "$prefix &c$file is not a symlink, creating symlink"
