@@ -10,7 +10,7 @@ check-config()
     then
         set -e
         color "$prefix &c$file is not a symlink, creating symlink"
-        if [[ -f "$file" ]]
+        if [[ -f "$file" ]] || [[ -d "$file" ]]
         then
             echo "> Original file $file exists."
             echo "> Diff:"
@@ -50,3 +50,5 @@ check-ssh-config
 check-config "$HOME/.nanorc" "$CFGSYNC/nanorc"
 check-config "$HOME/.condarc" "$CFGSYNC/.condarc"
 check-config "$HOME/.java/.userPrefs/com/cburch/logisim/prefs.xml" "$CFGSYNC/.java/.userPrefs/com/cburch/logisim/prefs.xml"
+
+check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
