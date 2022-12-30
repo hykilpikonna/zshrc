@@ -24,6 +24,7 @@ if [ -f "/etc/arch-release" ]; then
 
     # GPG Init
     alias gpg-init="echo 'hi' | gpg --status-fd=2 -bsau E289FAC0DA92DD2B"
+    alias ibus-init="ibus-daemon -drxR"
 
     CONDA_PATH="/opt/miniconda3"
 
