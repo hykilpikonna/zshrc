@@ -1,0 +1,12 @@
+# https://wiki.archlinuxcn.org/wiki/Fcitx5#RIME/%E4%B8%AD%E5%B7%9E%E9%9F%BB
+# 以下禁用了默认词库同时不启用默认的“八股文”词库及词频系统,如果您不希望候选词中的出现繁体字、方框字的话
+---
+name: extended
+version: "2021.02.19"
+sort: by_weight
+use_preset_vocabulary: true #是否启用默认的“八股文”词库及词频系统,如需启用请设为 true 。
+import_tables:
+  - luna_pinyin #默认词库,如需启用请取消注释
+  - zhwiki
+  - moegirl
+  # - 自定义词库名
