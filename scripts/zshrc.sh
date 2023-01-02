@@ -29,8 +29,10 @@ modern-replace 'top' 'btop'
 modern-replace 'ping' 'gping'
 modern-replace 'dig' 'dog'
 modern-replace 'grep' 'rg'
-# modern-replace 'curl' 'curlie'
+modern-replace 'nano' 'micro'
+modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
+modern-replace 'pacman' 'paru'
 
 # for macOS
 modern-replace 'tar' 'gtar'
@@ -58,8 +60,6 @@ alias ports='netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
 
 alias cls='clear'
-alias sctl='systemctl'
-alias jctl='journalctl'
 
 alias tar-create='tar -cvf'
 alias tar-expand='tar -zxvf'
@@ -99,6 +99,11 @@ alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
+
+# Automatic sudo
+alias sctl="sudo systemctl"
+alias jctl="sudo journalctl"
+alias ufw="sudo ufw"
 
 # Gradle with auto environment detection
 GRADLE="$(which gradle)"
