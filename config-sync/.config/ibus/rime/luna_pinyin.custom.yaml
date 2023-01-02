@@ -3,3 +3,5 @@
 # 此文件用于修改特定输入方案,把上方的luna_pinyin改为其它输入方案名即可完成对其它输入方案的修改
 patch:
     "translator/dictionary": extended #词典名字可自定义,与下方文件名保持一致即可
+    'engine/translators/+':
+    - lua_translator@date_translator
