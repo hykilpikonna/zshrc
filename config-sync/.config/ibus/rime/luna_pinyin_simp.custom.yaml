@@ -1,3 +1,9 @@
+__patch:
+# Rx: emoji:customize:schema=luna_pinyin {
+  - patch/+:
+      __include: emoji_suggestion:/patch
+# }
+
 # https://wiki.archlinuxcn.org/wiki/Fcitx5#RIME/%E4%B8%AD%E5%B7%9E%E9%9F%BB
 # 文件中“patch:”应只存在一个,若已存在只需粘贴后面的代码
 # 此文件用于修改特定输入方案,把上方的luna_pinyin改为其它输入方案名即可完成对其它输入方案的修改
