@@ -272,6 +272,16 @@ git-unenv() {
     done
 }
 
+# SSH Patch
+SSH_BIN=$(which ssh)
+ssh() {
+    if [[ "$TERM" == 'xterm-kitty' ]]; then
+        env TERM=xterm-256color "$SSH_BIN" "$@"
+    else
+        "$SSH_BIN" "$@"
+    fi
+}
+
 # Mac hostname
 mac-hostname() {
     name="$@"
