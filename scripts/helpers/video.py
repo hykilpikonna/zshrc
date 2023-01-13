@@ -2,13 +2,16 @@
 from __future__ import annotations
 
 import os
+import platform
 import re
+from subprocess import Popen
 import sys
+import shlex
 from datetime import datetime
 from pathlib import Path
 
 
-def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int = 24, br: int = 500,
+def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int = 24, br: int = None,
          cmd: bool = False, aargs: str = '', suffix: str = 'mp4'):
     """
     Compress video
@@ -36,17 +39,26 @@ def comp(input: str = 'latest', proc: str = 'cpu', codec: str = 'x264', crf: int
         out += f'-{crf}'
     out += f'.{suffix}'
 
+    c = ['ffmpeg', '-i', i]
+
     if proc == 'c':
-        c = f'ffmpeg -i "{i}" -vcodec lib{codec} -crf {crf} {aargs} "{out}"'
+        c += ['-c:v', f'lib{codec}', '-crf', str(crf)]
     elif proc == 'g':
-        c = f'ffmpeg -i "{i}" -c:v {codec}_videotoolbox -b:v {br}k {aargs} "{out}"'
+        if platform.system() == 'Darwin':
+            c += ['-c:v', f'{codec}_videotoolbox']
+        else:
+            c += ['-c:v', f'{codec}_nvenc', '-cq', str(crf)]
     else:
         raise AssertionError(f'Processor is invalid ({codec}[0] not in "cg")')
+
+    if br:
+        c += ['-b:v', f'{br}k', '-maxrate', f'{br}k', '-bufsize', f'2M']
+
+    c += shlex.split(aargs) + [out]
     
-    if cmd:
-        print(c)
-    else:
-        os.system(c)
+    print(c)
+    if not cmd:
+        Popen(c).wait()
 
 
 def combine(format: str, output: str | Path):
