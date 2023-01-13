@@ -7,6 +7,6 @@ sort: by_weight
 use_preset_vocabulary: true #是否启用默认的“八股文”词库及词频系统,如需启用请设为 true 。
 import_tables:
   - luna_pinyin #默认词库,如需启用请取消注释
-  - zhwiki
-  - moegirl
+  - zhwiki # https://github.com/felixonmars/fcitx5-pinyin-zhwiki/releases
+  - moegirl # https://github.com/outloudvi/mw2fcitx/releases
   # - 自定义词库名
