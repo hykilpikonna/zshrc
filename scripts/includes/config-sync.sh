@@ -52,5 +52,5 @@ check-config "$HOME/.condarc" "$CFGSYNC/.condarc"
 check-config "$HOME/.java/.userPrefs/com/cburch/logisim/prefs.xml" "$CFGSYNC/.java/.userPrefs/com/cburch/logisim/prefs.xml"
 
 check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
-check-config "$HOME/.config/ibus/rime" "$CFGSYNC/.config/ibus/rime"
-check-config "$HOME/.local/share/fcitx5/rime" "$CFGSYNC/.config/ibus/rime"
+# check-config "$HOME/.config/ibus/rime" "$CFGSYNC/.config/ibus/rime"
+# check-config "$HOME/.local/share/fcitx5/rime" "$CFGSYNC/.config/ibus/rime"
