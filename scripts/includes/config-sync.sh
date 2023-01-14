@@ -50,6 +50,7 @@ check-ssh-config
 check-config "$HOME/.nanorc" "$CFGSYNC/nanorc"
 check-config "$HOME/.condarc" "$CFGSYNC/.condarc"
 check-config "$HOME/.java/.userPrefs/com/cburch/logisim/prefs.xml" "$CFGSYNC/.java/.userPrefs/com/cburch/logisim/prefs.xml"
+check-config "$HOME/.config/micro/settings.json" "$CFGSYNC/.config/micro/settings.json"
 
 check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
 # check-config "$HOME/.config/ibus/rime" "$CFGSYNC/.config/ibus/rime"
