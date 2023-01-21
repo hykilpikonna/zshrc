@@ -282,6 +282,18 @@ ssh() {
     fi
 }
 
+# Docker linux containers
+alpine-create()
+{
+    docker rmi azalea/alpine
+    docker run -it --name alpine-init --hostname alpine alpine \
+        /bin/sh -c 'apk add zsh bash git curl wget tar zstd python3 && bash <(curl -sL hydev.org/zsh)'
+    docker commit alpine-init azalea/alpine
+    docker rm alpine-init
+}
+alias alpine="docker start -ai alpine"
+alias alpine-init="docker run -it --name alpine --hostname alpine azalea/alpine zsh"
+
 # Mac hostname
 mac-hostname() {
     name="$@"
