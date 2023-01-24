@@ -4,7 +4,8 @@ from __future__ import annotations
 import os
 import platform
 import re
-from subprocess import Popen
+import shutil
+from subprocess import Popen, check_call
 import sys
 import shlex
 from datetime import datetime
@@ -107,23 +108,29 @@ def rename():
             os.rename(file, date)
 
 
+def convert_gnome():
+    rec_dir = Path.home() / "Videos/Screencasts"
+    fs = [rec_dir / str(f) for f in os.listdir(rec_dir) if str(f).startswith("Screencast") and str(f).endswith(".webm")]
+    for inf in fs:
+        sp = inf.stem.split(" ")
+        ouf = rec_dir / f"Rec {sp[2]} {sp[3][:sp[3].rindex('-')]}.mp4"
+        if ouf.is_file():
+            print(f"Already converted: {inf}")
+            continue
+        print(f"Converting '{inf}' to '{ouf}'")
+        check_call(['ffmpeg', '-i', inf,
+                    '-c:v', 'libx264',
+                    '-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2, fps=30',
+                    '-y',
+                    ouf])
+
+    if input("Remove files? [y/N]") == "y":
+        [os.remove(f) for f in fs]
+
+
 if __name__ == '__main__':
-    if not hasattr(sys, 'ps1'):
-        args = sys.argv[1:]
-        if len(args) < 1:
-            print('Usage: compress [rename/python code]')
-
-        # Command to rename all screen recordings
-        if args[0] == 'rename':
-            rename()
-            exit()
-
-        # processor = args[0].lower().strip()
-        # i = args[1]
-        # crf = args[2] if len(args) > 2 else '24'
-        # cmd = 'cmd' in processor
-        # if cmd:
-        #     processor = processor.replace('cmd', '')
-
-        # additional_args = ' '.join(args[3:] if len(args) > 3 else [])
-        print(eval(' '.join(args[0:])))
+    args = sys.argv[1:]
+    if args:
+        v = eval(args[0])
+        if v:
+            print(v)

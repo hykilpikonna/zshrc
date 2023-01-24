@@ -315,8 +315,8 @@ cut() {
     echo "$start"
     ffmpeg -i "$1" -codec copy -ss "$start" -t "$2" Cut\ "$1"
 }
-alias vcomp="$BASEDIR/scripts/helpers/video.py"
-alias vcompy="ipython -i $BASEDIR/scripts/helpers/video.py"
+alias vcomp="$BASEDIR/scripts/bin/video.py"
+alias vcompy="ipython -i $BASEDIR/scripts/bin/video.py"
 
 flac2mp3() {
     for file in *.flac; do 
