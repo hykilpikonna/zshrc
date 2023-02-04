@@ -72,14 +72,6 @@ alias dusa='du -hc --max-depth=1 | sortsize'
 alias ts='tailscale'
 alias ts-install='curl -fsSL https://tailscale.com/install.sh | sh'
 
-if command -v 'docker-compose' &> /dev/null; then
-    alias dc='docker-compose'
-else
-    alias dc='docker compose'
-fi
-alias docker-ip="docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
-alias dockers="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
-
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias visucode='EDITOR="code --wait" sudoedit'
 alias gpu-temp='while sleep 1; do clear; gpustat; done'
@@ -119,45 +111,12 @@ reset-permissions-dangerous() {
     sudo find . -type f -exec chmod 644 {} \;
 }
 
-# Mamba (conda replacement)
-alias mamba="micromamba"
-alias mamba-install="curl micro.mamba.pm/install.sh | zsh"
-export MAMBA_ROOT_PREFIX="$HOME/.conda"
-
-# Mamba initialize function
-mamba-init()
-{
-    export MAMBA_EXE="$(which micromamba)";
-    __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
-    if [ $? -eq 0 ]; then
-        eval "$__mamba_setup"
-    else
-        if [ -f "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh" ]; then
-            . "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh"
-        else
-            export PATH="$MAMBA_ROOT_PREFIX/bin:$PATH"
-        fi
-    fi
-    unset __mamba_setup
-}
-
-# Auto init mamba
-if command -v 'micromamba' &> /dev/null; then
-    mamba-init
-fi
-
-# Pyenv
-if command -v 'pyenv' &> /dev/null; then
-    eval "$(pyenv init -)"
-    PATH=$(pyenv root)/shims:$PATH
-fi
-
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # Lisp wrapper
 lisp() {
-    ros run --load $1 --quit
+    ros run --load "$1" --quit
 }
 
 test-nf() {
@@ -166,13 +125,13 @@ test-nf() {
 
 # Remote adb
 adblan() {
-    adb connect $1:16523
+    adb connect "$1:16523"
 }
 alias adblan-start="adb tcpip 16523"
 
 # Add line if it doesn't exist in a file
 addline() {
-  grep -qxF "$2" "$1" || echo "$2" >> $1
+  grep -qxF "$2" "$1" || echo "$2" >> "$1"
 }
 
 # Silent pushd and popd
@@ -185,34 +144,33 @@ spopd () {
 
 # Minecraft coloring
 color() {
-    tmp="$@"
-    tmp="$tmp&r"
-    tmp=$(echo "${tmp//&0/\033[0;30m}")
-    tmp=$(echo "${tmp//&1/\033[0;34m}")
-    tmp=$(echo "${tmp//&2/\033[0;32m}")
-    tmp=$(echo "${tmp//&3/\033[0;36m}")
-    tmp=$(echo "${tmp//&4/\033[0;31m}")
-    tmp=$(echo "${tmp//&5/\033[0;35m}")
-    tmp=$(echo "${tmp//&6/\033[0;33m}")
-    tmp=$(echo "${tmp//&7/\033[0;37m}")
-    tmp=$(echo "${tmp//&8/\033[1;30m}")
-    tmp=$(echo "${tmp//&9/\033[1;34m}")
-    tmp=$(echo "${tmp//&a/\033[1;32m}")
-    tmp=$(echo "${tmp//&b/\033[1;36m}")
-    tmp=$(echo "${tmp//&c/\033[1;31m}")
-    tmp=$(echo "${tmp//&d/\033[1;35m}")
-    tmp=$(echo "${tmp//&e/\033[1;33m}")
-    tmp=$(echo "${tmp//&f/\033[1;37m}")
-    tmp=$(echo "${tmp//&r/\033[0m}")
+    tmp="$*&r"
+    tmp="${tmp//&0/\033[0;30m}"
+    tmp="${tmp//&1/\033[0;34m}"
+    tmp="${tmp//&2/\033[0;32m}"
+    tmp="${tmp//&3/\033[0;36m}"
+    tmp="${tmp//&4/\033[0;31m}"
+    tmp="${tmp//&5/\033[0;35m}"
+    tmp="${tmp//&6/\033[0;33m}"
+    tmp="${tmp//&7/\033[0;37m}"
+    tmp="${tmp//&8/\033[1;30m}"
+    tmp="${tmp//&9/\033[1;34m}"
+    tmp="${tmp//&a/\033[1;32m}"
+    tmp="${tmp//&b/\033[1;36m}"
+    tmp="${tmp//&c/\033[1;31m}"
+    tmp="${tmp//&d/\033[1;35m}"
+    tmp="${tmp//&e/\033[1;33m}"
+    tmp="${tmp//&f/\033[1;37m}"
+    tmp="${tmp//&r/\033[0m}"
     newline=$'\n'
-    tmp=$(echo "${tmp//&n/$newline}")
-    echo $tmp
+    tmp="${tmp//&n/$newline}"
+    echo "$tmp"
 }
 alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
 
 # Includes
-for f in "$SCR/includes/"*.*sh; do source $f; done
-for f in "$SCR/includes/later/"*.*sh; do source $f; done
+for f in "$SCR/includes/"*.*sh; do source "$f"; done
+for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
 
 # Set proxy
 setproxy() {
@@ -238,51 +196,5 @@ ssh() {
     fi
 }
 
-# Docker linux containers
-alpine-create()
-{
-    docker rmi azalea/alpine
-    docker run -it --name alpine-init --hostname alpine alpine \
-        /bin/sh -c 'apk add zsh bash git curl wget tar zstd python3 && bash <(curl -sL hydev.org/zsh)'
-    docker commit alpine-init azalea/alpine
-    docker rm alpine-init
-}
-alias alpine="docker start -ai alpine"
-alias alpine-init="docker run -it --name alpine --hostname alpine azalea/alpine zsh"
-
-alias psqlt-init="docker run --rm -dit --name psql-test --hostname psql -e POSTGRES_HOST_AUTH_METHOD=trust postgres"
-alias psqlt-stop="docker stop psql-test"
-alias psqlt='psql -h $(docker-ip psql-test) -p 5432 -U postgres'
-
-# Mac hostname
-mac-hostname() {
-    name="$@"
-    sudo scutil --set HostName "$name"
-    sudo scutil --set LocalHostName "$name"
-    sudo scutil --set ComputerName "$name"
-}
-
-# Cut videos - cut <file name> <end time> [start time (default 00:00:00)]
-cut() {
-    if [ "$#" -lt 2 ]; then
-        echo "Usage: cut <file name> <end time (hh:mm:ss)> [start time (00:00:00)]"
-        return 2
-    fi
-
-    local start="${3:-00:00:00}"
-    echo "$1"
-    echo "$2"
-    echo "$start"
-    ffmpeg -i "$1" -codec copy -ss "$start" -t "$2" Cut\ "$1"
-}
-alias vcomp="$BASEDIR/scripts/bin/video.py"
-alias vcompy="ipython -i $BASEDIR/scripts/bin/video.py"
-
-flac2mp3() {
-    for file in *.flac; do 
-        ffmpeg -i "$file" -ab 320k -map_metadata 0 -id3v2_version 3 "${file%.flac}.mp3"
-    done
-}
-
 # include if it exists
-[ -f "$HOME/extra.rc.sh" ] && . "$HOME/extra.rc.sh"
+[ -f "$HOME/extra.rc.sh" ] && source "$HOME/extra.rc.sh"
