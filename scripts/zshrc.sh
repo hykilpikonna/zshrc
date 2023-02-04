@@ -296,6 +296,10 @@ alpine-create()
 alias alpine="docker start -ai alpine"
 alias alpine-init="docker run -it --name alpine --hostname alpine azalea/alpine zsh"
 
+alias psqlt-init="docker run --rm -dit --name psql-test --hostname psql -e POSTGRES_HOST_AUTH_METHOD=trust postgres"
+alias psqlt-stop="docker stop psql-test"
+alias psqlt='psql -h $(docker-ip psql-test) -p 5432 -U postgres'
+
 # Mac hostname
 mac-hostname() {
     name="$@"
