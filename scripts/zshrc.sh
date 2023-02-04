@@ -211,7 +211,8 @@ color() {
 alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
 
 # Includes
-for f in $SCR/includes/*; do source $f; done
+for f in "$SCR/includes/"*.*sh; do source $f; done
+for f in "$SCR/includes/later/"*.*sh; do source $f; done
 
 # Set proxy
 setproxy() {
