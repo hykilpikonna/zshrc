@@ -78,6 +78,7 @@ else
     alias dc='docker compose'
 fi
 alias docker-ip="docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
+alias dockers="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
 
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias visucode='EDITOR="code --wait" sudoedit'
