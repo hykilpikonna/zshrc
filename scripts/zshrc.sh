@@ -94,6 +94,13 @@ alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh
 
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
+alias valgrin="valgrind \
+  --leak-check=full \
+  --show-leak-kinds=all \
+  --leak-resolution=med \
+  --track-origins=yes \
+  --vgdb=no"
+
 # Automatic sudo
 alias sctl="sudo systemctl"
 alias jctl="sudo journalctl"
