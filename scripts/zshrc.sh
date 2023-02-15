@@ -109,7 +109,11 @@ alias nginx="sudo nginx"
 # Gradle with auto environment detection
 [[ -z $GRADLE ]] && GRADLE="$(which gradle)"
 gradle() {
-    [[ -f "./gradlew" ]] && ./gradlew "$@" || $GRADLE "$@"
+    if [[ -f "./gradlew" ]]; then 
+        ./gradlew "$@"
+    else 
+        $GRADLE "$@"
+    fi
 }
 
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
