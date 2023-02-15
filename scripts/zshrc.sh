@@ -104,6 +104,7 @@ alias valgrin="valgrind \
 alias sctl="sudo systemctl"
 alias jctl="sudo journalctl"
 alias ufw="sudo ufw"
+alias nginx="sudo nginx"
 
 # Gradle with auto environment detection
 [[ -z $GRADLE ]] && GRADLE="$(which gradle)"
