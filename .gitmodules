@@ -7,3 +7,6 @@
 [submodule "plugins/find-the-command"]
 	path = plugins/find-the-command
 	url = https://github.com/pkasemir/find-the-command
+[submodule "config-sync/.config/ibus/rime/rime-japanese"]
+	path = config-sync/.config/ibus/rime/rime-japanese
+	url = https://github.com/gkovacs/rime-japanese
