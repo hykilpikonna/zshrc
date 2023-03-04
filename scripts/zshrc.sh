@@ -100,6 +100,11 @@ alias valgrin="valgrind \
   --track-origins=yes \
   --vgdb=no"
 
+upload-daisy() {
+    file="$@"
+    curl -u azalea -F "path=@$file" "https://daisy-ddns.hydev.org/upload\?path\=/"
+}
+
 # Automatic sudo
 alias sctl="sudo systemctl"
 alias jctl="sudo journalctl"
