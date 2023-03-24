@@ -2,6 +2,8 @@ __patch:
 # Rx: emoji:customize:schema=luna_pinyin {
   - patch/+:
       __include: emoji_suggestion:/patch
+  - patch/+:
+      __include: latex.patch:/patch
 # }
 
 # https://wiki.archlinuxcn.org/wiki/Fcitx5#RIME/%E4%B8%AD%E5%B7%9E%E9%9F%BB

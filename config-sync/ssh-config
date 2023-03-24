@@ -48,3 +48,9 @@ Host caspase
 Host kevin
     HostName caspase3kjq.terra-incognita.dev
     User me@hydev.org
+
+Host ut-343
+    HostName dbsrv1.teach.cs.toronto.edu
+
+Host ut-cs
+    HostName teach.cs.toronto.edu

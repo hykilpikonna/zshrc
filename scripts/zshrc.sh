@@ -72,19 +72,12 @@ alias dusa='du -hc --max-depth=1 | sortsize'
 alias ts='tailscale'
 alias ts-install='curl -fsSL https://tailscale.com/install.sh | sh'
 
-if command -v 'docker-compose' &> /dev/null; then
-    alias dc='docker-compose'
-else
-    alias dc='docker compose'
-fi
-
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias visucode='EDITOR="code --wait" sudoedit'
 alias gpu-temp='while sleep 1; do clear; gpustat; done'
 alias cpu-temp='s-tui'
-alias mine='sudo lolminer --algo ETHASH --pool stratum+ssl://daggerhashimoto.auto.nicehash.com:443 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
-alias mine-zel='sudo lolminer --algo ZEL --pers BgoldPoW --pool stratum+tcp://zelhash.auto.nicehash.com:9200 --user=3AcCeSHHwWJRf945iKCbxZ8cjUvy7Tmg3g.Daisy-lol'
 alias mount-external='sudo mount -t cifs //192.168.2.1/external /smb/external -o rw,user=azalea,uid=1000,gid=1000,pass='
+alias compress-json="find -name '*.json' -print0 | parallel --jobs 80% -0 zstd -z -19 -v -f --rm {}"
 
 alias ds-clean="find . -name '.DS_Store' -delete -print"
 alias dotclean="find . -name '._*' -delete -print"
@@ -100,15 +93,32 @@ alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh
 
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
+alias valgrin="valgrind \
+  --leak-check=full \
+  --show-leak-kinds=all \
+  --leak-resolution=med \
+  --track-origins=yes \
+  --vgdb=no"
+
+upload-daisy() {
+    file="$@"
+    curl -u azalea -F "path=@$file" "https://daisy-ddns.hydev.org/upload\?path\=/"
+}
+
 # Automatic sudo
 alias sctl="sudo systemctl"
 alias jctl="sudo journalctl"
 alias ufw="sudo ufw"
+alias nginx="sudo nginx"
 
 # Gradle with auto environment detection
-GRADLE="$(which gradle)"
+[[ -z $GRADLE ]] && GRADLE="$(which gradle)"
 gradle() {
-    [[ -f "./gradlew" ]] && ./gradlew "$@" || $GRADLE "$@"
+    if [[ -f "./gradlew" ]]; then 
+        ./gradlew "$@"
+    else 
+        $GRADLE "$@"
+    fi
 }
 
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
@@ -117,45 +127,12 @@ reset-permissions-dangerous() {
     sudo find . -type f -exec chmod 644 {} \;
 }
 
-# Mamba (conda replacement)
-alias mamba="micromamba"
-alias mamba-install="curl micro.mamba.pm/install.sh | zsh"
-export MAMBA_ROOT_PREFIX="$HOME/.conda"
-
-# Mamba initialize function
-mamba-init()
-{
-    export MAMBA_EXE="$(which micromamba)";
-    __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
-    if [ $? -eq 0 ]; then
-        eval "$__mamba_setup"
-    else
-        if [ -f "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh" ]; then
-            . "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh"
-        else
-            export PATH="$MAMBA_ROOT_PREFIX/bin:$PATH"
-        fi
-    fi
-    unset __mamba_setup
-}
-
-# Auto init mamba
-if command -v 'micromamba' &> /dev/null; then
-    mamba-init
-fi
-
-# Pyenv
-if command -v 'pyenv' &> /dev/null; then
-    eval "$(pyenv init -)"
-    PATH=$(pyenv root)/shims:$PATH
-fi
-
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # Lisp wrapper
 lisp() {
-    ros run --load $1 --quit
+    ros run --load "$1" --quit
 }
 
 test-nf() {
@@ -164,13 +141,13 @@ test-nf() {
 
 # Remote adb
 adblan() {
-    adb connect $1:16523
+    adb connect "$1:16523"
 }
 alias adblan-start="adb tcpip 16523"
 
 # Add line if it doesn't exist in a file
 addline() {
-  grep -qxF "$2" "$1" || echo "$2" >> $1
+  grep -qxF "$2" "$1" || echo "$2" >> "$1"
 }
 
 # Silent pushd and popd
@@ -183,33 +160,33 @@ spopd () {
 
 # Minecraft coloring
 color() {
-    tmp="$@"
-    tmp="$tmp&r"
-    tmp=$(echo "${tmp//&0/\033[0;30m}")
-    tmp=$(echo "${tmp//&1/\033[0;34m}")
-    tmp=$(echo "${tmp//&2/\033[0;32m}")
-    tmp=$(echo "${tmp//&3/\033[0;36m}")
-    tmp=$(echo "${tmp//&4/\033[0;31m}")
-    tmp=$(echo "${tmp//&5/\033[0;35m}")
-    tmp=$(echo "${tmp//&6/\033[0;33m}")
-    tmp=$(echo "${tmp//&7/\033[0;37m}")
-    tmp=$(echo "${tmp//&8/\033[1;30m}")
-    tmp=$(echo "${tmp//&9/\033[1;34m}")
-    tmp=$(echo "${tmp//&a/\033[1;32m}")
-    tmp=$(echo "${tmp//&b/\033[1;36m}")
-    tmp=$(echo "${tmp//&c/\033[1;31m}")
-    tmp=$(echo "${tmp//&d/\033[1;35m}")
-    tmp=$(echo "${tmp//&e/\033[1;33m}")
-    tmp=$(echo "${tmp//&f/\033[1;37m}")
-    tmp=$(echo "${tmp//&r/\033[0m}")
+    tmp="$*&r"
+    tmp="${tmp//&0/\033[0;30m}"
+    tmp="${tmp//&1/\033[0;34m}"
+    tmp="${tmp//&2/\033[0;32m}"
+    tmp="${tmp//&3/\033[0;36m}"
+    tmp="${tmp//&4/\033[0;31m}"
+    tmp="${tmp//&5/\033[0;35m}"
+    tmp="${tmp//&6/\033[0;33m}"
+    tmp="${tmp//&7/\033[0;37m}"
+    tmp="${tmp//&8/\033[1;30m}"
+    tmp="${tmp//&9/\033[1;34m}"
+    tmp="${tmp//&a/\033[1;32m}"
+    tmp="${tmp//&b/\033[1;36m}"
+    tmp="${tmp//&c/\033[1;31m}"
+    tmp="${tmp//&d/\033[1;35m}"
+    tmp="${tmp//&e/\033[1;33m}"
+    tmp="${tmp//&f/\033[1;37m}"
+    tmp="${tmp//&r/\033[0m}"
     newline=$'\n'
-    tmp=$(echo "${tmp//&n/$newline}")
-    echo $tmp
+    tmp="${tmp//&n/$newline}"
+    echo "$tmp"
 }
 alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
 
 # Includes
-for f in $SCR/includes/*; do source $f; done
+for f in "$SCR/includes/"*.*sh; do source "$f"; done
+for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
 
 # Set proxy
 setproxy() {
@@ -225,55 +202,8 @@ setproxy() {
     prompt-update
 }
 
-# Git identity
-git-ida() {
-    # Zsh only
-    TMP_ARR=("${(@f)$(git-id-list get "$1")}")
-    git-id "${TMP_ARR[1]}" "${TMP_ARR[2]}"
-}
-git-id() {
-    export GIT_USER="$1"
-    export GIT_EMAIL="$2"
-    git-id-prompt
-}
-git-id-prompt() {
-    if [[ -z "$GIT_USER" ]] && [[ -z "$GIT_EMAIL" ]]; then
-        prompt-reset
-    else
-        prompt-set 30 "&cGit ID: $GIT_USER | $GIT_EMAIL "
-        prompt-update
-    fi
-}
-git-id-prompt
-GIT_BIN=$(which git)
-git() {
-    if [[ -z "$GIT_USER" ]]; then 
-        $GIT_BIN "$@"
-    else
-        $GIT_BIN -c "user.name=$GIT_USER" -c "user.email=$GIT_EMAIL" -c "commit.gpgsign=false" "$@"
-    fi
-}
-
-# Git environment
-git-env() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag )
-    for i in "${git_commands[@]}"
-    do
-        alias "$i"="git $i"
-    done
-    alias 'grm'='git rm'
-    alias 'gmv'='git mv'
-}
-git-unenv() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag grm gmv )
-    for i in "${git_commands[@]}"
-    do
-        unalias "$i"
-    done
-}
-
 # SSH Patch
-SSH_BIN=$(which ssh)
+[[ -z $SSH_BIN ]] && SSH_BIN=$(which ssh)
 ssh() {
     if [[ "$TERM" == 'xterm-kitty' ]]; then
         env TERM=xterm-256color "$SSH_BIN" "$@"
@@ -282,35 +212,5 @@ ssh() {
     fi
 }
 
-# Mac hostname
-mac-hostname() {
-    name="$@"
-    sudo scutil --set HostName "$name"
-    sudo scutil --set LocalHostName "$name"
-    sudo scutil --set ComputerName "$name"
-}
-
-# Cut videos - cut <file name> <end time> [start time (default 00:00:00)]
-cut() {
-    if [ "$#" -lt 2 ]; then
-        echo "Usage: cut <file name> <end time (hh:mm:ss)> [start time (00:00:00)]"
-        return 2
-    fi
-
-    local start="${3:-00:00:00}"
-    echo "$1"
-    echo "$2"
-    echo "$start"
-    ffmpeg -i "$1" -codec copy -ss "$start" -t "$2" Cut\ "$1"
-}
-alias vcomp="$BASEDIR/scripts/helpers/video.py"
-alias vcompy="ipython -i $BASEDIR/scripts/helpers/video.py"
-
-flac2mp3() {
-    for file in *.flac; do 
-        ffmpeg -i "$file" -ab 320k -map_metadata 0 -id3v2_version 3 "${file%.flac}.mp3"
-    done
-}
-
 # include if it exists
-[ -f "$HOME/extra.rc.sh" ] && . "$HOME/extra.rc.sh"
+[ -f "$HOME/extra.rc.sh" ] && source "$HOME/extra.rc.sh"

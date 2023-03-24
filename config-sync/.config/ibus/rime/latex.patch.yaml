@@ -1,0 +1,15 @@
+patch:
+  # engine/translators/+:
+  #   - punct_translator
+    # - r10n_translator
+    # - reverse_lookup_translator
+# meaning of the regex: ^ start of line, \\ the starting \, .+ any char 1 or more time, $ end 
+  recognizer/patterns/reverse_lookup: '^\\.+$'
+  schema/dependencies/+:
+    - latex
+  abc_segmentor/extra_tags:
+    - reverse_lookup
+  reverse_lookup:
+    dictionary: latex
+    enable_completion: false
+    tips: latex

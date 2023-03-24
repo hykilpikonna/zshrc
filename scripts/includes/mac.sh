@@ -22,6 +22,14 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     export JAVA_HOME=${JDK11}
     export PATH="${JDK11}/bin:$PATH"
 
+    # Mac hostname
+    mac-hostname() {
+        name="$@"
+        sudo scutil --set HostName "$name"
+        sudo scutil --set LocalHostName "$name"
+        sudo scutil --set ComputerName "$name"
+    }
+
     # Anaconda
     export CONDA_PATH="/usr/local/anaconda3"
     export PATH="$CONDA_PATH/bin:$PATH"
