@@ -112,12 +112,8 @@ alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 
 # Gradle with auto environment detection
-if [[ -z $GRADLE ]]; then
-    if command -v 'gradle' &> /dev/null; then
-        GRADLE="$(which gradle)"
-    else
-        GRADLE="gradle"
-    fi
+if [[ -z $GRADLE ]] && command -v 'gradle' &> /dev/null; then
+    GRADLE="$(which gradle)"
 fi
 
 gradle() {
