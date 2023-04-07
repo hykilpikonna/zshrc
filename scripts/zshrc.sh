@@ -129,6 +129,7 @@ reset-permissions-dangerous() {
 
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # Lisp wrapper
 lisp() {
