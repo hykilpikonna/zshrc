@@ -112,14 +112,16 @@ alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 
 # Gradle with auto environment detection
-[[ -z $GRADLE ]] && GRADLE="$(which gradle)"
-gradle() {
-    if [[ -f "./gradlew" ]]; then 
-        ./gradlew "$@"
-    else 
-        $GRADLE "$@"
-    fi
-}
+if command -v 'gradle' &> /dev/null; then 
+    [[ -z $GRADLE ]] && GRADLE="$(which gradle)"
+    gradle() {
+        if [[ -f "./gradlew" ]]; then 
+            ./gradlew "$@"
+        else 
+            $GRADLE "$@"
+        fi
+    }
+fi
 
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
