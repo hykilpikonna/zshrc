@@ -1,19 +1,10 @@
-Host daisy-root
-    HostName daisy.hydev.org
-    User root
-
-Host home
-    HostName home.hydev.org
-    Port 10022
+Host aster
+    HostName hydev-aster
     User hykilpikonna
 
 Host ovh
     HostName ovh.hydev.org
     User root
-
-Host aster
-    HostName aster.hydev.org
-    User azalea
 
 Host daisy
     HostName daisy.hydev.org
@@ -21,14 +12,6 @@ Host daisy
 
 Host cn
     HostName cn.hydev.org
-    User root
-
-Host nix
-    HostName nix.hydev.org
-    User root
-
-Host us
-    HostName us.hydev.org
     User root
 
 Host lux
@@ -40,6 +23,10 @@ Host mir4
     User root
     KexAlgorithms +diffie-hellman-group1-sha1
     Cipher 3des-cbc
+
+Host orangepi3
+    HostName orangepi3
+    User root
 
 Host caspase
     HostName caspase3kjq.terra-incognita.dev
@@ -54,3 +41,7 @@ Host ut-343
 
 Host ut-cs
     HostName teach.cs.toronto.edu
+
+# Fig ssh integration. Keep at the bottom of this file.
+Match all
+  Include ~/.fig/ssh
