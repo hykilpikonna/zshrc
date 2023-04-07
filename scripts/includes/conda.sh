@@ -23,6 +23,10 @@ mamba-init()
 # Auto init mamba
 if command -v 'micromamba' &> /dev/null; then
     mamba-init
+    
+    if ! command -v 'conda' &> /dev/null; then
+        alias conda="mamba"
+    fi
 fi
 
 # Pyenv
