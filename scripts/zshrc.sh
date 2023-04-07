@@ -124,7 +124,11 @@ gradle() {
     if [[ -f "./gradlew" ]]; then 
         ./gradlew "$@"
     else 
-        $GRADLE "$@"
+        if [[ -z $GRADLE ]]; then 
+            echo "Neither gradle nor ./gradlew is found, please install it and restart zsh." 
+        else 
+            $GRADLE "$@" 
+        fi
     fi
 }
 
