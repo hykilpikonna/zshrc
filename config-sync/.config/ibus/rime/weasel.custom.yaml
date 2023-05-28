@@ -1,0 +1,13 @@
+customization:
+  distribution_code_name: Weasel
+  distribution_version: 0.14.3.0
+  generator: "Weasel::UIStyleSettings"
+  modified_time: "Thu May 25 06:14:31 2023"
+  rime_version: 1.8.5
+patch:
+  style:
+    color_font: true
+    color_scheme: steam
+    font_face: "LXGW WenKai"
+    horizontal: true
+    show_notifications_when: always

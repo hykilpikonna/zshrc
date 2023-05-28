@@ -1,5 +1,12 @@
+customization:
+  distribution_code_name: Weasel
+  distribution_version: 0.14.3
+  generator: "Rime::SwitcherSettings"
+  modified_time: "Thu May 25 05:40:39 2023"
+  rime_version: 1.5.3
 patch:
+  "menu/page_size": 7
   schema_list:
-    - schema: luna_pinyin_simp
-    - schema: japanese
-  menu/page_size: 7
+    - {schema: luna_pinyin_simp}
+    - {schema: japanese}
+    - {schema: latex}
