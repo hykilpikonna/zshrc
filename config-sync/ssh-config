@@ -1,3 +1,11 @@
+Host gcr
+    HostName hydev-ms-gcr
+    User REDMOND.t-azaleagui
+
+Host star
+    HostName star
+    User root
+
 Host aster
     HostName hydev-aster
     User hykilpikonna
