@@ -111,6 +111,33 @@ alias jctl="sudo journalctl"
 alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 
+has() {
+    command -v "$1" &> /dev/null
+}
+
+# Install using system package manager
+install-package() {
+    if has pacman; then
+        pacman -Sy "$1"
+    elif has apt; then
+        apt install "$1"
+    elif has dnf; then
+        dnf install "$1"
+    elif has brew; then
+        brew install "$1"
+    fi
+}
+
+# Set EDITOR
+if has micro; then 
+    export EDITOR="micro"
+elif has nano; then
+    export EDITOR="nano"
+else
+    install-package micro
+    export EDITOR="micro"
+fi
+
 # Gradle with auto environment detection
 [[ -z $GRADLE ]] && GRADLE="$(which gradle)"
 gradle() {
