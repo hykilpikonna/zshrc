@@ -57,6 +57,7 @@ alias rm='rm -ir'
 alias mkdirs='mkdir -p'
 
 alias ports='netstat -tulpn | grep LISTEN'
+alias suports='sudo netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
 
 alias cls='clear'
@@ -69,7 +70,7 @@ alias sortsize='sort -hr'
 alias dus='du -shc * | sortsize'
 alias dusa='du -hc --max-depth=1 | sortsize'
 
-alias ts='tailscale'
+alias ts='sudo tailscale'
 alias ts-install='curl -fsSL https://tailscale.com/install.sh | sh'
 
 alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
@@ -107,10 +108,13 @@ upload-daisy() {
 
 # Automatic sudo
 alias sctl="sudo systemctl"
+alias sctlu="systemctl --user"
 alias jctl="sudo journalctl"
 alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 alias certbot="sudo certbot"
+alias apt="sudo apt"
+alias dpkg="sudo dpkg"
 
 has() {
     command -v "$1" &> /dev/null
@@ -140,12 +144,19 @@ else
 fi
 
 # Gradle with auto environment detection
-[[ -z $GRADLE ]] && GRADLE="$(which gradle)"
+if [[ -z $GRADLE ]] && command -v 'gradle' &> /dev/null; then
+    GRADLE="$(which gradle)"
+fi
+
 gradle() {
     if [[ -f "./gradlew" ]]; then 
         ./gradlew "$@"
     else 
-        $GRADLE "$@"
+        if [[ -z $GRADLE ]]; then 
+            echo "Neither gradle nor ./gradlew is found, please install it and restart zsh." 
+        else 
+            $GRADLE "$@" 
+        fi
     fi
 }
 
@@ -157,6 +168,7 @@ reset-permissions-dangerous() {
 
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # Lisp wrapper
 lisp() {
