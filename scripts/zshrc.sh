@@ -110,6 +110,7 @@ alias sctl="sudo systemctl"
 alias jctl="sudo journalctl"
 alias ufw="sudo ufw"
 alias nginx="sudo nginx"
+alias certbot="sudo certbot"
 
 has() {
     command -v "$1" &> /dev/null
