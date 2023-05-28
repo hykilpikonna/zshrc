@@ -57,6 +57,7 @@ alias rm='rm -ir'
 alias mkdirs='mkdir -p'
 
 alias ports='netstat -tulpn | grep LISTEN'
+alias suports='sudo netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
 
 alias cls='clear'
