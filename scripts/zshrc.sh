@@ -89,6 +89,10 @@ alias mkfs.fat32="sudo mkfs.fat -F 32"
 alias btrfs-fs-progress="sudo watch -d sudo btrfs fi us"
 alias btrfs-balance-progress="sudo watch -d btrfs balance status"
 
+alias tmuxs="tmux new-session -s"
+alias tmuxr="tmux attach-session -t"
+alias tmuxl="tmux list-sessions"
+
 alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
 
@@ -110,6 +114,7 @@ upload-daisy() {
 alias sctl="sudo systemctl"
 alias sctlu="systemctl --user"
 alias jctl="sudo journalctl"
+alias docker="sudo docker"
 alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 alias certbot="sudo certbot"
