@@ -180,10 +180,6 @@ lisp() {
     ros run --load "$1" --quit
 }
 
-test-nf() {
-    CUSTOM_DISTRO="$1" ./neofetch test_distro_ascii
-}
-
 # Remote adb
 adblan() {
     adb connect "$1:16523"
