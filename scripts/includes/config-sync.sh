@@ -55,3 +55,8 @@ check-config "$HOME/.config/micro/settings.json" "$CFGSYNC/.config/micro/setting
 check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
 # check-config "$HOME/.config/ibus/rime" "$CFGSYNC/.config/ibus/rime"
 # check-config "$HOME/.local/share/fcitx5/rime" "$CFGSYNC/.config/ibus/rime"
+
+# macOS only
+if [[ $OSTYPE == 'darwin'* ]]; then
+    check-config "$HOME/Library/Preferences/com.googlecode.iterm2.plist" "$CFGSYNC/macOS/com.googlecode.iterm2.plist"
+fi
