@@ -42,8 +42,7 @@ check-inject()
 CFGSYNC="$SCR/../config-sync"
 
 # Sync SSH Config
-alias check-ssh-config="check-config $HOME/.ssh/config $CFGSYNC/ssh-config"
-check-ssh-config
+check-config $HOME/.ssh/config $CFGSYNC/ssh-config
 
 # Check nanorc includes
 # check-inject "$HOME/.nanorc" "include $SCR/../config-sync/nanorc"
@@ -59,4 +58,5 @@ check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
 # macOS only
 if [[ $OSTYPE == 'darwin'* ]]; then
     check-config "$HOME/Library/Preferences/com.googlecode.iterm2.plist" "$CFGSYNC/macOS/com.googlecode.iterm2.plist"
+    check-config "$HOME/Library/Rime" "$CFGSYNC/.config/ibus/rime"
 fi
