@@ -1,0 +1,75 @@
+patch:
+  # 通知栏显示方式以及 ascii_mode 应用，与外观无关
+  show_notifications_via_notification_center: true
+  app_options:
+    com.apple.dt.Xcode:
+      ascii_mode: true
+    com.runningwithcrayons.Alfred-3:
+      ascii_mode: true
+    com.apple.Terminal:
+      ascii_mode: true
+    com.googlecode.iterm2:
+      ascii_mode: true
+    com.apple.finder:
+      ascii_mode: true
+    com.sublimetext.3:
+      ascii_mode: true
+    com.github.atom:
+      ascii_mode: true
+    com.apple.appstore:
+      ascii_mode: true
+    com.apple.calculator:
+      ascii_mode: true
+    com.apple.iBooksX:
+      ascii_mode: true
+    com.apple.iTunes:
+      ascii_mode: true
+    com.apple.launchpad.launcher:
+      ascii_mode: true
+    com.apple.systempreferences:
+      ascii_mode: true
+    com.apple.keychainaccess:
+      ascii_mode: true
+    # com.apple.Safari:
+    #   ascii_mode: true
+    com.apple.Spotlight:
+      ascii_mode: true
+
+  us_keyboard_layout: true
+
+  # 外观配置
+  style:
+    color_scheme: placeless2           # 选择配色方案
+    horizontal: true                   # 候选窗横向显示
+    inline_preedit: true               # 关闭内嵌编码，这样就可以显示首行的拼音
+    corner_radius: 6                   # 窗口圆角半径
+    border_height: 0                   # 窗口边界高度，大于圆角半径才有效果
+    border_width: 12                   # 窗口边界宽度，大于圆角半径才有效果
+    line_spacing: 5                    # 候选词的行间距
+    spacing: 10                        # 在非内嵌编码模式下，预编辑和候选词之间的间距
+    font_face: "Lantinghei SC"         # 字体名称
+    font_point: 15                     # 字号
+    # label_font_face: 'STHeitiTC-Medium'
+    #candidate_format: '%c. %@'
+    label_font_point: 12
+
+  preset_color_schemes:
+    # 方案一 horizontal: false
+    placeless:
+      name: "秋田／Placeless"
+      author: "jed <placeless@outlook.com>"
+      back_color: 0xFFFFFF #背景
+      text_color: 0xFFFFFF # 編碼行文字顏色，24位色值，用十六進制書寫方便些，順序是藍綠紅0xBBGGRR
+      candidate_text_color: 0x000000 #非第一候选项
+      hilited_candidate_back_color: 0xf57c75 #第一候选项背景
+      hilited_candidate_text_color: 0xFFFFFF #第一候选项
+
+    # 方案二 horizontal: true
+    placeless2:
+      name: "荷田／Placeless"
+      author: "jed <placeless@outlook.com>"
+      back_color: 0xFFFFFF #背景
+      text_color: 0x000000 # 編碼行文字顏色，24位色值，用十六進制書寫方便些，順序是藍綠紅0xBBGGRR
+      candidate_text_color: 0x666666 #非第一候选项
+      hilited_candidate_back_color: 0xFFFFFF #第一候选项背景
+      hilited_candidate_text_color: 0xf57c75 #第一候选项
