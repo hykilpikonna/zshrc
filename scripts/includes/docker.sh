@@ -1,11 +1,16 @@
 
-if command -v 'docker-compose' &> /dev/null; then
-    alias dc='sudo docker-compose'
-else
-    alias dc='sudo docker compose'
+if [[ $OSTYPE != 'darwin'* ]]; then
+    alias docker="sudo docker"
+    alias docker-compose="sudo docker-compose"
 fi
-alias docker-ip="sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
-alias dockers="sudo docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
+
+if command -v 'docker-compose' &> /dev/null; then
+    alias dc='docker-compose'
+else
+    alias dc='docker compose'
+fi
+alias docker-ip="docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
+alias dockers="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
 
 # Docker linux containers
 alpine-create()
