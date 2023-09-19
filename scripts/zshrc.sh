@@ -21,7 +21,7 @@ modern-replace() {
     fi
 }
 
-modern-replace 'ls' 'exa' 'ls -h --color=auto'
+modern-replace 'ls' 'eza' 'ls -h --color=auto'
 modern-replace 'df' 'duf' 'df -h'
 modern-replace 'cat' 'bat'
 modern-replace 'man' 'tldr'
