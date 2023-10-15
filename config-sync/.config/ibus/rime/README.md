@@ -1,1 +1,0 @@
-rime-japanese/README.md
