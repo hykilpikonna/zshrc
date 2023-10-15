@@ -47,7 +47,7 @@ patch:
     border_width: 12                   # 窗口边界宽度，大于圆角半径才有效果
     line_spacing: 5                    # 候选词的行间距
     spacing: 10                        # 在非内嵌编码模式下，预编辑和候选词之间的间距
-    font_face: "Lantinghei SC"         # 字体名称
+    font_face: "LXGW Wenkai"           # 字体名称
     font_point: 15                     # 字号
     # label_font_face: 'STHeitiTC-Medium'
     #candidate_format: '%c. %@'

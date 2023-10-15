@@ -57,6 +57,6 @@ check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
 
 # macOS only
 if [[ $OSTYPE == 'darwin'* ]]; then
-    check-config "$HOME/Library/Preferences/com.googlecode.iterm2.plist" "$CFGSYNC/macOS/com.googlecode.iterm2.plist"
+    # check-config "$HOME/Library/Preferences/com.googlecode.iterm2.plist" "$CFGSYNC/macOS/com.googlecode.iterm2.plist"
     check-config "$HOME/Library/Rime" "$CFGSYNC/.config/ibus/rime"
 fi
