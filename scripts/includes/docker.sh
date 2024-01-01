@@ -1,14 +1,14 @@
+if command -v 'docker-compose' &> /dev/null; then
+    alias dc='docker-compose'
+else
+    alias dc='docker compose'
+fi
 
 if [[ $OSTYPE != 'darwin'* ]]; then
     alias docker="sudo docker"
     alias docker-compose="sudo docker-compose"
 fi
 
-if command -v 'docker-compose' &> /dev/null; then
-    alias dc='docker-compose'
-else
-    alias dc='docker compose'
-fi
 alias docker-ip="docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
 alias dockers="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
 
