@@ -1,4 +1,5 @@
 set-alias ll ls
+set-alias mamba micromamba
 
 function su { powershell Start-Process powershell -Verb runAs }
 function pwdd { $("$PWD".replace($HOME, '~')) }
