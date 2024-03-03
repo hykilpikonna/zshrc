@@ -17,8 +17,8 @@ if [ -f "/etc/arch-release" ]; then
     alias java17="${JDK17}/bin/java"
     alias java18="${JDK18}/bin/java"
     alias java19="${JDK19}/bin/java"
-    export JAVA_HOME=${JDK11}
-    export PATH="${JDK11}/bin:$PATH"
+    export JAVA_HOME=${JDK17}
+    export PATH="${JDK17}/bin:$PATH"
 
     export PATH="$HOME/.local/share/JetBrains/Toolbox/scripts:$PATH"
 
