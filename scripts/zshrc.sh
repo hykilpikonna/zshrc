@@ -114,6 +114,7 @@ upload-daisy() {
 alias sctl="sudo systemctl"
 alias sctlu="systemctl --user"
 alias jctl="sudo journalctl"
+alias jctlu="journalctl --user-unit"
 alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 alias certbot="sudo certbot"
