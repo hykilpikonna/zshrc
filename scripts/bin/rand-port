@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+
+import socket
+import random
+
+def find_random_open_port():
+    while True:
+        port = random.randint(1024, 65535)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            result = s.connect_ex(('localhost', port))
+            if result != 0:  # Port is available
+                return port
+
+if __name__ == "__main__":
+    random_port = find_random_open_port()
+    print(f"Random open port: {random_port}")
