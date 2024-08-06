@@ -1,8 +1,8 @@
 # ZSH History
 HISTFILE=~/.zsh_history
-HISTSIZE=1000
-SAVEHIST=1000
-setopt appendhistory
+HISTSIZE=100000
+SAVEHIST=100000
+setopt SHARE_HISTORY
 
 BASEDIR="$(dirname "$(dirname "$0")")"
 
@@ -251,6 +251,31 @@ ssh() {
         "$SSH_BIN" "$@"
     fi
 }
+
+# Subtitle generation
+subtitle() {
+    CUDA_VISIBLE_DEVICES=1 auto_subtitle --srt_only True --model large "$1"
+}
+
+# Uplaod to HyDEV daisy
+upload() {
+    local FILE=$1
+    local SERVER_URL="https://daisy.hydev.org/upload?path=/"
+    local UP_USERNAME="azalea"
+
+    # Check if UP_PASSWORD is set
+    if [ -z "$UP_PASSWORD" ]; then
+        echo "Error: Password not set, please export UP_PASSWORD=xxx"
+        return
+    fi
+
+    if [ -f "$FILE" ]; then
+        curl -u $UP_USERNAME:$UP_PASSWORD -F "path=@$FILE" "$SERVER_URL"
+    else
+        echo "Error: File not found."
+    fi
+}
+
 
 # include if it exists
 [ -f "$HOME/extra.rc.sh" ] && source "$HOME/extra.rc.sh"
