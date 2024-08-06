@@ -88,6 +88,7 @@ alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 alias mkfs.fat32="sudo mkfs.fat -F 32"
 alias btrfs-fs-progress="sudo watch -d sudo btrfs fi us"
 alias btrfs-balance-progress="sudo watch -d btrfs balance status"
+alias xcp="rsync -aviHAXKhS --one-file-system --partial --info=progress2 --atimes --open-noatime --delete --exclude='*~' --exclude=__pycache__"
 
 alias tmuxs="tmux new-session -s"
 alias tmuxr="tmux attach-session -t"
