@@ -59,8 +59,8 @@ alias mkdirs='mkdir -p'
 alias ip='ip -c -h -p'
 alias ipa='ip -br a'
 alias ipj='ip -j'
-alias ip-4="curl https://1.0.0.1/cdn-cgi/trace -sL | grep ip"
-alias ip-6="curl 'https://[2606:4700:4700::1111]/cdn-cgi/trace' -sL | grep ip"
+alias ipv4="curl https://1.0.0.1/cdn-cgi/trace -4 | grep ip"
+alias ipv6="curl 'https://[2606:4700:4700::1111]/cdn-cgi/trace' -6 | grep ip"
 
 alias ports='netstat -tulpn | grep LISTEN'
 alias suports='sudo netstat -tulpn | grep LISTEN'
