@@ -132,6 +132,15 @@ has() {
     command -v "$1" &> /dev/null
 }
 
+# Compress 7z zstd <out_file> <in_files...>
+compress-7zst() {
+    if [ -z "$1" ]; then
+        echo "Usage: compress-7zst <out_file> <in_files...>"
+        return
+    fi
+    7z a -m0=zstd -mx17 -mmt35 "$1" "$2"
+}
+
 # Install using system package manager
 install-package() {
     if has pacman; then
