@@ -76,6 +76,9 @@ alias sortsize='sort -hr'
 alias dus='du -shc * | sortsize'
 alias dusa='du -hc --max-depth=1 | sortsize'
 
+alias ffmpeg="ffmpeg -hide_banner"
+alias ffprobe="ffprobe -hide_banner"
+
 alias ts='sudo tailscale'
 alias ts-install='curl -fsSL https://tailscale.com/install.sh | sh'
 
