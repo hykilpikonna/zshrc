@@ -32,7 +32,7 @@ modern-replace 'grep' 'rg'
 modern-replace 'nano' 'micro'
 modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
-modern-replace 'pacman' 'paru --color always --needed' 'pacman --color always --needed'
+modern-replace 'pacman' 'paru' 'pacman --color always --needed' 'paru --color always --needed'
 
 # for macOS
 modern-replace 'tar' 'gtar'
