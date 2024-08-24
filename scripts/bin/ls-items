@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+# ls-items <dir>: Lists the number of files in each sub-directory of the target dir
+import argparse
+from pathlib import Path
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Lists the number of files in each sub-directory of the target dir")
+    parser.add_argument("dir", help="The target directory", default=".", nargs="?")
+    args = parser.parse_args()
+    
+    target = Path(args.dir)
+    if not target.is_dir():
+        print(f"{target} is not a directory")
+        
+    for subdir in target.iterdir():
+        if subdir.is_dir():
+            print(f"{subdir.name}: {len(list(subdir.iterdir()))}")
+    
