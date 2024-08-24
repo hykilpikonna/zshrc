@@ -49,11 +49,13 @@ if [ -f "/etc/arch-release" ]; then
 
     # Free up cache
     clean-cache() {
-        yay -Sc --noconfirm
-        sudo pacman -Sc --noconfirm
-        yarn cache clean
-        conda clean -a
-        pip cache remove '*'
+        has yay && yay -Sc --noconfirm
+        has pacman && sudo pacman -Sc --noconfirm
+        has pacman && rm -rf /var/cache/pacman
+        has paru && rm -rf "$HOME/.cache/paru"
+        has yarn && yarn cache clean
+        has conda && conda clean -a
+        has pip && pip cache remove '*'
     }
 
     # Command-not-found install prompt
