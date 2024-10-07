@@ -80,12 +80,17 @@ def get_hardware_info(cpu=False, gpu=False):
             gpu_str = re.sub(r'lite hash rate', 'LHR', gpu_str, flags=re.IGNORECASE)
         
         # Remove manufacturer keywords
-        kw = ['Intel', 'AMD', 'NVIDIA', 'GeForce', 'Radeon', 'Core', '(R)', 'Series', 'Processor', 'Graphics', 'GPU', 'CPU']
-        for k in kw:
-            cpu_str = cpu_str.replace(k, '')
-            gpu_str = gpu_str.replace(k, '')
+        kw = ['Intel', 'AMD', 'NVIDIA', 'GeForce', 'Radeon', '(R)', 'Series', 'Processor', 'Graphics', 'GPU', 'CPU', ',', 'Inc', '.', 'Family']
+        def norm(str) -> str:
+            for k in kw:
+                str = str.replace(k, '')
+            while '  ' in str:
+                str = str.replace('  ', ' ')
+            # Remove repeated words
+            str = ' '.join(dict.fromkeys(str.split()))
+            return str.strip()
 
-        return " ".join(v for v in [cpu_str.strip(), gpu_str.strip()] if v)
+        return " ".join(v for v in [norm(cpu_str), norm(gpu_str)] if v)
     except Exception as e:
         return "Unable to fetch hardware info"
 
