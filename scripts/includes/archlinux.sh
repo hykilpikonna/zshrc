@@ -1,8 +1,8 @@
 if command -v pacman &> /dev/null; then
+    alias upgrade='sudo pacman -Syu'
     alias install='pacman -Sy'
     alias uninstall='pacman -Rsn'
-    alias listunused='pacman -Qdtq'
-    alias aurinst='yay -S'
+    alias list-unused='pacman -Qdtq'
 fi
 
 if [ -f "/etc/arch-release" ]; then
@@ -25,24 +25,6 @@ if [ -f "/etc/arch-release" ]; then
     # GPG Init
     alias gpg-init="echo 'hi' | gpg --status-fd=2 -bsau E289FAC0DA92DD2B"
     alias ibus-init="ibus-daemon -drxR"
-
-    CONDA_PATH="/opt/miniconda3"
-
-    # Conda initialize
-    conda-init() {
-        # !! Contents within this block are managed by 'conda init' !!
-        __conda_setup="$("$CONDA_PATH/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
-        if [ $? -eq 0 ]; then
-            eval "$__conda_setup"
-        else
-            if [ -f "$CONDA_PATH/etc/profile.d/conda.sh" ]; then
-                . "$CONDA_PATH/etc/profile.d/conda.sh"
-            else
-                export PATH="$CONDA_PATH/bin:$PATH"
-            fi
-        fi
-        unset __conda_setup
-    }
 
     # Remove orphan packages
     alias autoremove='yay -c'
