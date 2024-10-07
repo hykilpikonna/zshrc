@@ -80,7 +80,7 @@ def get_hardware_info(cpu=False, gpu=False):
             gpu_str = re.sub(r'lite hash rate', 'LHR', gpu_str, flags=re.IGNORECASE)
         
         # Remove manufacturer keywords
-        kw = ['Intel', 'AMD', 'NVIDIA', 'GeForce', 'Radeon', '(R)', 'Series', 'Processor', 'Graphics', 'GPU', 'CPU', ',', 'Inc', '.', 'Family']
+        kw = ['Intel', 'AMD', 'NVIDIA', 'GeForce', 'Radeon', '(R)', 'Series', 'Processor', 'Graphics', 'GPU', 'CPU', ',', 'Inc', ' .', '. ', 'Family']
         def norm(str) -> str:
             for k in kw:
                 str = str.replace(k, '')
