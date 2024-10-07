@@ -115,6 +115,10 @@ alias valgrin="valgrind \
   --track-origins=yes \
   --vgdb=no"
 
+set-java() {
+    eval "$(switch-java "$1")"
+}
+
 upload-daisy() {
     file="$@"
     curl -u azalea -F "path=@$file" "https://daisy-ddns.hydev.org/upload\?path\=/"
