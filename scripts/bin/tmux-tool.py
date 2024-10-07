@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
+from pathlib import Path
 import re
+from shutil import which
 import subprocess
 import argparse
 from datetime import datetime
@@ -58,18 +60,20 @@ def get_ip_address():
         return None
 
 def get_hardware_info(cpu=False, gpu=False):
+    # Check if command exist
+    fastfetch = which('fastfetch') or Path(__file__).parent / 'fastfetch'
     try:
         cpu_str, gpu_str = '', ''
         if cpu:
             # Fetch CPU info
-            cpu_info = subprocess.run(['fastfetch', '--logo', 'none', '-s', 'CPU'], stdout=subprocess.PIPE)
+            cpu_info = subprocess.run([fastfetch, '--logo', 'none', '-s', 'CPU'], stdout=subprocess.PIPE)
             cpu_str = cpu_info.stdout.decode().strip()
             # cpu_str = cpu_str.split(':', 1)[1].split('@', 1)[0].strip()
             cpu_str = cpu_str.split(':', 1)[1].strip()
 
         if gpu:
             # Fetch GPU info
-            gpu_info = subprocess.run(['fastfetch', '--logo', 'none', '-s', 'GPU'], stdout=subprocess.PIPE)
+            gpu_info = subprocess.run([fastfetch, '--logo', 'none', '-s', 'GPU'], stdout=subprocess.PIPE)
             gpu_str = gpu_info.stdout.decode().strip()
             gpu_str = gpu_str.split(':', 1)[1].strip()
             
