@@ -67,14 +67,14 @@ def get_hardware_info(cpu=False, gpu=False):
         if cpu:
             # Fetch CPU info
             cpu_info = subprocess.run([fastfetch, '--logo', 'none', '-s', 'CPU'], stdout=subprocess.PIPE)
-            cpu_str = cpu_info.stdout.decode().strip()
+            cpu_str = cpu_info.stdout.decode().splitlines()[0].strip()
             # cpu_str = cpu_str.split(':', 1)[1].split('@', 1)[0].strip()
             cpu_str = cpu_str.split(':', 1)[1].strip()
 
         if gpu:
             # Fetch GPU info
             gpu_info = subprocess.run([fastfetch, '--logo', 'none', '-s', 'GPU'], stdout=subprocess.PIPE)
-            gpu_str = gpu_info.stdout.decode().strip()
+            gpu_str = gpu_info.stdout.decode().splitlines()[0].strip()
             gpu_str = gpu_str.split(':', 1)[1].strip()
             
             gpu_str = re.sub(r'lite hash rate', 'LHR', gpu_str, flags=re.IGNORECASE)
