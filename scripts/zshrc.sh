@@ -161,6 +161,11 @@ install-package() {
     fi
 }
 
+ttmp() {
+    mkdir -p /tmp/tmp
+    cd /tmp/tmp || return
+}
+
 # Set EDITOR
 if has micro; then 
     export EDITOR="micro"
