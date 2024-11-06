@@ -193,6 +193,15 @@ gradle() {
     fi
 }
 
+# Block the 7z d command becuase it's dangerous
+7z() {
+    if [[ "$1" == "d" ]]; then
+        echo "7z d is blocked. It doesn't stand for decompress, it stands for delete."
+    else
+        command 7z "$@"
+    fi
+}
+
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
     sudo find . -type d -exec chmod 755 {} \;
