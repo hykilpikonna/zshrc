@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+level="${level:-15}"
+
+cores=$(python3 -c "import os; print(os.cpu_count())")
+echo "Starting ZSTD compression with $cores cores and level $level"
+# "$cmd" -I "zstd -T$cores -$level" --checkpoint=.1024 --totals --totals=SIGUSR1 -c -f "$@"
+7z a -m0=zstd -mx"$level" -mmt"$cores" "$@"
