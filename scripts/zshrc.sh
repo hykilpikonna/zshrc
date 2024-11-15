@@ -6,6 +6,16 @@ setopt SHARE_HISTORY
 
 BASEDIR="$(dirname "$(dirname "$0")")"
 
+# Bash-like shortcuts
+bindkey '^[[1;5C' forward-word  # Ctrl + Right
+bindkey '^[[1;5D' backward-word # Ctrl + Left
+# ^w for delete backward until a space
+# ^backspace for delete backward until a word delimiter
+autoload -U select-word-style
+select-word-style bash
+bindkey '^W' backward-delete-word
+bindkey '^H' backward-kill-word
+
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
 modern-replace() {
@@ -33,6 +43,8 @@ modern-replace 'nano' 'micro'
 modern-replace 'curl' 'curlie'
 # modern-replace 'tree' 'broot'
 modern-replace 'pacman' 'paru' 'pacman --color always' 'paru --color always'
+modern-replace 'vi' 'nvim'
+modern-replace 'vim' 'nvim'
 
 # for macOS
 modern-replace 'tar' 'gtar'
@@ -207,7 +219,7 @@ reset-permissions-dangerous() {
     sudo find . -type d -exec chmod 755 {} \;
     sudo find . -type f -exec chmod 644 {} \;
 }
-
+ 
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
