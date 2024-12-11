@@ -109,8 +109,20 @@ alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 alias mkfs.fat32="sudo mkfs.fat -F 32"
 alias btrfs-fs-progress="sudo watch -d sudo btrfs fi us"
 alias btrfs-balance-progress="sudo watch -d btrfs balance status"
+
+# Rsync aliases by 依云, for synching (keep hard links, ACL, atime, xattr, etc)
+# Deletes files in destination that are not in source
 alias xcp="rsync -aviHAXKhS --one-file-system --partial --info=progress2 --atimes --open-noatime --delete --exclude='*~' --exclude=__pycache__"
 alias xcpz="xcp --compress-choice=zstd --compress-level=3 --checksum-choice=xxh3"
+alias xmv="xcp --remove-source-files"
+alias xmvz="xcpz --remove-source-files"
+
+# Rsync aliases by Azalea, for file transfer (do not keep hard links, ACL, atime, etc.)
+# Will not delete files in destination that are not in source
+alias rcp="rsync -avihS --partial --info=progress2 --exclude='*~' --exclude=__pycache__"
+alias rcpz="rcp --compress --compress-level=3 --checksum-choice=xxh3"
+alias rmv="rcp --remove-source-files"
+alias rmvz="rcpz --remove-source-files"
 
 alias tmuxs="tmux new-session -s"
 alias tmuxr="tmux attach-session -t"
