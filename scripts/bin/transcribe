@@ -9,7 +9,7 @@ from faster_whisper import WhisperModel, BatchedInferencePipeline
 
 
 # model_name = 'deepdml/faster-whisper-large-v3-turbo-ct2'
-model_name = 'distil-large-v3'
+model_name = 'large-v3'
 # model_name = 'medium.en'
 m = WhisperModel(model_name, device="cuda", compute_type="float16")
 model = BatchedInferencePipeline(model=m)
@@ -54,7 +54,7 @@ def main():
     parser = argparse.ArgumentParser(description="Transcribe audio from a video file and generate an SRT file.")
     # parser.add_argument("input_file", help="Path to the video file for transcription")
     parser.add_argument("input_file", nargs="+", help="Path to the video file for transcription")
-    parser.add_argument("-l", "--lang", default="en", help="Language code for transcription")
+    parser.add_argument("-l", "--lang", default=None, help="Language code for transcription (e.g. 'en')")
     args = parser.parse_args()
     for file in args.input_file:
         transcribe(Path(file), args.lang)
