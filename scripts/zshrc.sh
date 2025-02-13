@@ -78,7 +78,8 @@ alias ports='netstat -tulpn | grep LISTEN'
 alias suports='sudo netstat -tulpn | grep LISTEN'
 alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
 
-alias cls='clear'
+alias clr='reset'
+alias please='sudo'
 
 alias tar-create='tar -cvf'
 alias tar-expand='tar -zxvf'
