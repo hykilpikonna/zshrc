@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+import os
+from pathlib import Path
+from google import genai
+from google.genai import types
+
+if not (api_key := os.environ.get("GENAI_API_KEY")):
+    print("Please set the GENAI_API_KEY environment variable to your Google GenAI API key.")
+    exit(1)
+
+client = genai.Client(api_key=api_key)
+
+
+def generate(file: Path): 
+    ouf = file.with_suffix(".txt")
+    if ouf.exists():
+        return
+    
+    model = "gemini-2.0-flash-lite"
+    contents = [
+        types.Content(
+            role="user",
+            parts=[
+                types.Part.from_bytes(data=file.read_bytes(), mime_type="image/jpeg"),
+                types.Part.from_text(text="""Please transcribe this image"""),
+            ],
+        ),
+    ]
+    generate_content_config = types.GenerateContentConfig(
+        temperature=1,
+        top_p=0.95,
+        top_k=40,
+        max_output_tokens=8192,
+        response_mime_type="text/plain",
+    )
+
+    resp = client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=generate_content_config,
+    )
+    print(resp.text)
+    ouf.write_text(resp.text)
+
+
+if __name__ == "__main__":
+    # Loop through all images in the current directory
+    for file in Path().glob("*.jpg"):
+        generate(file)
