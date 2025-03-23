@@ -308,7 +308,10 @@ setproxy() {
     full="$addr:$port"
     export https_proxy="http://$full"
     export http_proxy="http://$full"
-    export all_proxy="socks5://$full"
+    export all_proxy="http://$full"
+    export HTTPS_PROXY="http://$full"
+    export HTTP_PROXY="http://$full"
+    export ALL_PROXY="http://$full"
     color "&aUsing proxy! $full&r"
 
     prompt-set 30 "🌎 "
