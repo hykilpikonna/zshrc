@@ -65,6 +65,23 @@ function cropv($file, $len)
     ffmpeg -i $file -filter:v "crop=$(len):1440:$([math]::floor((2560-$len)/2)):0" out.mp4
 }
 
+function mp3v0 {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$inputFile
+    )
+
+    # Extract file name without extension
+    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($inputFile)
+
+    # Set output filename
+    $outputFile = "$baseName.mp3"
+
+    # Run ffmpeg with specified arguments
+    ffmpeg -i "$inputFile" -c:a libmp3lame -q:a 0 "$outputFile"
+}
+
+
 # ls coloring
 if (Get-Module -ListAvailable -Name PSColor) {
     Import-Module PSColor
