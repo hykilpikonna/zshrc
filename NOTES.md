@@ -1,8 +1,18 @@
-## Notes to myself
+# Notes to myself
 
 ```sh
 bash <(curl -sL hydev.org/zsh)
 curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys
+```
+
+## Mamba
+
+```sh
+mamba-install
+
+Micromamba binary folder? [~/.local/bin]
+Init shell (zsh)? [Y/n] n
+Configure conda-forge? [Y/n] y
 ```
 
 ## Powershell
