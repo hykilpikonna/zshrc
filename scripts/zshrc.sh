@@ -328,6 +328,11 @@ ssh() {
     fi
 }
 
+# SSH Tmux
+if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
+  tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
+fi
+
 # Subtitle generation
 subtitle() {
     CUDA_VISIBLE_DEVICES=1 auto_subtitle --srt_only True --model large "$1"
