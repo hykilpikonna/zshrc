@@ -1,6 +1,6 @@
 # Mamba (conda replacement)
 alias mamba-install="zsh <(curl -L micro.mamba.pm/install.sh)"
-export MAMBA_ROOT_PREFIX="$HOME/.conda"
+export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-$HOME/.conda}"
 
 # Mamba initialize function
 mamba-init()
