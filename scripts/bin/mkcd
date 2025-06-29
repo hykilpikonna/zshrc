@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Mkdir and cd into a directory
+# Usage: mkcd <directory_name>
+set -euo pipefail
+if [[ $# -ne 1 ]]; then
+    echo "Usage: mkcd <directory_name>"
+    exit 1
+fi
+
+DIR="$1"
+if [[ -d "$DIR" ]]; then
+    echo "Directory '$DIR' already exists, cding into it."
+else
+    echo "Creating directory '$DIR'."
+    mkdir -p "$DIR"
+fi
+
+cd "$DIR" || { echo "Failed to change directory to '$DIR'"; exit 1; }
+echo "Changed directory to '$DIR'."
+ls -la
