@@ -1,4 +1,4 @@
 channels:
   - conda-forge
-  - defaults
+  - nodefaults
 channel_priority: flexible
