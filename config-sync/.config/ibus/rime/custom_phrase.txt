@@ -77,6 +77,8 @@ x̅	xbar	1
 —	emdahs	1
 —	emdash	1
 
+猫猫大部分时间都在睡觉	msj	1
+
 trans	trans	1
 hy.gui@mail.utoronto.ca	ut	1
 1007958266	ut	2
