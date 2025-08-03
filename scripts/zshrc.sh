@@ -14,7 +14,14 @@ bindkey '^[[1;5D' backward-word # Ctrl + Left
 autoload -U select-word-style
 select-word-style bash
 bindkey '^W' backward-delete-word
-bindkey '^H' backward-kill-word
+bindkey '^H' backward-kill-word 
+
+export PATH="$SCR/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
+# Includes
+for f in "$SCR/includes/"*.*sh; do source "$f"; done
+for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
 
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
@@ -242,10 +249,6 @@ reset-permissions-dangerous() {
     sudo find . -type d -exec chmod 755 {} \;
     sudo find . -type f -exec chmod 644 {} \;
 }
- 
-export PATH="$SCR/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/.cargo/bin:$PATH"
 
 # Lisp wrapper
 lisp() {
@@ -296,10 +299,6 @@ color() {
     echo "$tmp"
 }
 alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
-
-# Includes
-for f in "$SCR/includes/"*.*sh; do source "$f"; done
-for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
 
 # Set proxy
 setproxy() {
