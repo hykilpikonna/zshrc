@@ -16,6 +16,14 @@ select-word-style bash
 bindkey '^W' backward-delete-word
 bindkey '^H' backward-kill-word 
 
+# Silent pushd and popd
+spushd () {
+    pushd "$@" > /dev/null || exit
+}
+spopd () {
+    popd "$@" > /dev/null || exit
+}
+
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
@@ -264,14 +272,6 @@ alias adblan-start="adb tcpip 16523"
 # Add line if it doesn't exist in a file
 addline() {
   grep -qxF "$2" "$1" || echo "$2" >> "$1"
-}
-
-# Silent pushd and popd
-spushd () {
-    pushd "$@" > /dev/null || exit
-}
-spopd () {
-    popd "$@" > /dev/null || exit
 }
 
 # Minecraft coloring
