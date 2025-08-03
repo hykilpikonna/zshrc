@@ -16,39 +16,6 @@ select-word-style bash
 bindkey '^W' backward-delete-word
 bindkey '^H' backward-kill-word
 
-# Modern unix replacements.
-# Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
-modern-replace() {
-    orig_cmd="$1"
-    new_cmd="$2"
-    orig_cmd_with_args="${3:-$1}"
-    new_cmd_with_args="${4:-$2}"
-
-    if command -v "$new_cmd" &> /dev/null; then
-        alias "$orig_cmd=$new_cmd_with_args"
-    else
-        alias "$orig_cmd=$orig_cmd_with_args"
-    fi
-}
-
-modern-replace 'ls' 'eza' 'ls -h --color=auto'
-modern-replace 'df' 'duf' 'df -h'
-modern-replace 'cat' 'bat'
-modern-replace 'man' 'tldr'
-modern-replace 'top' 'btop'
-modern-replace 'ping' 'gping'
-modern-replace 'dig' 'dog'
-modern-replace 'grep' 'rg'
-modern-replace 'nano' 'micro'
-modern-replace 'curl' 'curlie'
-# modern-replace 'tree' 'broot'
-modern-replace 'pacman' 'paru' 'pacman --color always' 'paru --color always'
-modern-replace 'vi' 'nvim'
-modern-replace 'vim' 'nvim'
-
-# for macOS
-modern-replace 'tar' 'gtar'
-
 source "$BASEDIR/plugins/zsh-z.plugin.zsh"
 
 # Initialize fuck
@@ -300,6 +267,39 @@ alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&ee
 # Includes
 for f in "$SCR/includes/"*.*sh; do source "$f"; done
 for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
+
+# Modern unix replacements.
+# Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
+modern-replace() {
+    orig_cmd="$1"
+    new_cmd="$2"
+    orig_cmd_with_args="${3:-$1}"
+    new_cmd_with_args="${4:-$2}"
+
+    if command -v "$new_cmd" &> /dev/null; then
+        alias "$orig_cmd=$new_cmd_with_args"
+    else
+        alias "$orig_cmd=$orig_cmd_with_args"
+    fi
+}
+
+modern-replace 'ls' 'eza' 'ls -h --color=auto'
+modern-replace 'df' 'duf' 'df -h'
+modern-replace 'cat' 'bat'
+modern-replace 'man' 'tldr'
+modern-replace 'top' 'btop'
+modern-replace 'ping' 'gping'
+modern-replace 'dig' 'dog'
+modern-replace 'grep' 'rg'
+modern-replace 'nano' 'micro'
+modern-replace 'curl' 'curlie'
+# modern-replace 'tree' 'broot'
+modern-replace 'pacman' 'paru' 'pacman --color always' 'paru --color always'
+modern-replace 'vi' 'nvim'
+modern-replace 'vim' 'nvim'
+
+# for macOS
+modern-replace 'tar' 'gtar'
 
 # Set proxy
 setproxy() {
