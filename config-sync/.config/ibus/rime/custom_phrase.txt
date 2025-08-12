@@ -25,6 +25,7 @@
 🏳️‍⚧️	trans	2
 🔒	lock	1
 🌚	moon	1
+🥺	pien	1
 ❌	cross	1
 ³	cubed	1
 ▶Decimal	dec	1
