@@ -297,6 +297,7 @@ modern-replace 'curl' 'curlie'
 modern-replace 'pacman' 'paru' 'pacman --color always' 'paru --color always'
 modern-replace 'vi' 'nvim'
 modern-replace 'vim' 'nvim'
+modern-replace 'wget' 'aria2c'
 
 # for macOS
 modern-replace 'tar' 'gtar'
