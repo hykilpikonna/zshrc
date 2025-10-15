@@ -20,6 +20,9 @@ select-word-style bash
 bindkey '^W' backward-delete-word
 bindkey '^H' backward-kill-word
 
+# Early includes
+for f in "$SCR/includes/init/"*.*sh; do source "$f"; done
+
 source "$BASEDIR/plugins/zsh-z.plugin.zsh"
 
 # Initialize fuck
