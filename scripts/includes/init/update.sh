@@ -19,4 +19,4 @@ if [[ "${reslog}" != "" ]] ; then
     fi
 fi
 
-cd -
+cd - &> /dev/null
