@@ -264,10 +264,6 @@ color() {
 }
 alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
 
-# Includes
-for f in "$SCR/includes/"*.*sh; do source "$f"; done
-for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
-
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
 modern-replace() {
@@ -282,6 +278,10 @@ modern-replace() {
         alias "$orig_cmd=$orig_cmd_with_args"
     fi
 }
+
+# Includes
+for f in "$SCR/includes/"*.*sh; do source "$f"; done
+for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
 
 modern-replace 'ls' 'eza' 'ls -h --color=auto'
 modern-replace 'df' 'duf' 'df -h'
