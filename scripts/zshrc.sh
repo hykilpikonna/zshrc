@@ -4,6 +4,10 @@ HISTSIZE=100000
 SAVEHIST=100000
 setopt SHARE_HISTORY
 
+# UTF-8 Support
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 BASEDIR="$(dirname "$(dirname "$0")")"
 
 # Bash-like shortcuts
