@@ -105,6 +105,7 @@ alias tmuxl="tmux list-sessions"
 
 alias catt="echo 🐱"
 alias old-update-ssh-keys="curl -L https://github.com/Hykilpikonna.keys > ~/.ssh/authorized_keys"
+alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
 
 alias tar-kill-progress="watch -n 60 killall tar -SIGUSR1"
 
@@ -180,9 +181,6 @@ if has micro; then
     export EDITOR="micro"
 elif has nano; then
     export EDITOR="nano"
-else
-    install-package micro
-    export EDITOR="micro"
 fi
 
 # Gradle with auto environment detection
@@ -248,32 +246,6 @@ spopd () {
     popd "$@" > /dev/null || exit
 }
 
-# Minecraft coloring
-color() {
-    tmp="$*&r"
-    tmp="${tmp//&0/\033[0;30m}"
-    tmp="${tmp//&1/\033[0;34m}"
-    tmp="${tmp//&2/\033[0;32m}"
-    tmp="${tmp//&3/\033[0;36m}"
-    tmp="${tmp//&4/\033[0;31m}"
-    tmp="${tmp//&5/\033[0;35m}"
-    tmp="${tmp//&6/\033[0;33m}"
-    tmp="${tmp//&7/\033[0;37m}"
-    tmp="${tmp//&8/\033[1;30m}"
-    tmp="${tmp//&9/\033[1;34m}"
-    tmp="${tmp//&a/\033[1;32m}"
-    tmp="${tmp//&b/\033[1;36m}"
-    tmp="${tmp//&c/\033[1;31m}"
-    tmp="${tmp//&d/\033[1;35m}"
-    tmp="${tmp//&e/\033[1;33m}"
-    tmp="${tmp//&f/\033[1;37m}"
-    tmp="${tmp//&r/\033[0m}"
-    newline=$'\n'
-    tmp="${tmp//&n/$newline}"
-    echo "$tmp"
-}
-alias colors="color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'"
-
 # Modern unix replacements.
 # Usage: modern-replace 'orig cmd' 'new cmd' 'orig cmd with args (optional)' 'new cmd with args (optional)'
 modern-replace() {
@@ -303,7 +275,6 @@ modern-replace 'dig' 'dog'
 modern-replace 'grep' 'rg'
 modern-replace 'nano' 'micro'
 modern-replace 'curl' 'curlie'
-# modern-replace 'tree' 'broot'
 modern-replace 'pacman' 'paru' 'pacman --color always' 'paru --color always'
 modern-replace 'vi' 'nvim'
 modern-replace 'vim' 'nvim'
