@@ -1,4 +1,4 @@
-spushd $SCR
+cd $SCR
 
 prefix="&7[&3zshrc&7]"
 
@@ -19,4 +19,4 @@ if [[ "${reslog}" != "" ]] ; then
     fi
 fi
 
-spopd
+cd -
