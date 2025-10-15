@@ -1,5 +1,6 @@
 {
     "autosu": true,
+    "basename": true,
     "clipboard": "terminal",
     "colorscheme": "azalea",
     "diffgutter": true,
@@ -12,7 +13,6 @@
     "scrollbar": true,
     "scrollbarchar": " ",
     "scrollmargin": 2,
-    "basename": true,
     "statusformatl": " $(filename) $(modified)($(line),$(col))$(status.paste) / ft:$(opt:filetype) / $(opt:fileformat) / $(opt:encoding)",
     "statusformatr": "Micro Editor 🐈  Help: ^G / Quit: ^Q "
 }
