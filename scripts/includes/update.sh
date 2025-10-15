@@ -11,7 +11,7 @@ if [[ "${reslog}" != "" ]] ; then
     color "$prefix &cYour zshrc is outdated. Automatically updating..."
 
     # Try to pull
-    if git pull; then
+    if git stash & git pull & git stash pop; then
         . $SCR/zshrc.sh
         color "$prefix &aUpdated!"
     else
