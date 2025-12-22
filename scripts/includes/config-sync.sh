@@ -55,7 +55,8 @@ check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
 check-config "$HOME/.config/tmux" "$CFGSYNC/.config/tmux"
 check-config "$HOME/.ipython/profile_default/startup/ipython_init.py" "$CFGSYNC/ipython_init.py"
 # check-config "$HOME/.config/ibus/rime" "$CFGSYNC/.config/ibus/rime"
-# check-config "$HOME/.local/share/fcitx5/rime" "$CFGSYNC/.config/ibus/rime"
+check-config "$HOME/.local/share/fcitx5/rime" "$CFGSYNC/.config/ibus/rime"
+check-config "$HOME/.local/share/fcitx5/themes" "$CFGSYNC/.config/fcitx5/themes"
 
 # macOS only
 if [[ $OSTYPE == 'darwin'* ]]; then
