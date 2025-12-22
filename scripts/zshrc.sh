@@ -283,6 +283,9 @@ modern-replace 'wget' 'aria2c'
 # for macOS
 modern-replace 'tar' 'gtar'
 
+# for ArchLinux compat
+modern-replace 'code' 'visual-studio-code-electron'
+
 # Set proxy
 setproxy() {
     addr=${1:-127.0.0.1}
