@@ -1,0 +1,126 @@
+## Global Configuration Options
+
+# Set maximum number of expired notifications to keep in the history buffer to n.
+#max-history=5
+
+# Sorts incoming notifications by time and/or priority in ascending(+) or descending(-) order.
+#sort=-time
+
+# Includes a config at the specified path.
+#include=
+
+## Binding Options
+
+# Performs the action when the left pointer button is pressed.
+#on-button-left=invoke-default-action
+
+# Performs the action when the middle pointer button is pressed.
+#on-button-middle=none
+
+# Performs the action when the right pointer button is pressed.
+#on-button-right=dismiss
+
+# Performs the action when tapped via a touch device.
+#on-touch=dismiss
+
+# Performs the action when the notification is opened.
+#on-notify=none
+
+## Style Options
+
+# Set font to font, as a Pango font description.
+font="LXGW WenKai" 10
+
+# Set background color to color.
+background-color=#fee3e4
+
+# Set text color to color.
+text-color=#000000
+
+# Set width of notification popups.
+width=400
+
+# Set maximum height of notification popups.
+height=100
+
+# Set outer-margin of each edge.
+#outer-margin=0
+
+# Set margin of each edge.
+margin=14
+
+# Set padding on each side.
+padding=10
+
+# Set popup border size until pixels.
+border-size=4
+
+# Set popup border color to color.
+border-color=#ecd3d480
+
+# Set popup corner radius on each side.
+border-radius=8
+
+# Set popup progress indicator color.
+progress-color=over #f5c2e7
+
+# Show icons in notifications.
+#icons=1
+
+# Set maximum icon size to px pixels.
+max-icon-size=48
+
+# Paths to search for icons.
+#icon-path=
+
+# Position of the icon relative to the displayed text.
+#icon-location=left
+
+# Sets icon corner radius to px pixels.
+#icon-border-radius=0
+
+# If 1, enable Pango markup.
+#markup=1
+
+# Applications may request an action to be associated with activating a notification.
+#actions=1
+
+# If set, mako will save notifications that have reached their timeout into the history buffer.
+#history=1
+
+# Set notification format string to format.
+#format=<b>%s</b>\n%b
+
+# Set notification text alignment.
+#text-alignment=left
+
+# Set the default timeout to timeout in milliseconds.
+default-timeout=30000
+
+# If set, mako will ignore the expire timeout sent by notifications.
+#ignore-timeout=0
+
+# A comma-separated list of criteria fields that will be compared to other visible notifications to determine if this one should form a group.
+#group-by=none
+
+# Set maximum number of visible notifications to n.
+#max-visible=5
+
+# Show notifications on the specified output.
+#output=
+
+# Arrange mako at the specified layer, relative to normal windows.
+#layer=top
+
+# Show notifications at the specified position on the output.
+#anchor=top-right
+
+## Criteria-only Style Options
+
+# Whether this notification should be invisible even if it is above the max-visible cutoff.
+#invisible=0
+
+## User Criteria
+
+[urgency=high]
+border-color=#ea76cb

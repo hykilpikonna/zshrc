@@ -50,6 +50,7 @@ check-config "$HOME/.nanorc" "$CFGSYNC/nanorc"
 check-config "$HOME/.condarc" "$CFGSYNC/.condarc"
 check-config "$HOME/.java/.userPrefs/com/cburch/logisim/prefs.xml" "$CFGSYNC/.java/.userPrefs/com/cburch/logisim/prefs.xml"
 check-config "$HOME/.config/micro" "$CFGSYNC/.config/micro"
+check-config "$HOME/.config/mako" "$CFGSYNC/.config/mako"
 
 check-config "$HOME/.config/kitty" "$CFGSYNC/.config/kitty"
 check-config "$HOME/.config/tmux" "$CFGSYNC/.config/tmux"
