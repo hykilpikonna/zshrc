@@ -221,6 +221,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 if [[ "$(uname -s)" == "Linux" ]] && [[ "$(uname -m)" == "x86_64" ]]; then
     export PATH="$SCR/bin/linux-x64:$PATH"
 fi
+export PATH="$PATH:."
 
 # Lisp wrapper
 lisp() {
