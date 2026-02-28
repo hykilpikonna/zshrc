@@ -287,6 +287,14 @@ modern-replace 'tar' 'gtar'
 # for ArchLinux compat
 modern-replace 'code' 'visual-studio-code-electron'
 
+# If podman exists and docker doesn't exist, alias docker=podman
+if ! command -v docker &> /dev/null && command -v podman &> /dev/null; then
+    alias docker='podman'
+    if command -v podman-compose &> /dev/null; then
+        alias docker-compose='podman-compose'
+    fi
+fi
+
 # Set proxy
 setproxy() {
     addr=${1:-127.0.0.1}
