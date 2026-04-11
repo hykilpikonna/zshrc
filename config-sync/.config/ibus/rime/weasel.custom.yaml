@@ -1,13 +1,48 @@
-customization:
-  distribution_code_name: Weasel
-  distribution_version: 0.14.3.0
-  generator: "Weasel::UIStyleSettings"
-  modified_time: "Thu May 25 06:14:31 2023"
-  rime_version: 1.8.5
 patch:
   style:
-    color_font: true
+    antialias_mode: default
+    ascii_tip_follow_cursor: false
+    candidate_abbreviate_length: 0
+    click_to_capture: false
     color_scheme: steam
+    comment_font_face: "Microsoft YaHei"
+    comment_font_point: 14
+    display_tray_icon: false
     font_face: "LXGW WenKai"
+    font_point: 14
+    fullscreen: false
+    hover_type: none
+    inline_preedit: false
+    label_font_face: "Microsoft YaHei"
+    label_font_point: 14
+    label_format: "%s."
+    layout:
+      align_type: center
+      baseline: 0
+      border_width: 3
+      candidate_spacing: 5
+      corner_radius: 4
+      hilite_padding: 2
+      hilite_spacing: 4
+      linespacing: 0
+      margin_x: 12
+      margin_y: 12
+      max_height: 0
+      max_width: 0
+      min_height: 0
+      min_width: 160
+      round_corner: 4
+      shadow_offset_x: 4
+      shadow_offset_y: 4
+      shadow_radius: 0
+      spacing: 10
+    mark_text: ""
+    paging_on_scroll: false
+    preedit_type: composition
+    vertical_auto_reverse: false
+    vertical_text: false
+    vertical_text_left_to_right: false
+    vertical_text_with_wrap: false
+    color_font: true
     horizontal: true
     show_notifications_when: always
