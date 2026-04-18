@@ -290,7 +290,7 @@ modern-replace 'code' 'visual-studio-code-electron'
 # If podman binary exists and docker binary doesn't exist, alias docker=podman
 if (( ! $+commands[docker] && $+commands[podman] )); then
     alias docker='podman'
-    if command -v podman-compose &> /dev/null; then
+    if (( $+commands[podman-compose] )); then
         alias docker-compose='podman-compose'
     fi
 fi
