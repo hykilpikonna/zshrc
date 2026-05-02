@@ -43,6 +43,8 @@ CFGSYNC="$SCR/../config-sync"
 
 # Sync SSH Config
 check-config $HOME/.ssh/config $CFGSYNC/ssh-config
+check-config $HOME/.ssh/rc $CFGSYNC/ssh-rc
+chmod +x $CFGSYNC/ssh-rc
 
 # Check nanorc includes
 # check-inject "$HOME/.nanorc" "include $SCR/../config-sync/nanorc"

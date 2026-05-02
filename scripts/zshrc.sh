@@ -183,6 +183,18 @@ elif has nano; then
     export EDITOR="nano"
 fi
 
+# Use the stable SSH agent socket maintained by ~/.ssh/rc inside SSH/tmux sessions.
+if [[ -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]]; then
+    if [[ -n "$SSH_AUTH_SOCK" && "$SSH_AUTH_SOCK" != "$HOME/.ssh/current_agent.sock" && -S "$SSH_AUTH_SOCK" ]]; then
+        mkdir -p "$HOME/.ssh"
+        ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/current_agent.sock"
+    fi
+
+    if [[ -S "$HOME/.ssh/current_agent.sock" ]]; then
+        export SSH_AUTH_SOCK="$HOME/.ssh/current_agent.sock"
+    fi
+fi
+
 # Gradle with auto environment detection
 if [[ -z $GRADLE ]] && command -v 'gradle' &> /dev/null; then
     GRADLE="$(which gradle)"
