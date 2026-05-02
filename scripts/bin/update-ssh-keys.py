@@ -47,19 +47,26 @@ def normalize_key(key: str) -> str:
     return ' '.join(key.split(' ')[:2])
 
 
+def is_github_key(key: str) -> bool:
+    parts = key.split()
+    return len(parts) >= 3 and parts[2].endswith('@github')
+
+
 def update_ssh_keys():
     all_keys = list(fetch_all_keys())
     normalized_keys = {normalize_key(k) for k in all_keys}
 
     existing_keys = set(KEYS_PATH.read_text('utf-8').strip().splitlines()) \
         if KEYS_PATH.is_file() else set()
+    existing_normalized_keys = {normalize_key(k) for k in existing_keys}
     for k in existing_keys:
-        if normalize_key(k) not in normalized_keys:
+        if normalize_key(k) not in normalized_keys and not is_github_key(k):
             all_keys.append(k)
 
-    len_diff = len(all_keys) - len(existing_keys)
-    if len_diff > 0:
-        printc(f"&aSSH Keys Updated! Added {len_diff} keys")
+    len_added = len([k for k in all_keys if normalize_key(k) not in existing_normalized_keys])
+    len_removed = len([k for k in existing_keys if is_github_key(k) and normalize_key(k) not in normalized_keys])
+    if len_added > 0 or len_removed > 0:
+        printc(f"&aSSH Keys Updated! Added {len_added} keys, removed {len_removed} revoked GitHub keys")
 
     KEYS_PATH.write_text('\n'.join(all_keys))
 
