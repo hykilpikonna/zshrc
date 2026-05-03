@@ -1,11 +1,45 @@
-if [[ -n "$ZSHRC_UPDATING" ]]; then
-    return
+if [[ -z "$ZSHRC_UPDATE_ASYNC_CHILD" && -z "$ZSHRC_UPDATE_SYNC" ]]; then
+    _zshrc_start_async_update() {
+        if (( $+functions[add-zsh-hook] )); then
+            add-zsh-hook -d precmd _zshrc_start_async_update 2>/dev/null
+        fi
+        (
+            export ZSHRC_UPDATE_ASYNC_CHILD=1
+            export SCR
+            export PATH="$SCR/bin:$PATH"
+            exec zsh -f "$SCR/includes/init/update.sh"
+        ) &!
+        unset -f _zshrc_start_async_update 2>/dev/null
+    }
+
+    if [[ -o interactive ]]; then
+        autoload -Uz add-zsh-hook
+        add-zsh-hook -d precmd _zshrc_start_async_update 2>/dev/null
+        add-zsh-hook precmd _zshrc_start_async_update
+    else
+        _zshrc_start_async_update
+    fi
+
+    return 0 2>/dev/null || exit 0
 fi
 
-cd "$SCR" || return
+old_pwd="$PWD"
+cd "$SCR" || { cd "$old_pwd" 2>/dev/null; return 0 2>/dev/null || exit 0; }
+export PATH="$SCR/bin:$PATH"
 
 prefix="&7[&3zshrc&7]"
 remote_ref="${ZSHRC_UPDATE_REF:-origin/master}"
+lock_dir="$SCR/.git/zshrc-update.lock"
+
+if ! mkdir "$lock_dir" 2>/dev/null; then
+    cd "$old_pwd" 2>/dev/null
+    return 0 2>/dev/null || exit 0
+fi
+_zshrc_update_cleanup() {
+    rmdir "$lock_dir" 2>/dev/null
+    cd "$old_pwd" 2>/dev/null
+}
+trap _zshrc_update_cleanup EXIT INT TERM
 
 _zshrc_stash_created=0
 _zshrc_stash_if_needed() {
@@ -35,8 +69,7 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
         _zshrc_stash_if_needed
         if git reset --hard "$remote_ref" && git submodule update --init --recursive --depth 1; then
             _zshrc_restore_stash
-            ZSHRC_UPDATING=1 . "$SCR/zshrc.sh"
-            color "$prefix &aUpdated after history rewrite!"
+            color "$prefix &aUpdated after history rewrite! Open a new shell to use the latest zshrc."
         else
             color "$prefix &cUpdate failed!"
         fi
@@ -51,8 +84,7 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
             _zshrc_stash_if_needed
             if git merge --ff-only "$remote_ref" && git submodule update --init --recursive --depth 1; then
                 _zshrc_restore_stash
-                ZSHRC_UPDATING=1 . "$SCR/zshrc.sh"
-                color "$prefix &aUpdated!"
+                color "$prefix &aUpdated! Open a new shell to use the latest zshrc."
             else
                 color "$prefix &cUpdate failed!"
             fi
@@ -63,5 +95,7 @@ elif [[ -n "$ZSHRC_UPDATE_VERBOSE" ]]; then
 fi
 
 unset -f _zshrc_stash_if_needed _zshrc_restore_stash 2>/dev/null
-unset _zshrc_stash_created remote_ref reslog
-cd - &> /dev/null
+_zshrc_update_cleanup
+trap - EXIT INT TERM
+unset -f _zshrc_update_cleanup 2>/dev/null
+unset _zshrc_stash_created remote_ref reslog lock_dir old_pwd
