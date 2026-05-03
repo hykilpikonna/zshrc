@@ -1,3 +1,7 @@
+if [[ -n "$ZSHRC_UPDATING" ]]; then
+    return
+fi
+
 cd "$SCR" || return
 
 prefix="&7[&3zshrc&7]"
@@ -31,7 +35,7 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
         _zshrc_stash_if_needed
         if git reset --hard "$remote_ref" && git submodule update --init --recursive --depth 1; then
             _zshrc_restore_stash
-            . "$SCR/zshrc.sh"
+            ZSHRC_UPDATING=1 . "$SCR/zshrc.sh"
             color "$prefix &aUpdated after history rewrite!"
         else
             color "$prefix &cUpdate failed!"
@@ -47,7 +51,7 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
             _zshrc_stash_if_needed
             if git merge --ff-only "$remote_ref" && git submodule update --init --recursive --depth 1; then
                 _zshrc_restore_stash
-                . "$SCR/zshrc.sh"
+                ZSHRC_UPDATING=1 . "$SCR/zshrc.sh"
                 color "$prefix &aUpdated!"
             else
                 color "$prefix &cUpdate failed!"
@@ -58,6 +62,6 @@ elif [[ -n "$ZSHRC_UPDATE_VERBOSE" ]]; then
     color "$prefix &cUpdate check failed!"
 fi
 
-unset -f _zshrc_stash_if_needed _zshrc_restore_stash
+unset -f _zshrc_stash_if_needed _zshrc_restore_stash 2>/dev/null
 unset _zshrc_stash_created remote_ref reslog
 cd - &> /dev/null
