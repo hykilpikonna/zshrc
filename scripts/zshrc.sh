@@ -8,6 +8,20 @@ setopt SHARE_HISTORY
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+if [[ $EUID -eq 0 ]]; then
+    ZSHRC_SUDO=""
+else
+    ZSHRC_SUDO="sudo "
+fi
+
+_zshrc_as_root() {
+    if [[ $EUID -eq 0 ]]; then
+        command "$@"
+    else
+        sudo "$@"
+    fi
+}
+
 BASEDIR="$(dirname "$(dirname "$0")")"
 
 # Bash-like shortcuts
@@ -34,9 +48,10 @@ if command -v 'xdg-open' &> /dev/null; then
     alias open="xdg-open"
 fi
 
-# 好用的简写w
+# 好用的简写
 alias ll='ls -l'
 alias l='ll'
+alias llg='ll --git --git-repos'
 alias lla='ls -la'
 alias grep='grep --color'
 alias rm='rm -ir'
@@ -44,46 +59,66 @@ alias mkdirs='mkdir -p'
 
 alias ip='ip -c -h -p'
 alias ipa='ip -br a'
-alias ipj='ip -j'
 alias ipv4="curl https://1.0.0.1/cdn-cgi/trace -4 | grep ip"
 alias ipv6="curl 'https://[2606:4700:4700::1111]/cdn-cgi/trace' -6 | grep ip"
 
-alias ports='netstat -tulpn | grep LISTEN'
-alias suports='sudo netstat -tulpn | grep LISTEN'
-alias findtxt='grep -IHrnws --exclude=\*.log -s '/' -e'
+ports() {
+    if command -v ss &> /dev/null; then
+        ss -tulpn
+    else
+        netstat -tulpn | grep LISTEN
+    fi
+}
+
+suports() {
+    if command -v ss &> /dev/null; then
+        _zshrc_as_root ss -tulpn
+    else
+        _zshrc_as_root netstat -tulpn | grep LISTEN
+    fi
+}
+
+findtxt() {
+    if [[ -z $1 ]]; then
+        echo "Usage: findtxt <pattern>"
+        return 1
+    fi
+
+    local pattern="$*"
+    if command -v rg &> /dev/null; then
+        rg -n --no-messages -- "$pattern" /
+    else
+        grep -IHrnws -s -e "$pattern" /
+    fi
+}
 
 alias clr='reset'
 alias please='sudo'
 
-alias tar-create='tar -cvf'
-alias tar-expand='tar -zxvf'
+if [[ "$IS_SANDBOX" == "1" ]]; then
+    alias codex='codex --dangerously-bypass-approvals-and-sandbox'
+    alias claude='claude --dangerously-skip-permissions'
+fi
 
 alias du='du -h'
-alias sortsize='sort -hr'
-alias dus='du -shc * | sortsize'
-alias dusa='du -hc --max-depth=1 | sortsize'
 
 alias ffmpeg="ffmpeg -hide_banner"
 alias ffprobe="ffprobe -hide_banner"
 
-alias ts='sudo tailscale'
+alias ts="${ZSHRC_SUDO}tailscale"
 alias ts-install='curl -fsSL https://tailscale.com/install.sh | sh'
 
-alias vsucode='sudo code --user-data-dir /root/.config/vscode --no-sandbox'
 alias visucode='EDITOR="code --wait" sudoedit'
 alias gpu-temp='while sleep 1; do clear; gpustat; done'
 alias cpu-temp='s-tui'
-alias mount-external='sudo mount -t cifs //192.168.2.1/external /smb/external -o rw,user=azalea,uid=1000,gid=1000,pass='
 alias compress-json="find -name '*.json' -print0 | parallel --jobs 80% -0 zstd -z -19 -v -f --rm {}"
 
-alias ds-clean="find . -name '.DS_Store' -delete -print"
-alias dotclean="find . -name '._*' -delete -print"
+dotclean() {
+    find . \( -name '.DS_Store' -o -name '._*' \) -delete -print
+}
 alias clean-empty-dir="find . -type d -empty -delete -print"
-alias restart-kwin="DISPLAY=:0 setsid kwin_x11 --replace"
 
-alias mkfs.fat32="sudo mkfs.fat -F 32"
-alias btrfs-fs-progress="sudo watch -d sudo btrfs fi us"
-alias btrfs-balance-progress="sudo watch -d btrfs balance status"
+alias mkfs.fat32="${ZSHRC_SUDO}mkfs.fat -F 32"
 
 # Rsync aliases by 依云, for synching (keep hard links, ACL, atime, xattr, etc)
 # Deletes files in destination that are not in source
@@ -135,6 +170,7 @@ upload-daisy() {
 }
 
 # Automatic sudo
+if [[ $EUID -ne 0 ]]; then
 alias sctl="sudo systemctl"
 alias sctlu="systemctl --user"
 alias jctl="sudo journalctl"
@@ -144,31 +180,15 @@ alias nginx="sudo nginx"
 alias certbot="sudo certbot"
 alias apt="sudo apt"
 alias dpkg="sudo dpkg"
+else
+alias sctl="systemctl"
+alias sctlu="systemctl --user"
+alias jctl="journalctl"
+alias jctlu="journalctl --user-unit"
+fi
 
 has() {
     command -v "$1" &> /dev/null
-}
-
-# Compress 7z zstd <out_file> <in_files...>
-compress-7zst() {
-    if [ -z "$1" ]; then
-        echo "Usage: compress-7zst <out_file> <in_files...>"
-        return
-    fi
-    7z a -m0=zstd -mx17 -mmt35 "$1" "$2"
-}
-
-# Install using system package manager
-install-package() {
-    if has pacman; then
-        pacman -Sy "$1"
-    elif has apt; then
-        apt install "$1"
-    elif has dnf; then
-        dnf install "$1"
-    elif has brew; then
-        brew install "$1"
-    fi
 }
 
 ttmp() {
@@ -223,8 +243,8 @@ gradle() {
 
 # Unix permissions reset (Dangerous! This will make executable files no longer executable)
 reset-permissions-dangerous() {
-    sudo find . -type d -exec chmod 755 {} \;
-    sudo find . -type f -exec chmod 644 {} \;
+    _zshrc_as_root find . -type d -exec chmod 755 {} \;
+    _zshrc_as_root find . -type f -exec chmod 644 {} \;
 }
  
 export PATH="$SCR/bin:$PATH"

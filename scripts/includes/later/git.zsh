@@ -1,7 +1,11 @@
 # Git commit wrapper
 commit() {
-    msg="$@"
-    git commit -m "$msg"
+    if [[ $# -eq 0 ]]; then
+        git commit
+    else
+        msg="$@"
+        git commit -m "$msg"
+    fi
 }
 
 commitall() {
@@ -46,18 +50,22 @@ git() {
 
 # Git environment
 git-env() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag )
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag )
     for i in "${git_commands[@]}"
     do
         alias "$i"="git $i"
     done
     alias 'grm'='git rm'
     alias 'gmv'='git mv'
+    alias 'st'='git status'
+    br() {
+        git checkout -b "$@"
+    }
 }
 git-unenv() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag grm gmv )
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st br )
     for i in "${git_commands[@]}"
     do
-        unalias "$i"
+        unalias "$i" 2>/dev/null || unset -f "$i"
     done
 }
