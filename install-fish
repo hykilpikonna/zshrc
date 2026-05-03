@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    echo "Usage: install-fish [--uninstall]"
+}
+
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+rc_file="$repo_dir/fish/rc.fish"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fish"
+config_file="$config_dir/config.fish"
+
+escaped_rc_file="${rc_file//\\/\\\\}"
+escaped_rc_file="${escaped_rc_file//\"/\\\"}"
+source_line="source \"$escaped_rc_file\""
+legacy_source_line="source $rc_file"
+
+install_fish_rc() {
+    if [[ ! -f "$rc_file" ]]; then
+        echo "Fish rc not found: $rc_file" >&2
+        exit 1
+    fi
+
+    mkdir -p "$config_dir"
+    touch "$config_file"
+
+    if grep -Fxq "$source_line" "$config_file" || grep -Fxq "$legacy_source_line" "$config_file"; then
+        echo "Already installed in $config_file"
+        return
+    fi
+
+    if [[ -s "$config_file" && $(tail -c 1 "$config_file") != "" ]]; then
+        printf '\n' >>"$config_file"
+    fi
+
+    printf '%s\n' "$source_line" >>"$config_file"
+    echo "Installed fish rc in $config_file"
+}
+
+uninstall_fish_rc() {
+    if [[ ! -f "$config_file" ]]; then
+        echo "Fish rc is not installed in $config_file"
+        return
+    fi
+
+    if ! grep -Fxq "$source_line" "$config_file" && ! grep -Fxq "$legacy_source_line" "$config_file"; then
+        echo "Fish rc is not installed in $config_file"
+        return
+    fi
+
+    tmp_file="$(mktemp)"
+    grep -Fxv "$source_line" "$config_file" | grep -Fxv "$legacy_source_line" >"$tmp_file" || true
+    mv "$tmp_file" "$config_file"
+    echo "Uninstalled fish rc from $config_file"
+}
+
+case "${1:-}" in
+    "")
+        install_fish_rc
+        ;;
+    --uninstall)
+        uninstall_fish_rc
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 1
+        ;;
+esac

@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: compress-7zst <7z args...>"
+    exit 1
+fi
 
 level="${level:-15}"
-
 cores=$(python3 -c "import os; print(os.cpu_count())")
+
 echo "Starting ZSTD compression with $cores cores and level $level"
-# "$cmd" -I "zstd -T$cores -$level" --checkpoint=.1024 --totals --totals=SIGUSR1 -c -f "$@"
-7z a -m0=zstd -mx"$level" -mmt"$cores" "$@"
+exec 7z a -m0=zstd -mx"$level" -mmt"$cores" "$@"
