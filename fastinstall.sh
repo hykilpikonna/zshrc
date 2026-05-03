@@ -7,8 +7,8 @@ if [ -d "zshrc" ]; then
   exit -1
 fi
 
-# Clone repo
-git clone "https://github.com/hykilpikonna/zshrc"
+# Clone repo without downloading old history.
+git clone --depth 1 --recurse-submodules --shallow-submodules "https://github.com/hykilpikonna/zshrc"
 
 # Addline function: add a line to a file if the line doesn't already exist
 addline() {
@@ -18,12 +18,6 @@ addline() {
 # Add lines
 addline .zshrc 'SCR="$HOME/zshrc/scripts"'
 addline .zshrc '. $SCR/zshrc.sh'
-
-# Initialize submodules
-pushd zshrc
-git submodule init
-git submodule update
-popd
 
 # Return to the previous directory
 popd
