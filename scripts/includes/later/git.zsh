@@ -1,7 +1,11 @@
 # Git commit wrapper
 commit() {
-    msg="$@"
-    git commit -m "$msg"
+    if [[ $# -eq 0 ]]; then
+        git commit
+    else
+        msg="$@"
+        git commit -m "$msg"
+    fi
 }
 
 commitall() {
@@ -44,18 +48,105 @@ git() {
     fi
 }
 
+git-require-clean() {
+    command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
+
+    if [[ -n "$(command git status --porcelain 2>/dev/null)" ]]; then
+        echo 'Workspace is not clean.'
+        command git status --short
+        return 1
+    fi
+}
+
+git-main-branch() {
+    local remote_head
+    remote_head=$(command git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)
+    if [[ -n "$remote_head" ]]; then
+        echo "${remote_head#origin/}"
+        return 0
+    fi
+
+    local branch
+    for branch in main master trunk develop; do
+        if command git show-ref --verify --quiet "refs/heads/$branch"; then
+            echo "$branch"
+            return 0
+        fi
+        if command git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+            echo "$branch"
+            return 0
+        fi
+    done
+
+    echo 'Could not determine main branch.' >&2
+    return 1
+}
+
+git-update-main() {
+    local main_branch="$1"
+    if [[ -z "$main_branch" ]]; then
+        main_branch=$(git-main-branch) || return 1
+    fi
+
+    command git checkout "$main_branch" || return 1
+    command git pull --ff-only
+}
+
+br() {
+    if [[ $# -ne 1 ]]; then
+        echo 'Usage: br <branch-name>'
+        return 1
+    fi
+
+    local branch="$1"
+    git-require-clean || return 1
+
+    if command git show-ref --verify --quiet "refs/heads/$branch" || command git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+        command git checkout "$branch"
+        return $?
+    fi
+
+    local main_branch
+    main_branch=$(git-main-branch) || return 1
+    git-update-main "$main_branch" || return 1
+    command git checkout -b "$branch"
+}
+
+bru() {
+    local current_branch
+    current_branch=$(command git symbolic-ref --quiet --short HEAD 2>/dev/null)
+    if [[ -z "$current_branch" ]]; then
+        echo 'Could not determine current branch.'
+        return 1
+    fi
+
+    git-require-clean || return 1
+
+    local main_branch
+    main_branch=$(git-main-branch) || return 1
+    if [[ "$current_branch" == "$main_branch" ]]; then
+        echo "Already on $main_branch."
+        return 1
+    fi
+
+    git-update-main "$main_branch" || return 1
+    command git checkout "$current_branch" || return 1
+    command git rebase "$main_branch"
+}
+
 # Git environment
 git-env() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag )
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag )
     for i in "${git_commands[@]}"
     do
         alias "$i"="git $i"
     done
     alias 'grm'='git rm'
     alias 'gmv'='git mv'
+    alias 'st'='git status'
 }
 git-unenv() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show status tag grm gmv )
+    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st )
     for i in "${git_commands[@]}"
     do
         unalias "$i"
