@@ -66,14 +66,11 @@ function __fishrc_prompt_pr_state --description 'Set GitHub PR prompt state for 
     set -g __fishrc_vcs_pr_color "$pr_color"
 end
 
-function __fishrc_git_unpushed_count --description 'Print commits ahead of the git upstream or remotes'
+function __fishrc_git_unpushed_count --description 'Print commits ahead of the git upstream'
     set -l upstream (command git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null)
-    if test -n "$upstream"
-        command git rev-list --count "$upstream"..HEAD 2>/dev/null
-        return
-    end
+    test -n "$upstream"; or return 1
 
-    command git rev-list --count HEAD --not --remotes 2>/dev/null
+    command git rev-list --count "$upstream"..HEAD 2>/dev/null
 end
 
 function __fishrc_git_prompt_state --description 'Set compact git repository state for the prompt'
