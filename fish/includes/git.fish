@@ -61,6 +61,11 @@ function git-require-clean --description 'Require a clean git worktree'
     end
 end
 
+function git-ref-exists --description 'Return success if a git ref exists'
+    test (count $argv) -eq 1; or return 1
+    command git rev-parse --verify --quiet "$argv[1]" >/dev/null 2>&1
+end
+
 function git-main-branch --description 'Print the repository main branch name'
     set -l remote_head (command git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)
     if test -n "$remote_head"
@@ -69,11 +74,11 @@ function git-main-branch --description 'Print the repository main branch name'
     end
 
     for branch in main master trunk develop
-        if command git show-ref --verify --quiet refs/heads/$branch
+        if git-ref-exists refs/heads/$branch
             printf '%s\n' "$branch"
             return 0
         end
-        if command git show-ref --verify --quiet refs/remotes/origin/$branch
+        if git-ref-exists refs/remotes/origin/$branch
             printf '%s\n' "$branch"
             return 0
         end
@@ -102,7 +107,7 @@ function br --description 'Switch to an existing branch, or create one from upda
     set -l branch "$argv[1]"
     git-require-clean; or return 1
 
-    if command git show-ref --verify --quiet "refs/heads/$branch"; or command git show-ref --verify --quiet "refs/remotes/origin/$branch"
+    if git-ref-exists "refs/heads/$branch"; or git-ref-exists "refs/remotes/origin/$branch"
         command git checkout "$branch"
         return $status
     end

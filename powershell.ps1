@@ -525,6 +525,16 @@ function git-require-clean {
     if (-not (Test-GitCleanWorktree)) { return 1 }
 }
 
+function Test-GitRef {
+    param([Parameter(Mandatory = $true)][string]$Ref)
+
+    $gitExe = Get-ExternalCommandPath git
+    if (-not $gitExe) { return $false }
+
+    & $gitExe rev-parse --verify --quiet $Ref *> $null
+    return $LASTEXITCODE -eq 0
+}
+
 function git-main-branch {
     $remoteHead = Invoke-RawGit symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>$null
     if ($LASTEXITCODE -eq 0 -and $remoteHead) {
@@ -532,10 +542,8 @@ function git-main-branch {
     }
 
     foreach ($branch in @('main', 'master', 'trunk', 'develop')) {
-        Invoke-RawGit show-ref --verify --quiet "refs/heads/$branch" *> $null
-        if ($LASTEXITCODE -eq 0) { return $branch }
-        Invoke-RawGit show-ref --verify --quiet "refs/remotes/origin/$branch" *> $null
-        if ($LASTEXITCODE -eq 0) { return $branch }
+        if (Test-GitRef "refs/heads/$branch") { return $branch }
+        if (Test-GitRef "refs/remotes/origin/$branch") { return $branch }
     }
 
     Write-Error 'Could not determine main branch.'
@@ -556,11 +564,7 @@ function br {
     param([Parameter(Mandatory = $true)][string]$Branch)
     if (-not (Test-GitCleanWorktree)) { return 1 }
 
-    Invoke-RawGit show-ref --verify --quiet "refs/heads/$Branch" *> $null
-    $hasLocal = $LASTEXITCODE -eq 0
-    Invoke-RawGit show-ref --verify --quiet "refs/remotes/origin/$Branch" *> $null
-    $hasRemote = $LASTEXITCODE -eq 0
-    if ($hasLocal -or $hasRemote) {
+    if ((Test-GitRef "refs/heads/$Branch") -or (Test-GitRef "refs/remotes/origin/$Branch")) {
         Invoke-RawGit checkout $Branch
         return $LASTEXITCODE
     }

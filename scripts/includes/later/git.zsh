@@ -58,6 +58,11 @@ git-require-clean() {
     fi
 }
 
+git-ref-exists() {
+    [[ $# -eq 1 ]] || return 1
+    command git rev-parse --verify --quiet "$1" >/dev/null 2>&1
+}
+
 git-main-branch() {
     local remote_head
     remote_head=$(command git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)
@@ -68,11 +73,11 @@ git-main-branch() {
 
     local branch
     for branch in main master trunk develop; do
-        if command git show-ref --verify --quiet "refs/heads/$branch"; then
+        if git-ref-exists "refs/heads/$branch"; then
             echo "$branch"
             return 0
         fi
-        if command git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+        if git-ref-exists "refs/remotes/origin/$branch"; then
             echo "$branch"
             return 0
         fi
@@ -101,7 +106,7 @@ br() {
     local branch="$1"
     git-require-clean || return 1
 
-    if command git show-ref --verify --quiet "refs/heads/$branch" || command git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    if git-ref-exists "refs/heads/$branch" || git-ref-exists "refs/remotes/origin/$branch"; then
         command git checkout "$branch"
         return $?
     fi
