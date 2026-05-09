@@ -813,6 +813,16 @@ function Write-PromptText {
     [Console]::Write("$esc[38;2;$($rgb.R);$($rgb.G);$($rgb.B)m$Text$esc[0m")
 }
 
+function Write-PromptAnsiText {
+    param(
+        [AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory = $true)][int]$Code
+    )
+
+    $esc = [char]27
+    [Console]::Write("$esc[$($Code)m$Text$esc[0m")
+}
+
 function global:prompt {
     $hostName = [System.Net.Dns]::GetHostName() -replace '^HyDEV-', ''
     $date = Get-Date
@@ -829,21 +839,13 @@ function global:prompt {
         Write-PromptText ($date.ToString('mm ')) '55CDFC'
     }
 
-    if ($hostName -eq 'HyDEV') {
-        Write-PromptText 'H' '55CDFC'
-        Write-PromptText 'y' 'F7A8B8'
-        Write-PromptText 'D' 'FFFFFF'
-        Write-PromptText 'E' 'F7A8B8'
-        Write-PromptText 'V ' '55CDFC'
-    } else {
-        Write-PromptText "$hostName " '0000FF'
-    }
+    Write-PromptAnsiText "$hostName " 34
 
     if ($global:__PwshRcGitIdSegment) {
-        Write-PromptText $global:__PwshRcGitIdSegment 'FFFF00'
+        Write-PromptAnsiText $global:__PwshRcGitIdSegment 33
     } else {
         $userName = if ($env:USERNAME) { $env:USERNAME } else { $env:USER }
-        Write-PromptText "$userName " 'FFFF00'
+        Write-PromptAnsiText "$userName " 33
     }
 
     if ($global:__PwshRcProxySegment) {
