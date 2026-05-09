@@ -644,7 +644,7 @@ function Get-PromptPrState {
     $prLine = Invoke-ExternalCommand gh pr list --head $Branch --state all --limit 20 --json number,state,updatedAt --jq $jq 2>$null
     $prNumber = $prLine | Select-Object -First 1
     $prState = $prLine | Select-Object -Skip 1 -First 1
-    $prColor = if ($prState -eq 'MERGED') { 'Magenta' } else { 'Green' }
+    $prColor = if ($prState -eq 'MERGED') { 'AF87FF' } else { '00FF00' }
 
     $global:__PwshRcPromptPrCacheKey = $cacheKey
     $global:__PwshRcPromptPrCacheTime = $now
@@ -712,7 +712,7 @@ function Get-GitPromptState {
 
     return [pscustomobject]@{
         Segment = $segment
-        Color = if ($changed) { 'Yellow' } else { 'DarkGray' }
+        Color = if ($changed) { 'FFFF00' } else { '777777' }
         Pr = $pr
     }
 }
@@ -732,7 +732,7 @@ function Get-JjPromptState {
 
     return [pscustomobject]@{
         Segment = "jj:$info"
-        Color = if ($diffSummary) { 'Yellow' } else { 'DarkGray' }
+        Color = if ($diffSummary) { 'FFFF00' } else { '777777' }
         Pr = Get-PromptPrState $bookmark
     }
 }
@@ -767,54 +767,101 @@ function pcolor {
     }
 }
 
+function Convert-PromptRgbColor {
+    param([Parameter(Mandatory = $true)][string]$Color)
+
+    $namedColors = @{
+        blue = '0000FF'
+        cyan = '55CDFC'
+        green = '00FF00'
+        gray = '777777'
+        magenta = 'F7A8B8'
+        pink = 'F7A8B8'
+        purple = 'AF87FF'
+        white = 'FFFFFF'
+        yellow = 'FFFF00'
+    }
+
+    $normalized = $Color.Trim().TrimStart([char]'#')
+    $lower = $normalized.ToLowerInvariant()
+    if ($namedColors.ContainsKey($lower)) {
+        $normalized = $namedColors[$lower]
+    }
+
+    if ($normalized -notmatch '^[0-9A-Fa-f]{6}$') { return $null }
+
+    return [pscustomobject]@{
+        R = [Convert]::ToInt32($normalized.Substring(0, 2), 16)
+        G = [Convert]::ToInt32($normalized.Substring(2, 2), 16)
+        B = [Convert]::ToInt32($normalized.Substring(4, 2), 16)
+    }
+}
+
+function Write-PromptText {
+    param(
+        [AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Color
+    )
+
+    $rgb = Convert-PromptRgbColor $Color
+    if (-not $rgb) {
+        [Console]::Write($Text)
+        return
+    }
+
+    $esc = [char]27
+    [Console]::Write("$esc[38;2;$($rgb.R);$($rgb.G);$($rgb.B)m$Text$esc[0m")
+}
+
 function global:prompt {
     $hostName = [System.Net.Dns]::GetHostName() -replace '^HyDEV-', ''
     $date = Get-Date
 
-    Write-Host ''
+    [Console]::WriteLine()
     if ($hostName -eq 'HyDEV') {
-        Write-Host ($date.ToString('ddd MM-dd HH:mm')) -NoNewline -ForegroundColor Magenta
-        Write-Host ' ' -NoNewline
+        Write-PromptText ($date.ToString('ddd MM-dd HH:mm')) 'F7A8B8'
+        [Console]::Write(' ')
     } else {
-        Write-Host ($date.ToString('ddd ')) -NoNewline -ForegroundColor Cyan
-        Write-Host ($date.ToString('MM-')) -NoNewline -ForegroundColor Magenta
-        Write-Host ($date.ToString('dd ')) -NoNewline -ForegroundColor White
-        Write-Host ($date.ToString('HH:')) -NoNewline -ForegroundColor Magenta
-        Write-Host ($date.ToString('mm ')) -NoNewline -ForegroundColor Cyan
+        Write-PromptText ($date.ToString('ddd ')) '55CDFC'
+        Write-PromptText ($date.ToString('MM-')) 'F7A8B8'
+        Write-PromptText ($date.ToString('dd ')) 'FFFFFF'
+        Write-PromptText ($date.ToString('HH:')) 'F7A8B8'
+        Write-PromptText ($date.ToString('mm ')) '55CDFC'
     }
 
     if ($hostName -eq 'HyDEV') {
-        Write-Host 'H' -NoNewline -ForegroundColor Cyan
-        Write-Host 'y' -NoNewline -ForegroundColor Magenta
-        Write-Host 'D' -NoNewline -ForegroundColor White
-        Write-Host 'E' -NoNewline -ForegroundColor Magenta
-        Write-Host 'V ' -NoNewline -ForegroundColor Cyan
+        Write-PromptText 'H' '55CDFC'
+        Write-PromptText 'y' 'F7A8B8'
+        Write-PromptText 'D' 'FFFFFF'
+        Write-PromptText 'E' 'F7A8B8'
+        Write-PromptText 'V ' '55CDFC'
     } else {
-        Write-Host "$hostName " -NoNewline -ForegroundColor Blue
+        Write-PromptText "$hostName " '0000FF'
     }
 
     if ($global:__PwshRcGitIdSegment) {
-        Write-Host $global:__PwshRcGitIdSegment -NoNewline -ForegroundColor Yellow
+        Write-PromptText $global:__PwshRcGitIdSegment 'FFFF00'
     } else {
         $userName = if ($env:USERNAME) { $env:USERNAME } else { $env:USER }
-        Write-Host "$userName " -NoNewline -ForegroundColor Yellow
+        Write-PromptText "$userName " 'FFFF00'
     }
 
     if ($global:__PwshRcProxySegment) {
-        Write-Host $global:__PwshRcProxySegment -NoNewline -ForegroundColor Green
+        Write-PromptText $global:__PwshRcProxySegment '00FF00'
     }
 
-    Write-Host (pwdd) -NoNewline
+    [Console]::Write((pwdd))
 
     $vcs = Get-VcsPromptState
     if ($vcs) {
-        Write-Host ' [' -NoNewline
-        Write-Host $vcs.Segment -NoNewline -ForegroundColor $vcs.Color
+        [Console]::Write(' ')
+        Write-PromptText '[' $vcs.Color
+        Write-PromptText $vcs.Segment $vcs.Color
         if ($vcs.Pr) {
-            Write-Host ' ' -NoNewline -ForegroundColor $vcs.Color
-            Write-Host "#$($vcs.Pr.Number)" -NoNewline -ForegroundColor $vcs.Pr.Color
+            Write-PromptText ' ' $vcs.Color
+            Write-PromptText "#$($vcs.Pr.Number)" $vcs.Pr.Color
         }
-        Write-Host ']' -NoNewline -ForegroundColor $vcs.Color
+        Write-PromptText ']' $vcs.Color
     }
 
     return "`n> "
