@@ -547,7 +547,7 @@ function git-main-branch {
     }
 
     Write-Error 'Could not determine main branch.'
-    return 1
+    return
 }
 
 function git-update-main {
@@ -558,6 +558,16 @@ function git-update-main {
     Invoke-RawGit checkout $MainBranch
     if ($LASTEXITCODE -ne 0) { return $LASTEXITCODE }
     Invoke-RawGit pull --ff-only
+}
+
+function git-fetch-main {
+    param([string]$MainBranch)
+    if (-not $MainBranch) { $MainBranch = git-main-branch | Select-Object -First 1 }
+    if (-not $MainBranch) { return }
+
+    Invoke-RawGit fetch origin "+refs/heads/${MainBranch}:refs/remotes/origin/${MainBranch}"
+    if ($LASTEXITCODE -ne 0) { return }
+    Write-Output $MainBranch
 }
 
 function br {
@@ -598,6 +608,20 @@ function bru {
     Invoke-RawGit checkout $currentBranch
     if ($LASTEXITCODE -ne 0) { return $LASTEXITCODE }
     Invoke-RawGit rebase $mainBranch
+}
+
+function brup {
+    $currentBranch = Invoke-RawGit symbolic-ref --quiet --short HEAD 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $currentBranch) {
+        Write-Error 'Could not determine current branch.'
+        return 1
+    }
+
+    if (-not (Test-GitCleanWorktree)) { return 1 }
+
+    $mainBranch = git-fetch-main | Select-Object -First 1
+    if (-not $mainBranch) { return 1 }
+    Invoke-RawGit merge "refs/remotes/origin/$mainBranch"
 }
 
 function git-env {

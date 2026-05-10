@@ -98,6 +98,16 @@ function git-update-main --description 'Checkout and fast-forward the main branc
     command git pull --ff-only
 end
 
+function git-fetch-main --description 'Fetch the latest main branch from origin'
+    set -l main_branch $argv[1]
+    if test -z "$main_branch"
+        set main_branch (git-main-branch); or return 1
+    end
+
+    command git fetch origin "+refs/heads/$main_branch:refs/remotes/origin/$main_branch"; or return 1
+    printf '%s\n' "$main_branch"
+end
+
 function br --description 'Switch to an existing branch, or create one from updated main'
     if test (count $argv) -ne 1
         echo 'Usage: br <branch-name>'
@@ -135,6 +145,19 @@ function bru --description 'Update the current branch by rebasing it on updated 
     git-update-main "$main_branch"; or return 1
     command git checkout "$current_branch"; or return 1
     command git rebase "$main_branch"
+end
+
+function brup --description 'Merge the latest origin main branch into the current branch'
+    set -l current_branch (command git symbolic-ref --quiet --short HEAD 2>/dev/null)
+    if test -z "$current_branch"
+        echo 'Could not determine current branch.'
+        return 1
+    end
+
+    git-require-clean; or return 1
+
+    set -l main_branch (git-fetch-main); or return 1
+    command git merge "refs/remotes/origin/$main_branch"
 end
 
 function git-env --description 'Alias common git subcommands into the shell'

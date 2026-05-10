@@ -97,6 +97,16 @@ git-update-main() {
     command git pull --ff-only
 }
 
+git-fetch-main() {
+    local main_branch="$1"
+    if [[ -z "$main_branch" ]]; then
+        main_branch=$(git-main-branch) || return 1
+    fi
+
+    command git fetch origin "+refs/heads/${main_branch}:refs/remotes/origin/${main_branch}" || return 1
+    echo "$main_branch"
+}
+
 br() {
     if [[ $# -ne 1 ]]; then
         echo 'Usage: br <branch-name>'
@@ -137,6 +147,21 @@ bru() {
     git-update-main "$main_branch" || return 1
     command git checkout "$current_branch" || return 1
     command git rebase "$main_branch"
+}
+
+brup() {
+    local current_branch
+    current_branch=$(command git symbolic-ref --quiet --short HEAD 2>/dev/null)
+    if [[ -z "$current_branch" ]]; then
+        echo 'Could not determine current branch.'
+        return 1
+    fi
+
+    git-require-clean || return 1
+
+    local main_branch
+    main_branch=$(git-fetch-main) || return 1
+    command git merge "refs/remotes/origin/$main_branch"
 }
 
 # Git environment
