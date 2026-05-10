@@ -646,6 +646,48 @@ function prompt-reset {
     git-id-prompt
 }
 
+function Get-GithubOwnerFromRemoteUrl {
+    param([string]$Url)
+    if (-not $Url) { return $null }
+
+    foreach ($pattern in @(
+        '^https?://[^/]+/([^/]+)/.*$',
+        '^ssh://[^@]+@[^/]+/([^/]+)/.*$',
+        '^[^@]+@[^:]+:([^/]+)/.*$'
+    )) {
+        if ($Url -match $pattern) { return $Matches[1] }
+    }
+
+    return $null
+}
+
+function Get-GitRemoteUrl {
+    param([string]$Remote)
+    if (-not $Remote) { return $null }
+
+    if ($Remote -match '://|^[^@]+@[^:]+:') { return $Remote }
+    Invoke-RawGit remote get-url $Remote 2>$null | Select-Object -First 1
+}
+
+function Get-PromptPrByHead {
+    param(
+        [string]$HeadOwner,
+        [string]$HeadBranch
+    )
+    if (-not $HeadOwner -or -not $HeadBranch) { return $null }
+
+    $jq = 'map(select(.state == "OPEN" or .state == "MERGED")) | sort_by(.updatedAt) | reverse | .[] | [.number, .state, .headRepositoryOwner.login, .headRefName] | @tsv'
+    $prLines = Invoke-ExternalCommand gh pr list --head $HeadBranch --state all --limit 50 --json number,state,updatedAt,headRefName,headRepositoryOwner --jq $jq 2>$null
+    foreach ($line in $prLines) {
+        $fields = $line -split "`t", 4
+        if ($fields.Count -eq 4 -and $fields[2] -eq $HeadOwner -and $fields[3] -eq $HeadBranch) {
+            return [pscustomobject]@{ Number = $fields[0]; State = $fields[1] }
+        }
+    }
+
+    return $null
+}
+
 function Get-PromptPrState {
     param([string]$Branch)
     if (-not $Branch -or -not (has gh)) { return $null }
@@ -657,17 +699,31 @@ function Get-PromptPrState {
     if (-not $repoKey) { return $null }
     $repoKey = $repoKey | Select-Object -First 1
 
-    $cacheKey = "$repoKey`:$Branch"
+    $cacheKey = "$repoKey`:$Branch`:pr-v2"
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     if ($global:__PwshRcPromptPrCacheKey -eq $cacheKey -and ($now - [int64]$global:__PwshRcPromptPrCacheTime) -lt 300) {
         if ($global:__PwshRcPromptPrCacheValue[0] -eq '__none') { return $null }
         return [pscustomobject]@{ Number = $global:__PwshRcPromptPrCacheValue[0]; Color = $global:__PwshRcPromptPrCacheValue[1] }
     }
 
-    $jq = 'map(select(.state == "OPEN" or .state == "MERGED")) | sort_by(.updatedAt) | reverse | .[0] | select(.number != null) | .number, .state'
-    $prLine = Invoke-ExternalCommand gh pr list --head $Branch --state all --limit 20 --json number,state,updatedAt --jq $jq 2>$null
-    $prNumber = $prLine | Select-Object -First 1
-    $prState = $prLine | Select-Object -Skip 1 -First 1
+    $repoOwner = Invoke-ExternalCommand gh repo view --json owner --jq '.owner.login' 2>$null | Select-Object -First 1
+    if (-not $repoOwner) { return $null }
+
+    $pr = Get-PromptPrByHead $repoOwner $Branch
+
+    if (-not $pr) {
+        $branchRemote = Invoke-RawGit config --get "branch.$Branch.remote" 2>$null | Select-Object -First 1
+        $branchMerge = Invoke-RawGit config --get "branch.$Branch.merge" 2>$null | Select-Object -First 1
+        if ($branchRemote -and $branchMerge -and $branchMerge.StartsWith('refs/heads/')) {
+            $branchHead = $branchMerge.Substring('refs/heads/'.Length)
+            $remoteUrl = Get-GitRemoteUrl $branchRemote
+            $remoteOwner = Get-GithubOwnerFromRemoteUrl $remoteUrl
+            if ($remoteOwner) { $pr = Get-PromptPrByHead $remoteOwner $branchHead }
+        }
+    }
+
+    $prNumber = if ($pr) { $pr.Number } else { $null }
+    $prState = if ($pr) { $pr.State } else { $null }
     $prColor = if ($prState -eq 'MERGED') { 'AF87FF' } else { '00FF00' }
 
     $global:__PwshRcPromptPrCacheKey = $cacheKey

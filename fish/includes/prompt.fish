@@ -9,6 +9,67 @@ function prompt-reset --description 'Reset fish prompt state used by this rc'
     git-id-prompt
 end
 
+function __fishrc_github_owner_from_url --description 'Print GitHub owner from a remote URL'
+    set -l url $argv[1]
+    test -n "$url"; or return 1
+
+    set -l owner (string replace -r '^https?://[^/]+/([^/]+)/.*$' '$1' -- "$url")
+    if test "$owner" != "$url"
+        printf '%s\n' "$owner"
+        return 0
+    end
+
+    set owner (string replace -r '^ssh://[^@]+@[^/]+/([^/]+)/.*$' '$1' -- "$url")
+    if test "$owner" != "$url"
+        printf '%s\n' "$owner"
+        return 0
+    end
+
+    set owner (string replace -r '^[^@]+@[^:]+:([^/]+)/.*$' '$1' -- "$url")
+    if test "$owner" != "$url"
+        printf '%s\n' "$owner"
+        return 0
+    end
+
+    return 1
+end
+
+function __fishrc_git_remote_url --description 'Print a git remote URL from a remote name or URL'
+    set -l remote $argv[1]
+    test -n "$remote"; or return 1
+
+    if string match -qr '://|^[^@]+@[^:]+:' -- "$remote"
+        printf '%s\n' "$remote"
+    else
+        command git remote get-url "$remote" 2>/dev/null
+    end
+end
+
+function __fishrc_prompt_pr_by_head --description 'Print PR number and state for an exact GitHub head owner and branch'
+    set -l head_owner $argv[1]
+    set -l head_branch $argv[2]
+    test -n "$head_owner"; and test -n "$head_branch"; or return 1
+
+    set -l pr_lines
+    set -l jq 'map(select(.state == "OPEN" or .state == "MERGED")) | sort_by(.updatedAt) | reverse | .[] | [.number, .state, .headRepositoryOwner.login, .headRefName] | @tsv'
+    if command -sq timeout
+        set pr_lines (command timeout 1s gh pr list --head "$head_branch" --state all --limit 50 --json number,state,updatedAt,headRefName,headRepositoryOwner --jq "$jq" 2>/dev/null)
+    else
+        set pr_lines (command gh pr list --head "$head_branch" --state all --limit 50 --json number,state,updatedAt,headRefName,headRepositoryOwner --jq "$jq" 2>/dev/null)
+    end
+
+    set -l tab (printf '\t')
+    for line in $pr_lines
+        set -l fields (string split "$tab" -- "$line")
+        if test "$fields[3]" = "$head_owner"; and test "$fields[4]" = "$head_branch"
+            printf '%s\n%s\n' "$fields[1]" "$fields[2]"
+            return 0
+        end
+    end
+
+    return 1
+end
+
 function __fishrc_prompt_pr_state --description 'Set GitHub PR prompt state for a branch'
     set -l branch $argv[1]
     test -n "$branch"; or return 1
@@ -18,7 +79,7 @@ function __fishrc_prompt_pr_state --description 'Set GitHub PR prompt state for 
     if test -z "$repo_key"
         set repo_key (command jj root --ignore-working-copy 2>/dev/null)
     end
-    set -l cache_key "$repo_key:$branch"
+    set -l cache_key "$repo_key:$branch:pr-v2"
     set -l now (date +%s)
 
     if test "$__fishrc_prompt_pr_cache_key" = "$cache_key"
@@ -39,11 +100,27 @@ function __fishrc_prompt_pr_state --description 'Set GitHub PR prompt state for 
         end
     end
 
-    set -l pr_line
+    set -l repo_owner
     if command -sq timeout
-        set pr_line (command timeout 1s gh pr list --head "$branch" --state all --limit 20 --json number,state,updatedAt --jq 'map(select(.state == "OPEN" or .state == "MERGED")) | sort_by(.updatedAt) | reverse | .[0] | select(.number != null) | .number, .state' 2>/dev/null)
+        set repo_owner (command timeout 1s gh repo view --json owner --jq '.owner.login' 2>/dev/null)
     else
-        set pr_line (command gh pr list --head "$branch" --state all --limit 20 --json number,state,updatedAt --jq 'map(select(.state == "OPEN" or .state == "MERGED")) | sort_by(.updatedAt) | reverse | .[0] | select(.number != null) | .number, .state' 2>/dev/null)
+        set repo_owner (command gh repo view --json owner --jq '.owner.login' 2>/dev/null)
+    end
+    set repo_owner (string trim -- "$repo_owner")
+    test -n "$repo_owner"; or return 1
+
+    set -l pr_line
+    set pr_line (__fishrc_prompt_pr_by_head "$repo_owner" "$branch")
+
+    set -l branch_remote (command git config --get "branch.$branch.remote" 2>/dev/null)
+    set -l branch_merge (command git config --get "branch.$branch.merge" 2>/dev/null)
+    set -l branch_head (string replace -r '^refs/heads/' '' -- "$branch_merge")
+    if test -z "$pr_line"; and test -n "$branch_remote"; and test -n "$branch_head"; and test "$branch_head" != "$branch_merge"
+        set -l remote_url (__fishrc_git_remote_url "$branch_remote")
+        set -l remote_owner (__fishrc_github_owner_from_url "$remote_url")
+        if test -n "$remote_owner"
+            set pr_line (__fishrc_prompt_pr_by_head "$remote_owner" "$branch_head")
+        end
     end
 
     set -l pr_number (string trim -- "$pr_line[1]")
