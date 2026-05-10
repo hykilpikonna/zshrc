@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    echo 'Usage: zstdedit <file.zst>'
+}
+
+die() {
+    echo "zstdedit: $*" >&2
+    exit 1
+}
+
+choose_editor() {
+    if [[ -n "${VISUAL:-}" ]]; then
+        echo "$VISUAL"
+        return 0
+    fi
+
+    if [[ -n "${EDITOR:-}" ]]; then
+        echo "$EDITOR"
+        return 0
+    fi
+
+    local candidate
+    for candidate in micro nano vim vi; do
+        if command -v "$candidate" >/dev/null 2>&1; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+run_editor() {
+    local file="$1"
+    local editor
+    editor=$(choose_editor) || die 'No editor found. Set VISUAL or EDITOR.'
+
+    local -a editor_cmd
+    read -r -a editor_cmd <<<"$editor"
+    "${editor_cmd[@]}" "$file"
+}
+
+if [[ $# -ne 1 ]]; then
+    usage >&2
+    exit 1
+fi
+
+command -v zstd >/dev/null 2>&1 || die 'zstd is not installed.'
+
+target="$1"
+target_dir=$(dirname -- "$target")
+target_base=$(basename -- "$target")
+
+[[ -d "$target_dir" ]] || die "Parent directory does not exist: $target_dir"
+
+tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/zstdedit.XXXXXX")
+compressed_tmp=''
+cleanup() {
+    if [[ -n "$compressed_tmp" ]]; then
+        rm -f -- "$compressed_tmp"
+    fi
+    rm -rf -- "$tmpdir"
+}
+trap cleanup EXIT
+
+before_file="$tmpdir/before"
+edit_file="$tmpdir/${target_base%.zst}"
+
+if [[ -e "$target" ]]; then
+    [[ -f "$target" ]] || die "Not a regular file: $target"
+    zstd -q -dc -- "$target" >"$before_file" || die "Failed to decompress: $target"
+else
+    : >"$before_file"
+fi
+
+cp -- "$before_file" "$edit_file"
+run_editor "$edit_file"
+
+if cmp -s -- "$before_file" "$edit_file"; then
+    echo 'No changes.'
+    exit 0
+fi
+
+compressed_tmp=$(mktemp -- "$target_dir/.${target_base}.zstdedit.XXXXXX")
+zstd -q -f -o "$compressed_tmp" -- "$edit_file" || die 'Failed to recompress edited file.'
+
+if [[ -e "$target" ]]; then
+    chmod --reference="$target" "$compressed_tmp" 2>/dev/null || true
+fi
+
+mv -f -- "$compressed_tmp" "$target"
+compressed_tmp=''
+echo "Updated $target"
