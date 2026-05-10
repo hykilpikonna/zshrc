@@ -47,7 +47,10 @@ function Invoke-ExternalCommand {
     }
 
     $Command = [string]$args[0]
-    $CommandArgs = if ($args.Count -gt 1) { @($args[1..($args.Count - 1)]) } else { @() }
+    $CommandArgs = @()
+    for ($i = 1; $i -lt $args.Count; $i++) {
+        $CommandArgs += ,$args[$i]
+    }
     $cmd = Get-ExternalCommandPath $Command
     if (-not $cmd) {
         Write-Error "$Command is not installed."
@@ -314,13 +317,19 @@ function setproxy {
 }
 
 function global:ssh {
+    $sshExe = Get-ExternalCommandPath ssh
+    if (-not $sshExe) {
+        Write-Error 'ssh is not installed.'
+        return 127
+    }
+
     if ($env:TERM -eq 'xterm-kitty') {
         $oldTerm = $env:TERM
         $env:TERM = 'xterm-256color'
-        try { Invoke-ExternalCommand ssh @args }
+        try { & $sshExe @args }
         finally { $env:TERM = $oldTerm }
     } else {
-        Invoke-ExternalCommand ssh @args
+        & $sshExe @args
     }
 }
 
