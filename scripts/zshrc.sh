@@ -249,6 +249,7 @@ reset-permissions-dangerous() {
  
 export PATH="$SCR/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.bun/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 if [[ "$(uname -s)" == "Linux" ]] && [[ "$(uname -m)" == "x86_64" ]]; then
     export PATH="$SCR/bin/linux-x64:$PATH"

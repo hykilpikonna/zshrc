@@ -28,6 +28,7 @@ end
 __fishrc_prepend_path \
     "$SCR/bin" \
     "$HOME/.local/bin" \
+    "$HOME/.bun/bin" \
     "$HOME/.cargo/bin"
 
 if test (uname -s) = Linux; and test (uname -m) = x86_64
