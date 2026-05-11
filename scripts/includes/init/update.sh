@@ -24,12 +24,15 @@ if [[ -z "$ZSHRC_UPDATE_ASYNC_CHILD" && -z "$ZSHRC_UPDATE_SYNC" ]]; then
 fi
 
 old_pwd="$PWD"
-cd "$SCR" || { cd "$old_pwd" 2>/dev/null; return 0 2>/dev/null || exit 0; }
+repo_root="$(git -C "$SCR" rev-parse --show-toplevel 2>/dev/null)"
+[[ -n "$repo_root" ]] || repo_root="${SCR:h}"
+cd "$repo_root" || { cd "$old_pwd" 2>/dev/null; return 0 2>/dev/null || exit 0; }
 export PATH="$SCR/bin:$PATH"
 
 prefix="&7[&3zshrc&7]"
 remote_ref="${ZSHRC_UPDATE_REF:-origin/master}"
-lock_dir="$SCR/.git/zshrc-update.lock"
+lock_dir="$repo_root/.git/zshrc-update.lock"
+notify_file="$repo_root/.git/zshrc-update-notification"
 
 if ! mkdir "$lock_dir" 2>/dev/null; then
     cd "$old_pwd" 2>/dev/null
@@ -40,6 +43,10 @@ _zshrc_update_cleanup() {
     cd "$old_pwd" 2>/dev/null
 }
 trap _zshrc_update_cleanup EXIT INT TERM
+
+_zshrc_write_update_notification() {
+    printf '%s\n' "$1" >| "$notify_file" 2>/dev/null || true
+}
 
 _zshrc_stash_created=0
 _zshrc_stash_if_needed() {
@@ -54,8 +61,14 @@ _zshrc_stash_if_needed() {
 
 _zshrc_restore_stash() {
     if [[ "$_zshrc_stash_created" == "1" ]]; then
-        git stash pop >/dev/null || color "$prefix &cUpdated, but saved local changes need manual conflict resolution."
+        if git stash pop >/dev/null; then
+            return 0
+        fi
+        color "$prefix &cUpdated, but saved local changes need manual conflict resolution."
+        _zshrc_write_update_notification "Updated, but saved local changes need manual conflict resolution."
+        return 1
     fi
+    return 0
 }
 
 # Check for updates
@@ -68,8 +81,10 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
 
         _zshrc_stash_if_needed
         if git reset --hard "$remote_ref" && git submodule update --init --recursive --depth 1; then
-            _zshrc_restore_stash
-            color "$prefix &aUpdated after history rewrite! Open a new shell to use the latest zshrc."
+            if _zshrc_restore_stash; then
+                _zshrc_write_update_notification "Updated after history rewrite. Open a new shell to load the latest rc."
+                color "$prefix &aUpdated after history rewrite. Open a new shell to load the latest rc."
+            fi
         else
             color "$prefix &cUpdate failed!"
         fi
@@ -83,8 +98,10 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
             # Try to fast-forward without invoking git pull's merge/rebase behavior.
             _zshrc_stash_if_needed
             if git merge --ff-only "$remote_ref" && git submodule update --init --recursive --depth 1; then
-                _zshrc_restore_stash
-                color "$prefix &aUpdated! Open a new shell to use the latest zshrc."
+                if _zshrc_restore_stash; then
+                    _zshrc_write_update_notification "Updated. Open a new shell to load the latest rc."
+                    color "$prefix &aUpdated. Open a new shell to load the latest rc."
+                fi
             else
                 color "$prefix &cUpdate failed!"
             fi
@@ -94,8 +111,8 @@ elif [[ -n "$ZSHRC_UPDATE_VERBOSE" ]]; then
     color "$prefix &cUpdate check failed!"
 fi
 
-unset -f _zshrc_stash_if_needed _zshrc_restore_stash 2>/dev/null
+unset -f _zshrc_stash_if_needed _zshrc_restore_stash _zshrc_write_update_notification 2>/dev/null
 _zshrc_update_cleanup
 trap - EXIT INT TERM
 unset -f _zshrc_update_cleanup 2>/dev/null
-unset _zshrc_stash_created remote_ref reslog lock_dir old_pwd
+unset _zshrc_stash_created remote_ref reslog lock_dir notify_file repo_root old_pwd

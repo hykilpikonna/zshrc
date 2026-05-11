@@ -9,6 +9,26 @@ function prompt-reset --description 'Reset fish prompt state used by this rc'
     git-id-prompt
 end
 
+function __fishrc_show_update_notification --description 'Show pending zshrc update notification once'
+    set -l notification_file "$ZSHRC_ROOT/.git/zshrc-update-notification"
+    test -f "$notification_file"; or return 0
+
+    set -l message (string collect <"$notification_file" 2>/dev/null)
+    rm -f "$notification_file" 2>/dev/null
+    set message (string trim -- "$message")
+    test -n "$message"; or return 0
+
+    set_color 777777
+    printf '['
+    set_color 55CDFC
+    printf zshrc
+    set_color 777777
+    printf '] '
+    set_color green
+    printf '%s\n' "$message"
+    set_color normal
+end
+
 function __fishrc_github_owner_from_url --description 'Print GitHub owner from a remote URL'
     set -l url $argv[1]
     test -n "$url"; or return 1
@@ -251,6 +271,7 @@ function fish_prompt --description 'Repository fish prompt'
     set host (string replace -r '^HyDEV-' '' -- "$host")
 
     printf '\n'
+    __fishrc_show_update_notification
 
     if test "$host" = HyDEV
         set_color magenta

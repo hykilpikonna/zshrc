@@ -19,6 +19,24 @@ pcolor() {
     prompt "$tmp" color
 }
 
+_zshrc_show_update_notification() {
+    local notification_file="${BASEDIR:-${SCR:h}}/.git/zshrc-update-notification"
+    [[ -f "$notification_file" ]] || return 0
+
+    local message
+    message="$(<"$notification_file")"
+    rm -f "$notification_file" 2>/dev/null
+    [[ -n "$message" ]] || return 0
+
+    color "&7[&3zshrc&7] &a$message&r"
+}
+
+if [[ -o interactive ]]; then
+    autoload -Uz add-zsh-hook
+    add-zsh-hook -d precmd _zshrc_show_update_notification 2>/dev/null
+    add-zsh-hook precmd _zshrc_show_update_notification
+fi
+
 # Build a zsh prompt
 prompt-reset() {
     host="$(sed "s/HyDEV-//g" <<< "$HOST")"

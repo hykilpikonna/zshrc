@@ -60,6 +60,26 @@ function Invoke-ExternalCommand {
     & $cmd @CommandArgs
 }
 
+function Invoke-NativeApplication {
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [object[]]$PrefixArgs = @(),
+        [object[]]$NativeArgs = @()
+    )
+
+    $cmd = Get-ExternalCommandPath $Command
+    if (-not $cmd) {
+        Write-Error "$Command is not installed."
+        return 127
+    }
+
+    $allArgs = @()
+    foreach ($arg in $PrefixArgs) { $allArgs += ,$arg }
+    foreach ($arg in $NativeArgs) { $allArgs += ,$arg }
+
+    & $cmd @allArgs
+}
+
 function Add-PathIfExists {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Paths)
     $separator = [IO.Path]::PathSeparator
@@ -135,7 +155,7 @@ function Register-ForwardingFunction {
     )
 
     $scriptBlock = {
-        Invoke-ExternalCommand $Command @PrefixArgs @args
+        Invoke-NativeApplication -Command $Command -PrefixArgs $PrefixArgs -NativeArgs $args
     }.GetNewClosure()
     Remove-AliasIfExists $Name
     Set-Item -Path "function:global:$Name" -Value $scriptBlock
@@ -158,19 +178,19 @@ foreach ($name in @('ll', 'l', 'lla', 'llg', 'open', 'gradle', 'git', '7z', 'ssh
 }
 
 function ll {
-    if (has eza) { Invoke-ExternalCommand eza -l @args }
+    if (has eza) { Invoke-NativeApplication -Command eza -PrefixArgs @('-l') -NativeArgs $args }
     else { Get-ChildItem @args }
 }
 
 function l { ll @args }
 
 function lla {
-    if (has eza) { Invoke-ExternalCommand eza -la @args }
+    if (has eza) { Invoke-NativeApplication -Command eza -PrefixArgs @('-la') -NativeArgs $args }
     else { Get-ChildItem -Force @args }
 }
 
 function llg {
-    if (has eza) { Invoke-ExternalCommand eza -l --git --git-repos @args }
+    if (has eza) { Invoke-NativeApplication -Command eza -PrefixArgs @('-l', '--git', '--git-repos') -NativeArgs $args }
     else { ll @args }
 }
 
@@ -282,7 +302,7 @@ function global:7z {
     if ($args.Count -gt 0 -and $args[0] -eq 'd') {
         Write-Host '7z d is blocked. It does not stand for decompress, it stands for delete.'
     } else {
-        Invoke-ExternalCommand 7z @args
+        Invoke-NativeApplication -Command 7z -NativeArgs $args
     }
 }
 
@@ -317,19 +337,13 @@ function setproxy {
 }
 
 function global:ssh {
-    $sshExe = Get-ExternalCommandPath ssh
-    if (-not $sshExe) {
-        Write-Error 'ssh is not installed.'
-        return 127
-    }
-
     if ($env:TERM -eq 'xterm-kitty') {
         $oldTerm = $env:TERM
         $env:TERM = 'xterm-256color'
-        try { & $sshExe @args }
+        try { Invoke-NativeApplication -Command ssh -NativeArgs $args }
         finally { $env:TERM = $oldTerm }
     } else {
-        & $sshExe @args
+        Invoke-NativeApplication -Command ssh -NativeArgs $args
     }
 }
 
@@ -360,8 +374,8 @@ function upload {
     Invoke-ExternalCommand curl.exe -u $credential -F "path=@$File" 'https://daisy.hydev.org/upload?path=/'
 }
 
-function global:ffmpeg { Invoke-ExternalCommand ffmpeg -hide_banner @args }
-function global:ffprobe { Invoke-ExternalCommand ffprobe -hide_banner @args }
+function global:ffmpeg { Invoke-NativeApplication -Command ffmpeg -PrefixArgs @('-hide_banner') -NativeArgs $args }
+function global:ffprobe { Invoke-NativeApplication -Command ffprobe -PrefixArgs @('-hide_banner') -NativeArgs $args }
 
 function vcompy {
     $videoHelper = Join-Path $env:SCR 'helpers/video.py'
@@ -384,8 +398,8 @@ function mp3v0 {
 }
 
 function dc {
-    if (has docker-compose) { Invoke-ExternalCommand docker-compose @args }
-    else { Invoke-ExternalCommand docker compose @args }
+    if (has docker-compose) { Invoke-NativeApplication -Command docker-compose -NativeArgs $args }
+    else { Invoke-NativeApplication -Command docker -PrefixArgs @('compose') -NativeArgs $args }
 }
 
 if (-not (has docker) -and (has podman)) {
@@ -454,25 +468,20 @@ if (has pyenv) {
 }
 
 function Invoke-RawGit {
-    $GitArgs = @($args)
-    $gitExe = Get-ExternalCommandPath git
-    if (-not $gitExe) {
-        Write-Error 'git is not installed.'
-        return 127
-    }
-    & $gitExe @GitArgs
+    Invoke-NativeApplication -Command git -NativeArgs $args
 }
 
 function Invoke-GitCommand {
-    $GitArgs = @($args)
+    param([object[]]$GitArgs = @())
+
     if ($env:GIT_USER) {
-        Invoke-RawGit -c "user.name=$env:GIT_USER" -c "user.email=$env:GIT_EMAIL" -c commit.gpgsign=false @GitArgs
+        Invoke-NativeApplication -Command git -PrefixArgs @('-c', "user.name=$env:GIT_USER", '-c', "user.email=$env:GIT_EMAIL", '-c', 'commit.gpgsign=false') -NativeArgs $GitArgs
     } else {
-        Invoke-RawGit @GitArgs
+        Invoke-NativeApplication -Command git -NativeArgs $GitArgs
     }
 }
 
-function global:git { Invoke-GitCommand @args }
+function global:git { Invoke-GitCommand -GitArgs $args }
 
 function commit {
     if ($args.Count -eq 0) { git commit }
@@ -912,11 +921,33 @@ function Write-PromptAnsiText {
     [Console]::Write("$esc[$($Code)m$Text$esc[0m")
 }
 
+function Show-ZshrcUpdateNotification {
+    $notificationFile = Join-Path $env:ZSHRC_ROOT '.git/zshrc-update-notification'
+    if (-not (Test-Path -LiteralPath $notificationFile -PathType Leaf)) { return }
+
+    try {
+        $message = (Get-Content -LiteralPath $notificationFile -Raw -ErrorAction Stop).Trim()
+    } catch {
+        $message = ''
+    }
+
+    Remove-Item -LiteralPath $notificationFile -Force -ErrorAction SilentlyContinue
+    if (-not $message) { return }
+
+    Write-PromptAnsiText '[' 90
+    Write-PromptText 'zshrc' '55CDFC'
+    Write-PromptAnsiText '] ' 90
+    Write-PromptText $message '00FF00'
+    [Console]::WriteLine()
+}
+
 function global:prompt {
     $hostName = [System.Net.Dns]::GetHostName() -replace '^HyDEV-', ''
     $date = Get-Date
 
     [Console]::WriteLine()
+    Show-ZshrcUpdateNotification
+
     if ($hostName -eq 'HyDEV') {
         Write-PromptText ($date.ToString('ddd MM-dd HH:mm')) 'F7A8B8'
         [Console]::Write(' ')
@@ -1004,6 +1035,12 @@ function Start-ZshrcAutoUpdate {
         function Restore-UpdateStash {
             if ($script:stashCreated) { Invoke-UpdateGit stash pop *> $null }
         }
+        function Write-UpdateNotification {
+            param([Parameter(Mandatory = $true)][string]$Message)
+
+            $notificationFile = Join-Path $Root '.git/zshrc-update-notification'
+            Set-Content -LiteralPath $notificationFile -Value $Message -Encoding UTF8 -Force -ErrorAction SilentlyContinue
+        }
 
         try {
             Invoke-UpdateGit fetch origin --quiet *> $null
@@ -1016,7 +1053,14 @@ function Start-ZshrcAutoUpdate {
                     Invoke-UpdateGit reset --hard $RemoteRef *> $null
                     if ($LASTEXITCODE -eq 0) {
                         Invoke-UpdateGit submodule update --init --recursive --depth 1 *> $null
-                        Restore-UpdateStash
+                        if ($LASTEXITCODE -eq 0) {
+                            Restore-UpdateStash
+                            if ($LASTEXITCODE -eq 0) {
+                                Write-UpdateNotification 'Updated after history rewrite. Open a new shell to load the latest rc.'
+                            } else {
+                                Write-UpdateNotification 'Updated, but saved local changes need manual conflict resolution.'
+                            }
+                        }
                     }
                 } else {
                     $updates = Invoke-UpdateGit log "HEAD..$RemoteRef" --oneline
@@ -1025,7 +1069,14 @@ function Start-ZshrcAutoUpdate {
                         Invoke-UpdateGit merge --ff-only $RemoteRef *> $null
                         if ($LASTEXITCODE -eq 0) {
                             Invoke-UpdateGit submodule update --init --recursive --depth 1 *> $null
-                            Restore-UpdateStash
+                            if ($LASTEXITCODE -eq 0) {
+                                Restore-UpdateStash
+                                if ($LASTEXITCODE -eq 0) {
+                                    Write-UpdateNotification 'Updated. Open a new shell to load the latest rc.'
+                                } else {
+                                    Write-UpdateNotification 'Updated, but saved local changes need manual conflict resolution.'
+                                }
+                            }
                         }
                     }
                 }
