@@ -1033,7 +1033,9 @@ function Start-ZshrcAutoUpdate {
             }
         }
         function Restore-UpdateStash {
-            if ($script:stashCreated) { Invoke-UpdateGit stash pop *> $null }
+            if (-not $script:stashCreated) { return $true }
+            Invoke-UpdateGit stash pop *> $null
+            return ($LASTEXITCODE -eq 0)
         }
         function Write-UpdateNotification {
             param([Parameter(Mandatory = $true)][string]$Message)
@@ -1041,12 +1043,34 @@ function Start-ZshrcAutoUpdate {
             $notificationFile = Join-Path $Root '.git/zshrc-update-notification'
             Set-Content -LiteralPath $notificationFile -Value $Message -Encoding UTF8 -Force -ErrorAction SilentlyContinue
         }
+        function Optimize-UpdateGitHistory {
+            if ($env:ZSHRC_UPDATE_KEEP_HISTORY) { return }
+
+            Invoke-UpdateGit fetch --quiet --depth 1 --prune origin *> $null
+            Invoke-UpdateGit reflog expire --expire=now --expire-unreachable=now --all *> $null
+            Invoke-UpdateGit gc --prune=now *> $null
+
+            $submodules = Invoke-UpdateGit submodule status --recursive 2>$null
+            foreach ($line in @($submodules)) {
+                $trimmed = "$line".Trim()
+                if (-not $trimmed) { continue }
+
+                $parts = $trimmed -split '\s+'
+                if ($parts.Count -lt 2) { continue }
+
+                $path = $parts[1]
+                & $git -C $path fetch --quiet --depth 1 --prune origin *> $null
+                & $git -C $path reflog expire --expire=now --expire-unreachable=now --all *> $null
+                & $git -C $path gc --prune=now *> $null
+            }
+        }
 
         try {
             Invoke-UpdateGit fetch origin --quiet *> $null
             $fetched = $LASTEXITCODE -eq 0
             Invoke-UpdateGit rev-parse --verify --quiet $RemoteRef *> $null
             if ($fetched -and $LASTEXITCODE -eq 0) {
+                $updateOk = $true
                 Invoke-UpdateGit merge-base --is-ancestor HEAD $RemoteRef *> $null
                 if ($LASTEXITCODE -ne 0) {
                     Save-UpdateStash
@@ -1054,13 +1078,17 @@ function Start-ZshrcAutoUpdate {
                     if ($LASTEXITCODE -eq 0) {
                         Invoke-UpdateGit submodule update --init --recursive --depth 1 *> $null
                         if ($LASTEXITCODE -eq 0) {
-                            Restore-UpdateStash
-                            if ($LASTEXITCODE -eq 0) {
+                            if (Restore-UpdateStash) {
                                 Write-UpdateNotification 'Updated after history rewrite. Open a new shell to load the latest rc.'
                             } else {
+                                $updateOk = $false
                                 Write-UpdateNotification 'Updated, but saved local changes need manual conflict resolution.'
                             }
+                        } else {
+                            $updateOk = $false
                         }
+                    } else {
+                        $updateOk = $false
                     }
                 } else {
                     $updates = Invoke-UpdateGit log "HEAD..$RemoteRef" --oneline
@@ -1070,16 +1098,22 @@ function Start-ZshrcAutoUpdate {
                         if ($LASTEXITCODE -eq 0) {
                             Invoke-UpdateGit submodule update --init --recursive --depth 1 *> $null
                             if ($LASTEXITCODE -eq 0) {
-                                Restore-UpdateStash
-                                if ($LASTEXITCODE -eq 0) {
+                                if (Restore-UpdateStash) {
                                     Write-UpdateNotification 'Updated. Open a new shell to load the latest rc.'
                                 } else {
+                                    $updateOk = $false
                                     Write-UpdateNotification 'Updated, but saved local changes need manual conflict resolution.'
                                 }
+                            } else {
+                                $updateOk = $false
                             }
+                        } else {
+                            $updateOk = $false
                         }
                     }
                 }
+
+                if ($updateOk) { Optimize-UpdateGitHistory }
             } elseif ($VerboseUpdate) {
                 Write-Output 'Update check failed.'
             }

@@ -71,8 +71,24 @@ _zshrc_restore_stash() {
     return 0
 }
 
+_zshrc_trim_git_history() {
+    [[ -z "$ZSHRC_UPDATE_KEEP_HISTORY" ]] || return 0
+
+    # Keep auto-updated checkouts shallow so old binary blobs disappear after
+    # repository cleanup. Failures here should never block shell startup.
+    git fetch --quiet --depth 1 --prune origin >/dev/null 2>&1 || true
+    git reflog expire --expire=now --expire-unreachable=now --all >/dev/null 2>&1 || true
+    git gc --prune=now >/dev/null 2>&1 || true
+    git submodule foreach --recursive '
+        git fetch --quiet --depth 1 --prune origin >/dev/null 2>&1 || :
+        git reflog expire --expire=now --expire-unreachable=now --all >/dev/null 2>&1 || :
+        git gc --prune=now >/dev/null 2>&1 || :
+    ' >/dev/null 2>&1 || true
+}
+
 # Check for updates
 if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/dev/null; then
+    _zshrc_update_ok=1
 
     # Handle rewritten or force-pushed history. This keeps auto-update working
     # after repository cleanup that removes old large objects.
@@ -84,8 +100,11 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
             if _zshrc_restore_stash; then
                 _zshrc_write_update_notification "Updated after history rewrite. Open a new shell to load the latest rc."
                 color "$prefix &aUpdated after history rewrite. Open a new shell to load the latest rc."
+            else
+                _zshrc_update_ok=0
             fi
         else
+            _zshrc_update_ok=0
             color "$prefix &cUpdate failed!"
         fi
     else
@@ -101,18 +120,25 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
                 if _zshrc_restore_stash; then
                     _zshrc_write_update_notification "Updated. Open a new shell to load the latest rc."
                     color "$prefix &aUpdated. Open a new shell to load the latest rc."
+                else
+                    _zshrc_update_ok=0
                 fi
             else
+                _zshrc_update_ok=0
                 color "$prefix &cUpdate failed!"
             fi
         fi
+    fi
+
+    if [[ "$_zshrc_update_ok" == "1" ]]; then
+        _zshrc_trim_git_history
     fi
 elif [[ -n "$ZSHRC_UPDATE_VERBOSE" ]]; then
     color "$prefix &cUpdate check failed!"
 fi
 
-unset -f _zshrc_stash_if_needed _zshrc_restore_stash _zshrc_write_update_notification 2>/dev/null
+unset -f _zshrc_stash_if_needed _zshrc_restore_stash _zshrc_trim_git_history _zshrc_write_update_notification 2>/dev/null
 _zshrc_update_cleanup
 trap - EXIT INT TERM
 unset -f _zshrc_update_cleanup 2>/dev/null
-unset _zshrc_stash_created remote_ref reslog lock_dir notify_file repo_root old_pwd
+unset _zshrc_stash_created _zshrc_update_ok remote_ref reslog lock_dir notify_file repo_root old_pwd
