@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-from pathlib import Path
 import re
 from shutil import which
 import subprocess
@@ -60,8 +59,10 @@ def get_ip_address():
         return None
 
 def get_hardware_info(cpu=False, gpu=False):
-    # Check if command exist
-    fastfetch = which('fastfetch') or Path(__file__).parent / 'fastfetch'
+    fastfetch = which('fastfetch')
+    if not fastfetch:
+        return ""
+
     try:
         cpu_str, gpu_str = '', ''
         if cpu:

@@ -1,0 +1,156 @@
+#!/usr/bin/env sh
+set -eu
+
+repo='https://github.com/fastfetch-cli/fastfetch'
+version='latest'
+prefix="${PREFIX:-}"
+bin_dir="${BIN_DIR:-}"
+arch=''
+polyfilled=0
+
+usage() {
+    cat <<'EOF'
+Usage: install-fastfetch [options]
+
+Download fastfetch from GitHub releases and install it to local bin.
+
+Options:
+  --version <tag>   Install a specific release tag instead of latest
+  --arch <arch>     Override release arch: amd64, aarch64, armv7, riscv64
+  --prefix <dir>    Install under <dir>/bin (default: $HOME/.local)
+  --bin-dir <dir>   Install directly into <dir>
+  --polyfilled      Use the polyfilled Linux release archive
+  -h, --help        Show this help
+EOF
+}
+
+die() {
+    echo "install-fastfetch: $*" >&2
+    exit 1
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --version)
+            [ "$#" -ge 2 ] || die '--version requires a value'
+            version="$2"
+            shift 2
+            ;;
+        --arch)
+            [ "$#" -ge 2 ] || die '--arch requires a value'
+            arch="$2"
+            shift 2
+            ;;
+        --prefix)
+            [ "$#" -ge 2 ] || die '--prefix requires a value'
+            prefix="$2"
+            shift 2
+            ;;
+        --bin-dir)
+            [ "$#" -ge 2 ] || die '--bin-dir requires a value'
+            bin_dir="$2"
+            shift 2
+            ;;
+        --polyfilled)
+            polyfilled=1
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            die "unknown option: $1"
+            ;;
+    esac
+done
+
+if [ -z "$bin_dir" ]; then
+    if [ -z "$prefix" ]; then
+        [ -n "${HOME:-}" ] || die 'HOME is not set; use --prefix or --bin-dir'
+        prefix="$HOME/.local"
+    fi
+    bin_dir="$prefix/bin"
+fi
+
+case "$(uname -s)" in
+    Linux)
+        ;;
+    *)
+        die 'only Linux fastfetch release archives are supported'
+        ;;
+esac
+
+if [ -z "$arch" ]; then
+    machine=$(uname -m)
+    case "$machine" in
+        x86_64|amd64)
+            arch='amd64'
+            ;;
+        aarch64|arm64)
+            arch='aarch64'
+            ;;
+        armv7l|armv7*)
+            arch='armv7'
+            ;;
+        riscv64)
+            arch='riscv64'
+            ;;
+        *)
+            die "unsupported architecture: $machine"
+            ;;
+    esac
+fi
+
+asset="fastfetch-linux-$arch"
+if [ "$polyfilled" = 1 ]; then
+    asset="$asset-polyfilled"
+fi
+archive="$asset.tar.gz"
+
+if [ "$version" = latest ]; then
+    url="$repo/releases/latest/download/$archive"
+else
+    url="$repo/releases/download/$version/$archive"
+fi
+
+download() {
+    url_arg="$1"
+    output_arg="$2"
+
+    if command -v curl >/dev/null 2>&1; then
+        curl -fL --retry 3 -o "$output_arg" "$url_arg"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -O "$output_arg" "$url_arg"
+    else
+        die 'curl or wget is required'
+    fi
+}
+
+tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/install-fastfetch.XXXXXX")
+cleanup() {
+    rm -rf "$tmpdir"
+}
+trap cleanup EXIT INT TERM
+
+archive_path="$tmpdir/$archive"
+extract_dir="$tmpdir/extract"
+mkdir -p "$extract_dir"
+
+echo "Downloading $url"
+download "$url" "$archive_path"
+
+tar -xzf "$archive_path" -C "$extract_dir" || die "failed to extract $archive"
+fastfetch_bin=$(find "$extract_dir" -type f -path '*/usr/bin/fastfetch' | head -n 1)
+[ -n "$fastfetch_bin" ] || die "fastfetch binary not found in $archive"
+
+mkdir -p "$bin_dir"
+if command -v install >/dev/null 2>&1; then
+    install -m 755 "$fastfetch_bin" "$bin_dir/fastfetch"
+else
+    cp "$fastfetch_bin" "$bin_dir/fastfetch"
+    chmod 755 "$bin_dir/fastfetch"
+fi
+
+echo "Installed $bin_dir/fastfetch"
+"$bin_dir/fastfetch" --version 2>/dev/null || true
