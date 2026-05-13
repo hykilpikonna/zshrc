@@ -25,7 +25,8 @@ end
 
 function ssh --description 'Use xterm-256color when connecting from kitty'
     if test "$TERM" = xterm-kitty
-        env TERM=xterm-256color command ssh $argv
+        set -lx TERM xterm-256color
+        command ssh $argv
     else
         command ssh $argv
     end
