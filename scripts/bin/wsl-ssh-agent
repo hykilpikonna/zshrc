@@ -1,0 +1,96 @@
+#!/usr/bin/env sh
+
+socket="${WSL_SSH_AUTH_SOCK:-$HOME/.ssh/agent.sock}"
+pid_file="$socket.pid"
+
+is_wsl() {
+    if [ -r /proc/sys/kernel/osrelease ] && grep -qiE 'microsoft|wsl' /proc/sys/kernel/osrelease 2>/dev/null; then
+        return 0
+    fi
+
+    if [ -r /proc/version ] && grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null; then
+        return 0
+    fi
+
+    return 1
+}
+
+agent_alive() {
+    [ -S "$socket" ] || return 1
+
+    if ! command -v ssh-add >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if command -v timeout >/dev/null 2>&1; then
+        SSH_AUTH_SOCK="$socket" timeout 2 ssh-add -l >/dev/null 2>&1
+    else
+        SSH_AUTH_SOCK="$socket" ssh-add -l >/dev/null 2>&1
+    fi
+
+    ret=$?
+    [ "$ret" -eq 0 ] || [ "$ret" -eq 1 ]
+}
+
+kill_pid_file_relay() {
+    [ -r "$pid_file" ] || return 0
+
+    pid=$(cat "$pid_file" 2>/dev/null || true)
+    case "$pid" in
+        ''|*[!0-9]*)
+            return 0
+            ;;
+    esac
+
+    kill "$pid" 2>/dev/null || true
+}
+
+kill_matching_relay() {
+    command -v ps >/dev/null 2>&1 || return 0
+
+    ps -eo pid=,args= 2>/dev/null | while IFS= read -r line; do
+        set -- $line
+        pid=${1:-}
+
+        [ -n "$pid" ] || continue
+        [ "$pid" = "$$" ] && continue
+
+        case "$line" in
+            *socat*"$socket"*npiperelay.exe*|*socat*npiperelay.exe*"$socket"*)
+                kill "$pid" 2>/dev/null || true
+                ;;
+        esac
+    done
+}
+
+stop_stale_relay() {
+    kill_pid_file_relay
+    kill_matching_relay
+    rm -f "$pid_file" "$socket"
+}
+
+start_relay() {
+    command -v socat >/dev/null 2>&1 || return 1
+    command -v npiperelay.exe >/dev/null 2>&1 || return 1
+
+    mkdir -p "$HOME/.ssh" || return 1
+    rm -f "$socket"
+
+    if command -v setsid >/dev/null 2>&1; then
+        setsid socat "UNIX-LISTEN:$socket,fork" 'EXEC:npiperelay.exe -ei -s //./pipe/openssh-ssh-agent,nofork' >/dev/null 2>&1 &
+    else
+        socat "UNIX-LISTEN:$socket,fork" 'EXEC:npiperelay.exe -ei -s //./pipe/openssh-ssh-agent,nofork' >/dev/null 2>&1 &
+    fi
+
+    echo "$!" > "$pid_file" 2>/dev/null || true
+}
+
+is_wsl || exit 1
+[ -n "${HOME:-}" ] || exit 1
+
+if ! agent_alive; then
+    stop_stale_relay
+    start_relay || exit 1
+fi
+
+printf '%s\n' "$socket"

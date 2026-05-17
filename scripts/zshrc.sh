@@ -203,8 +203,16 @@ elif has nano; then
     export EDITOR="nano"
 fi
 
+# Use the Windows OpenSSH agent from WSL through npiperelay.
+_zshrc_wsl_ssh_auth_sock=""
+if [[ -x "$SCR/bin/wsl-ssh-agent" ]]; then
+    _zshrc_wsl_ssh_auth_sock="$("$SCR/bin/wsl-ssh-agent" 2>/dev/null)"
+fi
+if [[ -n "$_zshrc_wsl_ssh_auth_sock" ]]; then
+    export SSH_AUTH_SOCK="$_zshrc_wsl_ssh_auth_sock"
+
 # Use the stable SSH agent socket maintained by ~/.ssh/rc inside SSH/tmux sessions.
-if [[ -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]]; then
+elif [[ -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]]; then
     if [[ -n "$SSH_AUTH_SOCK" && "$SSH_AUTH_SOCK" != "$HOME/.ssh/current_agent.sock" && -S "$SSH_AUTH_SOCK" ]]; then
         mkdir -p "$HOME/.ssh"
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/current_agent.sock"
@@ -214,6 +222,7 @@ if [[ -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]]; then
         export SSH_AUTH_SOCK="$HOME/.ssh/current_agent.sock"
     fi
 fi
+unset _zshrc_wsl_ssh_auth_sock
 
 # Gradle with auto environment detection
 if [[ -z $GRADLE ]] && command -v 'gradle' &> /dev/null; then

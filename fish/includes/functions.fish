@@ -42,8 +42,16 @@ else if has nano
     set -gx EDITOR nano
 end
 
+# Use the Windows OpenSSH agent from WSL through npiperelay.
+set -l __fishrc_wsl_ssh_auth_sock
+if test -x "$SCR/bin/wsl-ssh-agent"
+    set __fishrc_wsl_ssh_auth_sock ("$SCR/bin/wsl-ssh-agent" 2>/dev/null)
+end
+if test -n "$__fishrc_wsl_ssh_auth_sock"
+    set -gx SSH_AUTH_SOCK "$__fishrc_wsl_ssh_auth_sock"
+
 # Use the stable SSH agent socket maintained by ~/.ssh/rc inside SSH/tmux sessions.
-if test -n "$SSH_TTY"; or test -n "$SSH_CONNECTION"
+else if test -n "$SSH_TTY"; or test -n "$SSH_CONNECTION"
     if test -n "$SSH_AUTH_SOCK"; and test "$SSH_AUTH_SOCK" != "$HOME/.ssh/current_agent.sock"; and test -S "$SSH_AUTH_SOCK"
         mkdir -p "$HOME/.ssh"
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/current_agent.sock"
