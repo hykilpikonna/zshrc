@@ -4,6 +4,23 @@ function pcolor --description 'Colorize text using the repository prompt helper'
     "$SCR/helpers/prompt.py" (string join ' ' -- $argv) color
 end
 
+function fish_title --description 'Set the terminal title for this rc'
+    set -l ssh
+    if set -q SSH_TTY; and not set -q TMUX
+        set ssh "["(prompt_hostname | string sub -l 10 | string collect)"]"
+    end
+
+    if set -q argv[1]
+        echo -- $ssh (string sub -l 20 -- $argv[1]) (prompt_pwd -d 1 -D 1)
+    else
+        set -l command (status current-command)
+        if test "$command" = fish
+            set command
+        end
+        echo -- $ssh (string sub -l 20 -- $command) (prompt_pwd -d 1 -D 1)
+    end
+end
+
 function prompt-reset --description 'Reset fish prompt state used by this rc'
     set -g __fishrc_proxy_segment ''
     git-id-prompt
