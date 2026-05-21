@@ -1,3 +1,7 @@
+if [[ -S /run/podman/podman.sock ]]; then
+    export DOCKER_HOST=unix:///run/podman/podman.sock
+fi
+
 if command -v 'docker-compose' &> /dev/null; then
     alias dc='docker-compose'
 else

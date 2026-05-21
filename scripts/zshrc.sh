@@ -337,6 +337,10 @@ if (( ! $+commands[docker] && $+commands[podman] )); then
     fi
 fi
 
+if [[ -S /run/podman/podman.sock ]]; then
+    export DOCKER_HOST=unix:///run/podman/podman.sock
+fi
+
 # Set proxy
 setproxy() {
     addr=${1:-127.0.0.1}
@@ -367,7 +371,10 @@ ssh() {
 # SSH Tmux
 if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
   if command -v tmux >/dev/null 2>&1; then
-    tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
+    if tmux has-session -t '=ssh_tmux' 2>/dev/null && ! tmux has-session -t '=ssh' 2>/dev/null; then
+      tmux rename-session -t '=ssh_tmux' ssh 2>/dev/null
+    fi
+    tmux attach-session -t '=ssh' || tmux new-session -s ssh
   fi
 fi
 

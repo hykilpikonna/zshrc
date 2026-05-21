@@ -1,4 +1,8 @@
 # Docker setup.
+if test -S /run/podman/podman.sock
+    set -gx DOCKER_HOST unix:///run/podman/podman.sock
+end
+
 if has docker-compose
     alias dc docker-compose
 else

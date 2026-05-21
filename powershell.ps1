@@ -402,6 +402,10 @@ function dc {
     else { Invoke-NativeApplication -Command docker -PrefixArgs @('compose') -NativeArgs $args }
 }
 
+if ($PSVersionTable.Platform -eq 'Unix' -and (Test-Path -LiteralPath '/run/podman/podman.sock')) {
+    $Env:DOCKER_HOST = 'unix:///run/podman/podman.sock'
+}
+
 if (-not (has docker) -and (has podman)) {
     Set-Alias -Scope Global -Name docker -Value podman -Force
     if (has podman-compose) {
