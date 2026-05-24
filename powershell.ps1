@@ -15,6 +15,13 @@ if (-not $env:BASEDIR) { $env:BASEDIR = $env:ZSHRC_ROOT }
 if (-not $env:LANG) { $env:LANG = 'en_US.UTF-8' }
 if (-not $env:LC_ALL) { $env:LC_ALL = 'en_US.UTF-8' }
 
+$script:PwshRcUtf8Encoding = New-Object System.Text.UTF8Encoding -ArgumentList $false
+$global:OutputEncoding = $script:PwshRcUtf8Encoding
+try {
+    [Console]::InputEncoding = $script:PwshRcUtf8Encoding
+    [Console]::OutputEncoding = $script:PwshRcUtf8Encoding
+} catch {}
+
 $global:__PwshRcProxySegment = ''
 $global:__PwshRcGitIdSegment = ''
 $global:__PwshRcPromptPrCacheKey = ''
@@ -175,6 +182,9 @@ function modern-replace {
 
 foreach ($name in @('ll', 'l', 'lla', 'llg', 'open', 'gradle', 'git', '7z', 'ssh', 'ffmpeg', 'ffprobe')) {
     Remove-AliasIfExists $name
+}
+foreach ($name in @('ffmpeg', 'ffprobe')) {
+    Remove-Item -Path "function:global:$name" -ErrorAction SilentlyContinue
 }
 
 function ll {
@@ -374,8 +384,10 @@ function upload {
     Invoke-ExternalCommand curl.exe -u $credential -F "path=@$File" 'https://daisy.hydev.org/upload?path=/'
 }
 
-function global:ffmpeg { Invoke-NativeApplication -Command ffmpeg -PrefixArgs @('-hide_banner') -NativeArgs $args }
-function global:ffprobe { Invoke-NativeApplication -Command ffprobe -PrefixArgs @('-hide_banner') -NativeArgs $args }
+function Invoke-Ffmpeg {
+    param([object[]]$NativeArgs = @())
+    Invoke-NativeApplication -Command ffmpeg -PrefixArgs @('-hide_banner') -NativeArgs $NativeArgs
+}
 
 function vcompy {
     $videoHelper = Join-Path $env:SCR 'helpers/video.py'
@@ -388,13 +400,13 @@ function cropv {
         [Parameter(Mandatory = $true)][int]$Length
     )
     $x = [math]::Floor((2560 - $Length) / 2)
-    ffmpeg -i $File -filter:v "crop=$Length`:1440:$x`:0" out.mp4
+    Invoke-Ffmpeg -NativeArgs @('-i', $File, '-filter:v', "crop=$Length`:1440:$x`:0", 'out.mp4')
 }
 
 function mp3v0 {
     param([Parameter(Mandatory = $true)][string]$InputFile)
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($InputFile)
-    ffmpeg -i $InputFile -c:a libmp3lame -q:a 0 "$baseName.mp3"
+    Invoke-Ffmpeg -NativeArgs @('-i', $InputFile, '-c:a', 'libmp3lame', '-q:a', '0', "$baseName.mp3")
 }
 
 function dc {
@@ -976,7 +988,7 @@ function global:prompt {
         Write-PromptText $global:__PwshRcProxySegment '00FF00'
     }
 
-    [Console]::Write((pwdd))
+    Write-Host -NoNewline (pwdd)
 
     $vcs = Get-VcsPromptState
     if ($vcs) {
