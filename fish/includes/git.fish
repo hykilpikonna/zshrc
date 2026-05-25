@@ -160,7 +160,48 @@ function brup --description 'Merge the latest origin main branch into the curren
     command git merge "refs/remotes/origin/$main_branch"
 end
 
+set -g __fishrc_git_env_commands add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st
+set -q __fishrc_git_env_active; or set -g __fishrc_git_env_active 0
+set -q __fishrc_git_env_auto_active; or set -g __fishrc_git_env_auto_active 0
+set -q __fishrc_git_env_auto; or set -g __fishrc_git_env_auto on
+
+function __fishrc_git_env_save_function --description 'Save an existing function before git-env replaces it'
+    set -l name "$argv[1]"
+    set -l had_var "__fishrc_git_env_had_$name"
+    set -l def_var "__fishrc_git_env_def_$name"
+
+    if functions -q "$name"
+        set -g $had_var 1
+        set -g $def_var (functions "$name" | string collect)
+    else
+        set -g $had_var 0
+        set -e $def_var
+    end
+end
+
+function __fishrc_git_env_restore_function --description 'Restore a function replaced by git-env'
+    set -l name "$argv[1]"
+    set -l had_var "__fishrc_git_env_had_$name"
+    set -l def_var "__fishrc_git_env_def_$name"
+
+    functions -q "$name"; and functions -e "$name"
+    if test "$$had_var" = 1
+        printf '%s\n' $$def_var | source
+    end
+
+    set -e $had_var
+    set -e $def_var
+end
+
 function git-env --description 'Alias common git subcommands into the shell'
+    if test "$__fishrc_git_env_active" = 1
+        return 0
+    end
+
+    for cmd in $__fishrc_git_env_commands
+        __fishrc_git_env_save_function "$cmd"
+    end
+
     set -l git_commands add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag
     for cmd in $git_commands
         alias "$cmd" "git $cmd"
@@ -168,13 +209,84 @@ function git-env --description 'Alias common git subcommands into the shell'
     alias grm 'git rm'
     alias gmv 'git mv'
     alias st 'git status'
+
+    set -g __fishrc_git_env_active 1
 end
 
 function git-unenv --description 'Remove aliases created by git-env'
-    set -l git_commands add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st
-    for cmd in $git_commands
-        functions -q "$cmd"; and functions -e "$cmd"
+    if test "$__fishrc_git_env_active" != 1
+        return 0
+    end
+
+    for cmd in $__fishrc_git_env_commands
+        __fishrc_git_env_restore_function "$cmd"
+    end
+
+    set -g __fishrc_git_env_active 0
+    set -g __fishrc_git_env_auto_active 0
+end
+
+function __fishrc_git_env_auto_in_repo --description 'Return success inside a git worktree'
+    command -sq git; and command git rev-parse --is-inside-work-tree >/dev/null 2>&1
+end
+
+function __fishrc_git_env_auto_update --description 'Refresh automatic git-env state'
+    status is-interactive; or return 0
+
+    if test "$__fishrc_git_env_auto" != on
+        if test "$__fishrc_git_env_auto_active" = 1
+            git-unenv
+        end
+        set -g __fishrc_git_env_auto_active 0
+        return 0
+    end
+
+    if __fishrc_git_env_auto_in_repo
+        git-env
+        set -g __fishrc_git_env_auto_active 1
+    else if test "$__fishrc_git_env_auto_active" = 1
+        git-unenv
     end
 end
 
+function __fishrc_git_env_auto_on_pwd --on-variable PWD --description 'Refresh automatic git-env after cd'
+    __fishrc_git_env_auto_update
+end
+
+function __fishrc_git_env_auto_on_prompt --on-event fish_prompt --description 'Refresh automatic git-env before each prompt'
+    __fishrc_git_env_auto_update
+end
+
+function git-env-auto --description 'Toggle automatic git-env in git worktrees'
+    if test (count $argv) -eq 0
+        echo "git-env-auto $__fishrc_git_env_auto"
+        return 0
+    end
+
+    if test (count $argv) -ne 1
+        echo 'Usage: git-env-auto {on|off|status}'
+        return 1
+    end
+
+    switch "$argv[1]"
+        case on
+            set -g __fishrc_git_env_auto on
+            set -U __fishrc_git_env_auto on
+            __fishrc_git_env_auto_update
+        case off
+            set -g __fishrc_git_env_auto off
+            set -U __fishrc_git_env_auto off
+            if test "$__fishrc_git_env_auto_active" = 1
+                git-unenv
+            end
+            set -g __fishrc_git_env_auto_active 0
+        case status
+            echo "git-env-auto $__fishrc_git_env_auto"
+        case '*'
+            echo 'Usage: git-env-auto {on|off|status}'
+            return 1
+    end
+end
+
+__fishrc_git_env_auto_update
 git-id-prompt
