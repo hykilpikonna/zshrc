@@ -35,11 +35,6 @@ if ADDITIONAL_USERS_PATH.is_file():
 
 
 def is_openwrt_dropbear() -> bool:
-    """
-    OpenWrt's Dropbear integration reads /etc/dropbear/authorized_keys.
-    Plain Dropbear on other distributions commonly keeps the OpenSSH-style
-    ~/.ssh/authorized_keys path, so only switch paths for OpenWrt-like systems.
-    """
     openwrt_markers = (
         Path('/etc/openwrt_release'),
         Path('/etc/openwrt_version'),
@@ -56,8 +51,6 @@ def authorized_keys_path() -> Path:
     override = os.environ.get('UPDATE_SSH_KEYS_PATH') or os.environ.get('AUTHORIZED_KEYS_PATH')
     if override:
         return Path(override).expanduser()
-    if is_openwrt_dropbear():
-        return Path('/etc/dropbear/authorized_keys')
     return Path.home() / '.ssh' / 'authorized_keys'
 
 
@@ -65,10 +58,7 @@ def ssh_server_kind() -> str | None:
     override = os.environ.get('UPDATE_SSH_KEYS_SSH_SERVER')
     if override:
         normalized = override.strip().lower()
-        if normalized in {'dropbear', 'openssh', 'none'}:
-            return None if normalized == 'none' else normalized
-    if is_openwrt_dropbear():
-        return 'dropbear'
+        return 'openssh' if normalized == 'openssh' else None
     if OPENSSH_CONFIG_PATH.is_file() or shutil.which('sshd') or Path('/usr/sbin/sshd').exists():
         return 'openssh'
     return None
@@ -110,6 +100,34 @@ def run_command(cmd: list[str], check: bool = False) -> subprocess.CompletedProc
     return subprocess.run(cmd, check=check, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
+def is_root() -> bool:
+    return hasattr(os, 'geteuid') and os.geteuid() == 0
+
+
+def package_manager() -> str | None:
+    if shutil.which('apk'):
+        return 'apk'
+    if shutil.which('opkg'):
+        return 'opkg'
+    return None
+
+
+def openssh_server_installed() -> bool:
+    return OPENSSH_CONFIG_PATH.is_file() or shutil.which('sshd') is not None or Path('/usr/sbin/sshd').exists()
+
+
+def run_as_root(cmd: list[str]) -> bool:
+    if is_root():
+        root_cmd = cmd
+    elif shutil.which('sudo'):
+        root_cmd = ['sudo', *cmd]
+    else:
+        printc(f'&eNeed root privileges to run: {" ".join(cmd)}')
+        return False
+
+    return subprocess.run(root_cmd).returncode == 0
+
+
 def run_existing_reload_commands(commands: list[list[str]]) -> bool:
     for cmd in commands:
         executable = Path(cmd[0])
@@ -126,18 +144,6 @@ def run_existing_reload_commands(commands: list[list[str]]) -> bool:
 
 
 def reload_ssh_server(kind: str):
-    if kind == 'dropbear':
-        if run_existing_reload_commands([
-            ['/etc/init.d/dropbear', 'reload'],
-            ['/etc/init.d/dropbear', 'restart'],
-            ['service', 'dropbear', 'reload'],
-            ['service', 'dropbear', 'restart'],
-        ]):
-            printc('&aReloaded dropbear.')
-        else:
-            printc('&eCould not reload dropbear automatically; restart SSH manually.')
-        return
-
     if kind == 'openssh':
         if run_existing_reload_commands([
             ['systemctl', 'reload', 'sshd'],
@@ -154,102 +160,178 @@ def reload_ssh_server(kind: str):
             printc('&eCould not reload sshd automatically; restart SSH manually.')
 
 
-def dropbear_password_auth_enabled(config_path: Path = DROPBEAR_CONFIG_PATH) -> bool | None:
-    if not config_path.is_file():
-        return None
+def write_backup(path: Path):
+    backup = path.with_suffix(path.suffix + '.bak')
+    if path.exists() and not backup.exists():
+        shutil.copy2(path, backup)
 
-    disabled_values = {'0', 'false', 'no', 'off', 'disabled'}
-    password_auth_values: list[str | None] = []
-    in_dropbear = False
-    saw_password_auth = False
 
-    def finish_section():
-        nonlocal saw_password_auth
-        if in_dropbear and not saw_password_auth:
-            password_auth_values.append(None)
-        saw_password_auth = False
+def set_openssh_global_options(options: dict[str, str], config_path: Path = OPENSSH_CONFIG_PATH) -> bool:
+    lines = config_path.read_text('utf-8', errors='replace').splitlines() if config_path.exists() else []
+    output: list[str] = []
+    pending = {key.lower(): (key, value) for key, value in options.items()}
+    option_pattern = '|'.join(re.escape(key) for key in options)
+    changed = False
+    inserted = False
 
-    for line in config_path.read_text('utf-8', errors='replace').splitlines():
-        if re.match(r'^\s*config\s+', line):
-            finish_section()
-            in_dropbear = bool(re.match(r'^\s*config\s+dropbear\b', line))
+    def append_pending():
+        nonlocal changed
+        for option, value in pending.values():
+            output.append(f'{option} {value}')
+            changed = True
+        pending.clear()
+
+    for line in lines:
+        if not inserted and re.match(r'(?i)^\s*Match\s+', line):
+            append_pending()
+            inserted = True
+            output.append(line)
             continue
 
-        if in_dropbear:
-            match = re.match(r'^\s*option\s+PasswordAuth\s+[\'"]?([^\'"\s#]+)', line)
+        if not inserted:
+            match = re.match(rf'(?i)^\s*#?\s*({option_pattern})\b', line)
             if match:
-                saw_password_auth = True
-                password_auth_values.append(match.group(1))
+                key = match.group(1).lower()
+                if key in pending:
+                    option, value = pending.pop(key)
+                    replacement = f'{option} {value}'
+                    output.append(replacement)
+                    changed = changed or line != replacement
+                    continue
 
-    finish_section()
+        output.append(line)
 
-    if not password_auth_values:
-        return True
-    return any(value is None or value.lower() not in disabled_values for value in password_auth_values)
+    if pending:
+        append_pending()
+
+    if changed:
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        write_backup(config_path)
+        config_path.write_text('\n'.join(output).rstrip() + '\n')
+    return changed
 
 
-def set_dropbear_password_auth_disabled(config_path: Path = DROPBEAR_CONFIG_PATH) -> bool:
+def set_dropbear_backup_port(config_path: Path = DROPBEAR_CONFIG_PATH, port: str = '2222') -> bool:
+    if not config_path.exists():
+        return False
+
     lines = config_path.read_text('utf-8', errors='replace').splitlines()
     output: list[str] = []
     in_dropbear = False
-    section_seen = False
-    saw_password_auth = False
-    saw_root_password_auth = False
+    saw_port = False
     changed = False
 
     def finish_section():
-        nonlocal changed, saw_password_auth, saw_root_password_auth
-        if in_dropbear:
-            if not saw_password_auth:
-                output.append("\toption PasswordAuth 'off'")
-                changed = True
-            if not saw_root_password_auth:
-                output.append("\toption RootPasswordAuth 'off'")
-                changed = True
-        saw_password_auth = False
-        saw_root_password_auth = False
+        nonlocal changed, saw_port
+        if in_dropbear and not saw_port:
+            output.append(f"\toption Port '{port}'")
+            changed = True
+        saw_port = False
 
     for line in lines:
         if re.match(r'^\s*config\s+', line):
             finish_section()
             in_dropbear = bool(re.match(r'^\s*config\s+dropbear\b', line))
-            section_seen = section_seen or in_dropbear
             output.append(line)
             continue
 
-        if in_dropbear and re.match(r'^\s*option\s+PasswordAuth\b', line):
-            saw_password_auth = True
-            replacement = "\toption PasswordAuth 'off'"
-            output.append(replacement)
-            changed = changed or line != replacement
-            continue
-
-        if in_dropbear and re.match(r'^\s*option\s+RootPasswordAuth\b', line):
-            saw_root_password_auth = True
-            replacement = "\toption RootPasswordAuth 'off'"
-            output.append(replacement)
-            changed = changed or line != replacement
+        port_match = re.match(r'^\s*option\s+Port\s+[\'"]?([^\'"\s#]+)', line)
+        if in_dropbear and port_match:
+            saw_port = True
+            if port_match.group(1) == '22':
+                replacement = f"\toption Port '{port}'"
+                output.append(replacement)
+                changed = changed or line != replacement
+            else:
+                output.append(line)
             continue
 
         output.append(line)
 
     finish_section()
 
-    if not section_seen:
-        output.extend([
-            '',
-            'config dropbear',
-            "\toption PasswordAuth 'off'",
-            "\toption RootPasswordAuth 'off'",
-        ])
-        changed = True
-
     if changed:
-        backup = config_path.with_suffix(config_path.suffix + '.bak')
-        if config_path.exists() and not backup.exists():
-            shutil.copy2(config_path, backup)
+        write_backup(config_path)
         config_path.write_text('\n'.join(output).rstrip() + '\n')
     return changed
+
+
+def install_openssh_server() -> bool:
+    if openssh_server_installed():
+        printc('&aOpenSSH server already appears installed.')
+        return True
+
+    manager = package_manager()
+    if manager == 'apk':
+        return run_as_root(['apk', 'update']) and run_as_root(['apk', 'add', 'openssh-server'])
+    if manager == 'opkg':
+        return run_as_root(['opkg', 'update']) and run_as_root(['opkg', 'install', 'openssh-server'])
+
+    printc('&eCould not find apk or opkg to install openssh-server.')
+    return False
+
+
+def start_openssh_switch_services() -> bool:
+    script = Path('/tmp/update-ssh-keys-switch-openssh.sh')
+    log_path = Path('/tmp/update-ssh-keys-switch-openssh.log')
+    script.write_text(textwrap.dedent("""\
+        #!/bin/sh
+        sleep 1
+        if [ -x /etc/init.d/dropbear ]; then
+          /etc/init.d/dropbear restart || /etc/init.d/dropbear reload || true
+        fi
+        if [ -x /etc/init.d/sshd ]; then
+          /etc/init.d/sshd enable || true
+          /etc/init.d/sshd restart || /etc/init.d/sshd start || true
+        fi
+        if [ -x /etc/init.d/ssh ]; then
+          /etc/init.d/ssh enable || true
+          /etc/init.d/ssh restart || /etc/init.d/ssh start || true
+        fi
+        """))
+    script.chmod(0o755)
+
+    log_file = log_path.open('ab')
+    subprocess.Popen(
+        ['/bin/sh', str(script)],
+        stdin=subprocess.DEVNULL,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+    printc(f'&aStarted OpenSSH switch in the background. Log: {log_path}')
+    return True
+
+
+def switch_to_openssh(update_keys: bool = True) -> bool:
+    if not is_root() and shutil.which('sudo'):
+        cmd = ['sudo', sys.executable, str(Path(__file__).resolve()), 'switch-to-openssh']
+        return subprocess.run(cmd).returncode == 0
+    if not is_root():
+        printc('&eRun update-ssh-keys.py switch-to-openssh as root.')
+        return False
+
+    if update_keys:
+        update_ssh_keys()
+    if not install_openssh_server():
+        return False
+
+    set_openssh_global_options({
+        'PubkeyAuthentication': 'yes',
+        'AuthorizedKeysFile': '.ssh/authorized_keys',
+        'PermitRootLogin': 'prohibit-password',
+    })
+    set_dropbear_backup_port()
+
+    printc('&eDropbear will be moved to port 2222 as a fallback.')
+    printc('&eThis may close the current SSH session if it is connected through Dropbear.')
+    if not start_openssh_switch_services():
+        return False
+
+    printc('&aAfter a few seconds, test OpenSSH on port 22:')
+    printc('&6> ssh -o PasswordAuthentication=no root@<host>')
+    printc('&6> ssh -p 2222 root@<host>  # Dropbear fallback')
+    return True
 
 
 def openssh_effective_password_auth() -> bool | None:
@@ -299,47 +381,11 @@ def openssh_password_auth_enabled(config_path: Path = OPENSSH_CONFIG_PATH) -> bo
 
 
 def set_openssh_password_auth_disabled(config_path: Path = OPENSSH_CONFIG_PATH) -> bool:
-    lines = config_path.read_text('utf-8', errors='replace').splitlines() if config_path.exists() else []
-    output: list[str] = []
-    changed = False
-    saw_password_auth = False
-    inserted = False
-
-    for line in lines:
-        if not inserted and re.match(r'(?i)^\s*Match\s+', line):
-            if not saw_password_auth:
-                output.append('PasswordAuthentication no')
-                changed = True
-            inserted = True
-            output.append(line)
-            continue
-
-        if not inserted and re.match(r'(?i)^\s*#?\s*PasswordAuthentication\b', line):
-            saw_password_auth = True
-            replacement = 'PasswordAuthentication no'
-            output.append(replacement)
-            changed = changed or line != replacement
-            continue
-
-        output.append(line)
-
-    if not saw_password_auth and not inserted:
-        output.append('PasswordAuthentication no')
-        changed = True
-
-    if changed:
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        backup = config_path.with_suffix(config_path.suffix + '.bak')
-        if config_path.exists() and not backup.exists():
-            shutil.copy2(config_path, backup)
-        config_path.write_text('\n'.join(output).rstrip() + '\n')
-    return changed
+    return set_openssh_global_options({'PasswordAuthentication': 'no'}, config_path)
 
 
 def password_auth_enabled() -> tuple[str | None, bool | None]:
     kind = ssh_server_kind()
-    if kind == 'dropbear':
-        return kind, dropbear_password_auth_enabled()
     if kind == 'openssh':
         return kind, openssh_password_auth_enabled()
     return None, None
@@ -357,10 +403,7 @@ def disable_password_auth_local() -> bool:
         printc('&eCould not determine whether SSH password authentication is enabled.')
         return False
 
-    if kind == 'dropbear':
-        changed = set_dropbear_password_auth_disabled()
-    else:
-        changed = set_openssh_password_auth_disabled()
+    changed = set_openssh_password_auth_disabled()
 
     if changed:
         printc('&aDisabled SSH password authentication in config.')
@@ -388,15 +431,14 @@ def check_password_auth():
         printc('&eCould not detect an SSH server config.')
         return 1
 
-    label = 'OpenWrt Dropbear' if kind == 'dropbear' else 'OpenSSH'
     if enabled is True:
-        printc(f'&e{label} password authentication appears enabled.')
+        printc('&eOpenSSH password authentication appears enabled.')
         return 2
     if enabled is False:
-        printc(f'&a{label} password authentication appears disabled.')
+        printc('&aOpenSSH password authentication appears disabled.')
         return 0
 
-    printc(f'&eCould not determine {label} password authentication state.')
+    printc('&eCould not determine OpenSSH password authentication state.')
     return 3
 
 
@@ -408,19 +450,43 @@ def maybe_offer_disable_password_auth():
     if enabled is not True:
         return
 
-    label = 'OpenWrt Dropbear' if kind == 'dropbear' else 'OpenSSH'
-    printc(f'&eWarning: {label} password authentication appears enabled.')
+    printc('&eWarning: OpenSSH password authentication appears enabled.')
     printc('&eAfter installing SSH keys, disabling password authentication is recommended.')
+    printc('&eBefore disabling it, open another terminal and verify public-key login works:')
+    printc('&6> ssh -o PasswordAuthentication=no <user>@<host>')
+    if os.environ.get('SSH_CONNECTION') or os.environ.get('SSH_CLIENT'):
+        printc('&eReloading SSH may close this current SSH session.')
 
     if not sys.stdin.isatty():
         printc('&eRun update-ssh-keys.py disable-password-auth to disable it.')
         return
 
-    answer = input('Disable SSH password authentication now? [y/N] ').strip().lower()
-    if answer in {'y', 'yes'}:
+    answer = input('Type "disable" after verifying key login, or press Enter to skip: ').strip().lower()
+    if answer == 'disable':
         disable_password_auth()
     else:
         printc('&6> You can disable it later with: update-ssh-keys.py disable-password-auth')
+
+
+def maybe_offer_openssh_switch():
+    if os.environ.get('UPDATE_SSH_KEYS_NO_OPENSSH_PROMPT'):
+        return
+    if not is_openwrt_dropbear() or openssh_server_installed():
+        return
+
+    printc('&eDetected OpenWrt Dropbear without OpenSSH server.')
+    printc('&eThis script now manages ~/.ssh/authorized_keys for OpenSSH instead of Dropbear keys.')
+    printc('&eOpenWrt Dropbear builds may reject ECDSA and ECDSA-SK keys.')
+
+    if not sys.stdin.isatty():
+        printc('&eRun update-ssh-keys.py switch-to-openssh to install OpenSSH and move Dropbear to port 2222.')
+        return
+
+    answer = input('Type "openssh" to install OpenSSH on port 22 and move Dropbear to 2222: ').strip().lower()
+    if answer == 'openssh':
+        switch_to_openssh(update_keys=not is_root())
+    else:
+        printc('&6> You can switch later with: update-ssh-keys.py switch-to-openssh')
 
 
 def update_ssh_keys():
@@ -474,6 +540,7 @@ if __name__ == "__main__":
     # No args provided
     if len(sys.argv) == 0:
         update_ssh_keys()
+        maybe_offer_openssh_switch()
         maybe_offer_disable_password_auth()
         exit(0)
 
@@ -489,6 +556,7 @@ if __name__ == "__main__":
         printc(f'&aAdded {", ".join(usernames)}!')
         list_users()
         update_ssh_keys()
+        maybe_offer_openssh_switch()
         maybe_offer_disable_password_auth()
 
     # Remove users
@@ -516,6 +584,9 @@ if __name__ == "__main__":
     elif sys.argv[0] == 'disable-password-auth':
         exit(0 if disable_password_auth() else 1)
 
+    elif sys.argv[0] == 'switch-to-openssh':
+        exit(0 if switch_to_openssh() else 1)
+
     # Unknown argument
     else:
         print(textwrap.dedent("""
@@ -524,4 +595,5 @@ if __name__ == "__main__":
             - list
             - check-password-auth
             - disable-password-auth
+            - switch-to-openssh
             """))
