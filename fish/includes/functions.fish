@@ -7,6 +7,226 @@ function mkcd --description 'Create a directory and cd into it'
     mkdir -p "$argv[1]"; and cd "$argv[1]"
 end
 
+function __fishrc_z_datafile --description 'Print the z database path'
+    if set -q ZSHZ_DATA; and test -n "$ZSHZ_DATA"
+        printf '%s\n' "$ZSHZ_DATA"
+    else if set -q _Z_DATA; and test -n "$_Z_DATA"
+        printf '%s\n' "$_Z_DATA"
+    else
+        printf '%s\n' "$HOME/.z"
+    end
+end
+
+function __fishrc_z_unescape_path --description 'Unescape paths written by zsh-z'
+    string replace -a '\\' '' -- "$argv[1]"
+end
+
+function __fishrc_z_add --description 'Record the current directory in the z database'
+    status is-interactive; or return 0
+    test "$PWD" != "$HOME"; or return 0
+    test -d "$PWD"; or return 0
+
+    if has zoxide
+        zoxide add "$PWD" >/dev/null 2>&1
+    end
+
+    set -l datafile (__fishrc_z_datafile)
+    test -d "$datafile"; and return 0
+
+    set -l now (date +%s)
+    set -l tmp "$datafile."(random)
+    set -l found 0
+    set -l total 0
+
+    if test -f "$datafile"
+        while read -l line
+            set -l fields (string split -m2 '|' -- "$line")
+            test (count $fields) -eq 3; or continue
+
+            set -l path (__fishrc_z_unescape_path "$fields[1]")
+            set -l rank "$fields[2]"
+            set -l time "$fields[3]"
+            string match -rq '^[0-9]+([.][0-9]+)?$' -- "$rank"; or continue
+            string match -rq '^[0-9]+$' -- "$time"; or continue
+            test -d "$path"; or continue
+
+            if test "$path" = "$PWD"
+                set rank (math "$rank + 1")
+                set time "$now"
+                set found 1
+            end
+
+            set total (math "$total + $rank")
+            printf '%s|%s|%s\n' "$path" "$rank" "$time" >>"$tmp"; or begin
+                rm -f "$tmp"
+                return 1
+            end
+        end <"$datafile"
+    end
+
+    if test "$found" = 0
+        printf '%s|1|%s\n' "$PWD" "$now" >>"$tmp"; or begin
+            rm -f "$tmp"
+            return 1
+        end
+        set total (math "$total + 1")
+    end
+
+    if test (math "floor($total)") -gt 9000
+        set -l aged "$tmp.aged"
+        while read -l line
+            set -l fields (string split -m2 '|' -- "$line")
+            test (count $fields) -eq 3; or continue
+            set -l rank (math "$fields[2] * 0.99")
+            test (math "floor($rank)") -ge 1; or continue
+            printf '%s|%s|%s\n' "$fields[1]" "$rank" "$fields[3]" >>"$aged"; or begin
+                rm -f "$tmp" "$aged"
+                return 1
+            end
+        end <"$tmp"
+        mv -f "$aged" "$tmp"
+    end
+
+    mv -f "$tmp" "$datafile"
+end
+
+function __fishrc_z_on_prompt --on-event fish_prompt --description 'Track directories for z'
+    __fishrc_z_add >/dev/null 2>&1
+end
+
+function z --description 'Jump to a frecent directory'
+    set -l list 0
+    set -l echo_only 0
+    set -l remove 0
+    set -l current_only 0
+    set -l method frecency
+    set -l terms
+
+    for arg in $argv
+        switch "$arg"
+            case -l --list
+                set list 1
+            case -e --echo
+                set echo_only 1
+            case -x --remove
+                set remove 1
+            case -c --current
+                set current_only 1
+            case -r --rank
+                set method rank
+            case -t --recent
+                set method time
+            case -h --help
+                echo 'Usage: z [-l|-e|-x|-c|-r|-t] [pattern ...]'
+                return 0
+            case '--'
+            case '-*'
+            echo "z: unknown option $arg" >&2
+            return 1
+        case '*'
+            set terms $terms "$arg"
+        end
+    end
+
+    if has zoxide; and test "$remove" = 0; and test "$current_only" = 0; and test "$method" = frecency
+        if test "$list" = 1; or test (count $argv) -eq 0
+            zoxide query -l -- $terms
+            return $status
+        end
+
+        set -l match (zoxide query -- $terms); or return $status
+        if test "$echo_only" = 1
+            printf '%s\n' "$match"
+        else
+            cd "$match"
+        end
+        return $status
+    end
+
+    set -l datafile (__fishrc_z_datafile)
+    if test "$remove" = 1
+        set -l target "$PWD"
+        test (count $terms) -gt 0; and set target "$terms[1]"
+        set target (path resolve "$target" 2>/dev/null); or return 1
+        test -f "$datafile"; or return 1
+        set -l tmp "$datafile."(random)
+        while read -l line
+            set -l fields (string split -m2 '|' -- "$line")
+            test (count $fields) -eq 3; or continue
+            set -l path (__fishrc_z_unescape_path "$fields[1]")
+            test "$path" = "$target"; and continue
+            printf '%s\n' "$line" >>"$tmp"
+        end <"$datafile"
+        mv -f "$tmp" "$datafile"
+        return 0
+    end
+
+    test -f "$datafile"; or return 1
+
+    set -l now (date +%s)
+    set -l rows
+
+    while read -l line
+        set -l fields (string split -m2 '|' -- "$line")
+        test (count $fields) -eq 3; or continue
+
+        set -l path (__fishrc_z_unescape_path "$fields[1]")
+        set -l rank "$fields[2]"
+        set -l time "$fields[3]"
+        string match -rq '^[0-9]+([.][0-9]+)?$' -- "$rank"; or continue
+        string match -rq '^[0-9]+$' -- "$time"; or continue
+        test -d "$path"; or continue
+
+        if test "$current_only" = 1
+            string match -q -- "$PWD/*" "$path"; or test "$path" = "$PWD"; or continue
+        end
+
+        set -l haystack (string lower -- "$path")
+        set -l matched 1
+        for term in $terms
+            if not string match -q -- "*"(string lower -- "$term")"*" "$haystack"
+                set matched 0
+                break
+            end
+        end
+        test "$matched" = 1; or continue
+
+        switch "$method"
+            case rank
+                set score "$rank"
+            case time
+                set score "$time"
+            case frecency
+                set -l dx (math "max(0, $now - $time)")
+                set score (math "10000 * $rank * (3.75 / ((0.0001 * $dx + 1) + 0.25))")
+        end
+
+        set rows $rows (printf '%s\t%s' "$score" "$path")
+    end <"$datafile"
+
+    if test "$list" = 1; or test (count $argv) -eq 0
+        for row in $rows
+            printf '%s\n' "$row"
+        end | sort -n
+        return 0
+    end
+
+    set -l sorted_rows
+    for row in $rows
+        set sorted_rows $sorted_rows (printf '%s\n' "$row")
+    end
+    set sorted_rows (printf '%s\n' $sorted_rows | sort -n)
+    set -l best_row "$sorted_rows[-1]"
+    set -l best_path (string split -m1 \t -- "$best_row")[2]
+    test -n "$best_path"; or return 1
+
+    if test "$echo_only" = 1
+        printf '%s\n' "$best_path"
+    else
+        cd "$best_path"
+    end
+end
+
 function set-java --description 'Set JAVA_HOME and PATH to an installed JDK version'
     if test (count $argv) -eq 0
         echo 'Usage: set-java <version>'
