@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -101,6 +102,10 @@ def infer_clone_directory(args: List[str], pr_url_index: int, pr_url: PullReques
     return pr_url.repo_name
 
 
+def has_explicit_clone_directory(args: List[str], pr_url_index: int) -> bool:
+    return pr_url_index + 1 < len(args)
+
+
 def run(command: List[str]) -> int:
     try:
         return subprocess.run(command).returncode
@@ -126,9 +131,12 @@ def main(argv: List[str]) -> int:
     if options.unsupported_checkout_option is not None:
         return die(f'{options.unsupported_checkout_option} cannot be used with pull request checkout')
 
-    clone_dir = infer_clone_directory(argv, pr_url_index, pr_url)
     clone_args = list(argv)
     clone_args[pr_url_index] = pr_url.clone_url
+    clone_dir = infer_clone_directory(argv, pr_url_index, pr_url)
+    if not has_explicit_clone_directory(argv, pr_url_index) and os.path.exists(clone_dir):
+        clone_dir = f'{pr_url.repo_name}-{pr_url.number}'
+        clone_args.append(clone_dir)
 
     clone_result = run(['git', 'clone', *clone_args])
     if clone_result != 0:
