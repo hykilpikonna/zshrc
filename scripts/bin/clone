@@ -1,29 +1,47 @@
 #!/usr/bin/env python3
 import os
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
-from urllib.parse import unquote, urlparse
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, unquote, urlparse
+from urllib.request import Request, urlopen
 
 
 @dataclass(frozen=True)
 class PullRequestUrl:
+    scheme: str
+    host: str
+    owner: str
     clone_url: str
     repo_name: str
     number: str
 
 
 @dataclass(frozen=True)
+class PullRequestMetadata:
+    head_ref: str
+    head_repo_full_name: str
+    head_clone_url: str
+    base_repo_full_name: str
+    base_clone_url: str
+
+
+@dataclass(frozen=True)
 class CloneOptions:
     remote: str = 'origin'
-    depth: Optional[str] = None
     unsupported_checkout_option: Optional[str] = None
 
 
 def die(message: str) -> int:
     print(f'clone: {message}', file=sys.stderr)
     return 1
+
+
+def warn(message: str) -> None:
+    print(f'clone: warning: {message}', file=sys.stderr)
 
 
 def strip_git_suffix(name: str) -> str:
@@ -47,7 +65,14 @@ def parse_pull_request_url(value: str) -> Optional[PullRequestUrl]:
         return None
 
     clone_url = f'{parsed.scheme}://{parsed.netloc}/{owner}/{repo_name}'
-    return PullRequestUrl(clone_url=clone_url, repo_name=repo_name, number=parts[3])
+    return PullRequestUrl(
+        scheme=parsed.scheme,
+        host=parsed.netloc,
+        owner=owner,
+        clone_url=clone_url,
+        repo_name=repo_name,
+        number=parts[3],
+    )
 
 
 def option_value(args: List[str], index: int) -> Optional[str]:
@@ -59,7 +84,6 @@ def option_value(args: List[str], index: int) -> Optional[str]:
 
 def parse_clone_options(args: List[str], stop_index: int) -> CloneOptions:
     remote = 'origin'
-    depth: Optional[str] = None
     unsupported_checkout_option: Optional[str] = None
     index = 0
 
@@ -70,6 +94,14 @@ def parse_clone_options(args: List[str], stop_index: int) -> CloneOptions:
 
         if arg in ('--bare', '--mirror'):
             unsupported_checkout_option = arg
+        elif arg in ('-b', '--branch', '--revision', '-n', '--no-checkout'):
+            unsupported_checkout_option = arg
+            if arg in ('-b', '--branch', '--revision') and option_value(args, index) is not None:
+                index += 1
+        elif arg.startswith('--branch=') or arg.startswith('--revision='):
+            unsupported_checkout_option = arg.split('=', 1)[0]
+        elif arg.startswith('-b') and arg != '-b':
+            unsupported_checkout_option = '-b'
         elif arg in ('-o', '--origin'):
             value = option_value(args, index)
             if value is not None:
@@ -79,19 +111,11 @@ def parse_clone_options(args: List[str], stop_index: int) -> CloneOptions:
             remote = arg.split('=', 1)[1]
         elif arg.startswith('-o') and arg != '-o':
             remote = arg[2:]
-        elif arg == '--depth':
-            value = option_value(args, index)
-            if value is not None:
-                depth = value
-                index += 1
-        elif arg.startswith('--depth='):
-            depth = arg.split('=', 1)[1]
 
         index += 1
 
     return CloneOptions(
         remote=remote,
-        depth=depth,
         unsupported_checkout_option=unsupported_checkout_option,
     )
 
@@ -106,11 +130,140 @@ def has_explicit_clone_directory(args: List[str], pr_url_index: int) -> bool:
     return pr_url_index + 1 < len(args)
 
 
+def add_branch_option(args: List[str], branch: str) -> List[str]:
+    if '--' in args:
+        delimiter_index = args.index('--')
+        return args[:delimiter_index] + ['--branch', branch] + args[delimiter_index:]
+    return [*args, '--branch', branch]
+
+
 def run(command: List[str]) -> int:
     try:
         return subprocess.run(command).returncode
     except FileNotFoundError:
         return die(f'{command[0]} is not installed')
+
+
+def run_capture(command: List[str], timeout: int = 30) -> Tuple[int, str, str]:
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return result.returncode, result.stdout, result.stderr
+    except FileNotFoundError:
+        return 127, '', f'{command[0]} is not installed'
+    except subprocess.TimeoutExpired:
+        return 124, '', f'{command[0]} timed out'
+
+
+def github_api_url(pr_url: PullRequestUrl) -> str:
+    owner = quote(pr_url.owner, safe='')
+    repo = quote(pr_url.repo_name, safe='')
+    if pr_url.host.lower() == 'github.com':
+        return f'https://api.github.com/repos/{owner}/{repo}/pulls/{pr_url.number}'
+    return f'{pr_url.scheme}://{pr_url.host}/api/v3/repos/{owner}/{repo}/pulls/{pr_url.number}'
+
+
+def fetch_pr_json_with_http(pr_url: PullRequestUrl) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    headers = {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'zshrc-clone',
+    }
+    token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
+    if token:
+        headers['Authorization'] = f'Bearer {token}'
+
+    request = Request(github_api_url(pr_url), headers=headers)
+    try:
+        with urlopen(request, timeout=15) as response:
+            return json.load(response), None
+    except HTTPError as error:
+        return None, f'GitHub API returned HTTP {error.code}'
+    except (OSError, URLError, json.JSONDecodeError) as error:
+        return None, str(error)
+
+
+def fetch_pr_json_with_gh(pr_url: PullRequestUrl) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    command = [
+        'gh',
+        'api',
+        f'repos/{pr_url.owner}/{pr_url.repo_name}/pulls/{pr_url.number}',
+    ]
+    if pr_url.host.lower() != 'github.com':
+        command[2:2] = ['--hostname', pr_url.host]
+
+    returncode, stdout, stderr = run_capture(command)
+    if returncode != 0:
+        return None, stderr.strip() or f'gh api exited with {returncode}'
+
+    try:
+        return json.loads(stdout), None
+    except json.JSONDecodeError as error:
+        return None, str(error)
+
+
+def repo_clone_url(repo: Dict[str, Any]) -> str:
+    return repo.get('clone_url') or repo.get('html_url') or repo.get('ssh_url') or ''
+
+
+def parse_pr_metadata(data: Dict[str, Any], pr_url: PullRequestUrl) -> Tuple[Optional[PullRequestMetadata], Optional[str]]:
+    head = data.get('head') or {}
+    base = data.get('base') or {}
+    head_repo = head.get('repo')
+    base_repo = base.get('repo') or {}
+
+    if not isinstance(head_repo, dict):
+        return None, 'PR head repository is unavailable; the branch may have been deleted'
+
+    head_ref = head.get('ref') or ''
+    head_clone_url = repo_clone_url(head_repo)
+    if not head_ref or not head_clone_url:
+        return None, 'PR metadata did not include a cloneable head branch'
+
+    return PullRequestMetadata(
+        head_ref=head_ref,
+        head_repo_full_name=head_repo.get('full_name') or '',
+        head_clone_url=head_clone_url,
+        base_repo_full_name=base_repo.get('full_name') or f'{pr_url.owner}/{pr_url.repo_name}',
+        base_clone_url=repo_clone_url(base_repo) or pr_url.clone_url,
+    ), None
+
+
+def fetch_pr_metadata(pr_url: PullRequestUrl) -> Tuple[Optional[PullRequestMetadata], Optional[str]]:
+    errors: List[str] = []
+    for fetcher in (fetch_pr_json_with_http, fetch_pr_json_with_gh):
+        data, error = fetcher(pr_url)
+        if data is None:
+            if error:
+                errors.append(error)
+            continue
+
+        metadata, parse_error = parse_pr_metadata(data, pr_url)
+        if metadata is not None:
+            return metadata, None
+        if parse_error:
+            errors.append(parse_error)
+
+    return None, '; '.join(errors) or 'failed to fetch PR metadata'
+
+
+def add_base_remote(clone_dir: str, metadata: PullRequestMetadata, head_remote: str) -> int:
+    if not metadata.base_clone_url:
+        return 0
+    if metadata.head_repo_full_name == metadata.base_repo_full_name:
+        return 0
+
+    base_remote = 'upstream'
+    if head_remote == base_remote:
+        base_remote = 'base'
+
+    result = run(['git', '-C', clone_dir, 'remote', 'add', base_remote, metadata.base_clone_url])
+    if result != 0:
+        warn(f'failed to add {base_remote} remote for {metadata.base_repo_full_name}')
+    return 0
 
 
 def main(argv: List[str]) -> int:
@@ -131,35 +284,25 @@ def main(argv: List[str]) -> int:
     if options.unsupported_checkout_option is not None:
         return die(f'{options.unsupported_checkout_option} cannot be used with pull request checkout')
 
-    clone_args = list(argv)
-    clone_args[pr_url_index] = pr_url.clone_url
+    metadata, metadata_error = fetch_pr_metadata(pr_url)
+    if metadata is None:
+        return die(f'could not load pull request metadata: {metadata_error}')
+
+    clone_args = add_branch_option(argv[:pr_url_index], metadata.head_ref)
+    clone_args.extend([metadata.head_clone_url, *argv[pr_url_index + 1:]])
+
+    explicit_clone_directory = has_explicit_clone_directory(argv, pr_url_index)
     clone_dir = infer_clone_directory(argv, pr_url_index, pr_url)
-    if not has_explicit_clone_directory(argv, pr_url_index) and os.path.exists(clone_dir):
-        clone_dir = f'{pr_url.repo_name}-{pr_url.number}'
+    if not explicit_clone_directory:
+        if os.path.exists(clone_dir):
+            clone_dir = f'{pr_url.repo_name}-{pr_url.number}'
         clone_args.append(clone_dir)
 
     clone_result = run(['git', 'clone', *clone_args])
     if clone_result != 0:
         return clone_result
 
-    fetch_command = [
-        'git',
-        '-C',
-        clone_dir,
-        'fetch',
-    ]
-    if options.depth is not None:
-        fetch_command.extend(['--depth', options.depth])
-    fetch_command.extend([
-        options.remote,
-        f'+refs/pull/{pr_url.number}/head:refs/heads/{pr_url.number}',
-    ])
-
-    fetch_result = run(fetch_command)
-    if fetch_result != 0:
-        return fetch_result
-
-    return run(['git', '-C', clone_dir, 'checkout', pr_url.number])
+    return add_base_remote(clone_dir, metadata, options.remote)
 
 
 if __name__ == '__main__':
