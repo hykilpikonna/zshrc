@@ -499,6 +499,22 @@ function Invoke-GitCommand {
 
 function global:git { Invoke-GitCommand -GitArgs $args }
 
+function clone {
+    $cloneScript = Join-Path $env:SCR 'bin/clone'
+    if (Test-Path -LiteralPath $cloneScript -PathType Leaf) {
+        $python = Get-ExternalCommandPath python3
+        if (-not $python) { $python = Get-ExternalCommandPath python }
+        if ($python) {
+            $cloneArgs = @($cloneScript)
+            foreach ($arg in $args) { $cloneArgs += ,$arg }
+            & $python @cloneArgs
+            return
+        }
+    }
+
+    Invoke-RawGit clone @args
+}
+
 function commit {
     if ($args.Count -eq 0) { git commit }
     else { git commit -m ($args -join ' ') }
@@ -659,7 +675,7 @@ function brup {
 }
 
 function git-env {
-    foreach ($cmd in @('add', 'bisect', 'branch', 'checkout', 'clone', 'commit', 'diff', 'fetch', 'grep', 'init', 'log', 'merge', 'pull', 'push', 'rebase', 'reset', 'restore', 'show', 'stash', 'tag')) {
+    foreach ($cmd in @('add', 'bisect', 'branch', 'checkout', 'commit', 'diff', 'fetch', 'grep', 'init', 'log', 'merge', 'pull', 'push', 'rebase', 'reset', 'restore', 'show', 'stash', 'tag')) {
         $name = $cmd
         Set-Item -Path "function:global:$name" -Value { git $name @args }.GetNewClosure()
     }
@@ -670,7 +686,7 @@ function git-env {
 }
 
 function git-unenv {
-    foreach ($cmd in @('add', 'bisect', 'branch', 'checkout', 'clone', 'commit', 'diff', 'fetch', 'grep', 'init', 'log', 'merge', 'pull', 'push', 'rebase', 'reset', 'restore', 'show', 'stash', 'tag', 'grm', 'gmv', 'st')) {
+    foreach ($cmd in @('add', 'bisect', 'branch', 'checkout', 'commit', 'diff', 'fetch', 'grep', 'init', 'log', 'merge', 'pull', 'push', 'rebase', 'reset', 'restore', 'show', 'stash', 'tag', 'grm', 'gmv', 'st')) {
         Remove-Item -Path "function:global:$cmd" -ErrorAction SilentlyContinue
     }
 }

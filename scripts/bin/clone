@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
+from urllib.parse import unquote, urlparse
+
+
+@dataclass(frozen=True)
+class PullRequestUrl:
+    clone_url: str
+    repo_name: str
+    number: str
+
+
+@dataclass(frozen=True)
+class CloneOptions:
+    remote: str = 'origin'
+    depth: Optional[str] = None
+    unsupported_checkout_option: Optional[str] = None
+
+
+def die(message: str) -> int:
+    print(f'clone: {message}', file=sys.stderr)
+    return 1
+
+
+def strip_git_suffix(name: str) -> str:
+    if name.endswith('.git'):
+        return name[:-4]
+    return name
+
+
+def parse_pull_request_url(value: str) -> Optional[PullRequestUrl]:
+    parsed = urlparse(value)
+    if parsed.scheme not in ('http', 'https') or not parsed.netloc:
+        return None
+
+    parts = [unquote(part) for part in parsed.path.split('/') if part]
+    if len(parts) < 4 or parts[2] != 'pull' or not parts[3].isdigit():
+        return None
+
+    owner = parts[0]
+    repo_name = strip_git_suffix(parts[1])
+    if not owner or not repo_name:
+        return None
+
+    clone_url = f'{parsed.scheme}://{parsed.netloc}/{owner}/{repo_name}'
+    return PullRequestUrl(clone_url=clone_url, repo_name=repo_name, number=parts[3])
+
+
+def option_value(args: List[str], index: int) -> Optional[str]:
+    next_index = index + 1
+    if next_index >= len(args):
+        return None
+    return args[next_index]
+
+
+def parse_clone_options(args: List[str], stop_index: int) -> CloneOptions:
+    remote = 'origin'
+    depth: Optional[str] = None
+    unsupported_checkout_option: Optional[str] = None
+    index = 0
+
+    while index < stop_index:
+        arg = args[index]
+        if arg == '--':
+            break
+
+        if arg in ('--bare', '--mirror'):
+            unsupported_checkout_option = arg
+        elif arg in ('-o', '--origin'):
+            value = option_value(args, index)
+            if value is not None:
+                remote = value
+                index += 1
+        elif arg.startswith('--origin='):
+            remote = arg.split('=', 1)[1]
+        elif arg.startswith('-o') and arg != '-o':
+            remote = arg[2:]
+        elif arg == '--depth':
+            value = option_value(args, index)
+            if value is not None:
+                depth = value
+                index += 1
+        elif arg.startswith('--depth='):
+            depth = arg.split('=', 1)[1]
+
+        index += 1
+
+    return CloneOptions(
+        remote=remote,
+        depth=depth,
+        unsupported_checkout_option=unsupported_checkout_option,
+    )
+
+
+def infer_clone_directory(args: List[str], pr_url_index: int, pr_url: PullRequestUrl) -> str:
+    if pr_url_index + 1 < len(args):
+        return args[pr_url_index + 1]
+    return pr_url.repo_name
+
+
+def run(command: List[str]) -> int:
+    try:
+        return subprocess.run(command).returncode
+    except FileNotFoundError:
+        return die(f'{command[0]} is not installed')
+
+
+def main(argv: List[str]) -> int:
+    matches: List[Tuple[int, PullRequestUrl]] = []
+    for index, arg in enumerate(argv):
+        pr_url = parse_pull_request_url(arg)
+        if pr_url is not None:
+            matches.append((index, pr_url))
+
+    if not matches:
+        return run(['git', 'clone', *argv])
+
+    if len(matches) > 1:
+        return die('only one pull request URL can be cloned at a time')
+
+    pr_url_index, pr_url = matches[0]
+    options = parse_clone_options(argv, pr_url_index)
+    if options.unsupported_checkout_option is not None:
+        return die(f'{options.unsupported_checkout_option} cannot be used with pull request checkout')
+
+    clone_dir = infer_clone_directory(argv, pr_url_index, pr_url)
+    clone_args = list(argv)
+    clone_args[pr_url_index] = pr_url.clone_url
+
+    clone_result = run(['git', 'clone', *clone_args])
+    if clone_result != 0:
+        return clone_result
+
+    fetch_command = [
+        'git',
+        '-C',
+        clone_dir,
+        'fetch',
+    ]
+    if options.depth is not None:
+        fetch_command.extend(['--depth', options.depth])
+    fetch_command.extend([
+        options.remote,
+        f'+refs/pull/{pr_url.number}/head:refs/heads/{pr_url.number}',
+    ])
+
+    fetch_result = run(fetch_command)
+    if fetch_result != 0:
+        return fetch_result
+
+    return run(['git', '-C', clone_dir, 'checkout', pr_url.number])
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

@@ -166,7 +166,7 @@ brup() {
 
 # Git environment
 git-env() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag )
+    git_commands=( add bisect branch checkout commit diff fetch grep init log merge pull push rebase reset restore show stash tag )
     for i in "${git_commands[@]}"
     do
         alias "$i"="git $i"
@@ -176,7 +176,7 @@ git-env() {
     alias 'st'='git status'
 }
 git-unenv() {
-    git_commands=( add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st )
+    git_commands=( add bisect branch checkout commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st )
     for i in "${git_commands[@]}"
     do
         unalias "$i"

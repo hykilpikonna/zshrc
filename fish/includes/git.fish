@@ -160,7 +160,7 @@ function brup --description 'Merge the latest origin main branch into the curren
     command git merge "refs/remotes/origin/$main_branch"
 end
 
-set -g __fishrc_git_env_commands add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st
+set -g __fishrc_git_env_commands add bisect branch checkout commit diff fetch grep init log merge pull push rebase reset restore show stash tag grm gmv st
 set -q __fishrc_git_env_active; or set -g __fishrc_git_env_active 0
 set -q __fishrc_git_env_auto_active; or set -g __fishrc_git_env_auto_active 0
 set -q __fishrc_git_env_auto; or set -g __fishrc_git_env_auto on
@@ -202,7 +202,7 @@ function git-env --description 'Alias common git subcommands into the shell'
         __fishrc_git_env_save_function "$cmd"
     end
 
-    set -l git_commands add bisect branch checkout clone commit diff fetch grep init log merge pull push rebase reset restore show stash tag
+    set -l git_commands add bisect branch checkout commit diff fetch grep init log merge pull push rebase reset restore show stash tag
     for cmd in $git_commands
         alias "$cmd" "git $cmd"
     end
