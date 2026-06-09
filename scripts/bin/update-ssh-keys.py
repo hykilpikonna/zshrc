@@ -8,6 +8,8 @@ import textwrap
 import os
 import shutil
 import re
+import glob
+import shlex
 from urllib.request import Request, urlopen
 
 from color_utils import printc
@@ -25,6 +27,7 @@ def import_or_install(module: str, package: str | None = None):
 GITHUB_USERS = {'hykilpikonna', 'sauricat'}
 ADDITIONAL_USERS_PATH = Path.home() / '.ssh' / 'authorized_github_users'
 OPENSSH_CONFIG_PATH = Path(os.environ.get('UPDATE_SSH_KEYS_SSHD_CONFIG', '/etc/ssh/sshd_config'))
+OPENSSH_INCLUDE_BASE_PATH = Path(os.environ.get('UPDATE_SSH_KEYS_SSHD_INCLUDE_BASE', '/etc/ssh'))
 DROPBEAR_CONFIG_PATH = Path(os.environ.get('UPDATE_SSH_KEYS_DROPBEAR_CONFIG', '/etc/config/dropbear'))
 if ADDITIONAL_USERS_PATH.is_file():
     GITHUB_USERS.update(
@@ -166,6 +169,67 @@ def write_backup(path: Path):
         shutil.copy2(path, backup)
 
 
+def sshd_config_tokens(line: str) -> list[str]:
+    try:
+        return shlex.split(line, comments=True, posix=True)
+    except ValueError:
+        return line.split('#', 1)[0].split()
+
+
+def expand_sshd_include_paths(patterns: list[str]) -> list[Path]:
+    paths: list[Path] = []
+    for pattern in patterns:
+        path = Path(pattern)
+        if not path.is_absolute():
+            path = OPENSSH_INCLUDE_BASE_PATH / path
+
+        matches = sorted(glob.glob(str(path)))
+        if not matches and not glob.has_magic(str(path)):
+            matches = [str(path)]
+
+        paths.extend(Path(match) for match in matches if Path(match).is_file())
+    return paths
+
+
+def read_openssh_global_option(
+    option: str,
+    config_path: Path = OPENSSH_CONFIG_PATH,
+    seen: set[Path] | None = None,
+) -> str | None:
+    if not config_path.is_file():
+        return None
+
+    if seen is None:
+        seen = set()
+
+    resolved = config_path.resolve(strict=False)
+    if resolved in seen:
+        return None
+    seen.add(resolved)
+
+    option_lower = option.lower()
+    for line in config_path.read_text('utf-8', errors='replace').splitlines():
+        tokens = sshd_config_tokens(line)
+        if not tokens:
+            continue
+
+        key = tokens[0].lower()
+        if key == 'match':
+            break
+
+        if key == 'include':
+            for include_path in expand_sshd_include_paths(tokens[1:]):
+                value = read_openssh_global_option(option, include_path, seen)
+                if value is not None:
+                    return value
+            continue
+
+        if key == option_lower and len(tokens) >= 2:
+            return tokens[1].lower()
+
+    return None
+
+
 def set_openssh_global_options(options: dict[str, str], config_path: Path = OPENSSH_CONFIG_PATH) -> bool:
     lines = config_path.read_text('utf-8', errors='replace').splitlines() if config_path.exists() else []
     output: list[str] = []
@@ -182,11 +246,13 @@ def set_openssh_global_options(options: dict[str, str], config_path: Path = OPEN
         pending.clear()
 
     for line in lines:
-        if not inserted and re.match(r'(?i)^\s*Match\s+', line):
-            append_pending()
-            inserted = True
-            output.append(line)
-            continue
+        if not inserted:
+            tokens = sshd_config_tokens(line)
+            if tokens and tokens[0].lower() in {'include', 'match'}:
+                append_pending()
+                inserted = True
+                output.append(line)
+                continue
 
         if not inserted:
             match = re.match(rf'(?i)^\s*#?\s*({option_pattern})\b', line)
@@ -358,26 +424,12 @@ def openssh_password_auth_enabled(config_path: Path = OPENSSH_CONFIG_PATH) -> bo
     if effective is not None:
         return effective
 
-    if not config_path.is_file():
-        return None
-
-    in_match = False
-    value: str | None = None
-    for line in config_path.read_text('utf-8', errors='replace').splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            continue
-        if re.match(r'(?i)^Match\s+', stripped):
-            in_match = True
-        if in_match:
-            continue
-        match = re.match(r'(?i)^PasswordAuthentication\s+(\S+)', stripped)
-        if match:
-            value = match.group(1).lower()
-
+    value = read_openssh_global_option('PasswordAuthentication', config_path)
     if value is None:
         return True
-    return value == 'yes'
+    if value in {'yes', 'no'}:
+        return value == 'yes'
+    return None
 
 
 def set_openssh_password_auth_disabled(config_path: Path = OPENSSH_CONFIG_PATH) -> bool:
@@ -461,7 +513,11 @@ def maybe_offer_disable_password_auth():
         printc('&eRun update-ssh-keys.py disable-password-auth to disable it.')
         return
 
-    answer = input('Type "disable" after verifying key login, or press Enter to skip: ').strip().lower()
+    try:
+        answer = input('Type "disable" after verifying key login, or press Enter to skip: ').strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return
     if answer == 'disable':
         disable_password_auth()
     else:
@@ -482,7 +538,11 @@ def maybe_offer_openssh_switch():
         printc('&eRun update-ssh-keys.py switch-to-openssh to install OpenSSH and move Dropbear to port 2222.')
         return
 
-    answer = input('Type "openssh" to install OpenSSH on port 22 and move Dropbear to 2222: ').strip().lower()
+    try:
+        answer = input('Type "openssh" to install OpenSSH on port 22 and move Dropbear to 2222: ').strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return
     if answer == 'openssh':
         switch_to_openssh(update_keys=not is_root())
     else:
