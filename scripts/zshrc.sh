@@ -369,7 +369,14 @@ ssh() {
 }
 
 # SSH Tmux
-if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
+_zshrc_ssh_client_from_multiplexer() {
+  case "$TERM" in
+    tmux|tmux-*|screen|screen-*|screen.*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]] && ! _zshrc_ssh_client_from_multiplexer; then
   if command -v tmux >/dev/null 2>&1; then
     if tmux has-session -t '=ssh_tmux' 2>/dev/null && ! tmux has-session -t '=ssh' 2>/dev/null; then
       tmux rename-session -t '=ssh_tmux' ssh 2>/dev/null

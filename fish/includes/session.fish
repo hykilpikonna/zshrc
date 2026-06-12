@@ -32,7 +32,11 @@ function ssh --description 'Use xterm-256color when connecting from kitty'
     end
 end
 
-if status is-interactive; and test -z "$TMUX"; and test -n "$SSH_TTY"; and has tmux
+function __fishrc_ssh_client_from_multiplexer --description 'Return success if SSH inherited a multiplexer terminal'
+    string match -qr '^(tmux|screen)([-.]|$)' -- "$TERM"
+end
+
+if status is-interactive; and test -z "$TMUX"; and test -n "$SSH_TTY"; and not __fishrc_ssh_client_from_multiplexer; and has tmux
     if tmux has-session -t '=ssh_tmux' 2>/dev/null; and not tmux has-session -t '=ssh' 2>/dev/null
         tmux rename-session -t '=ssh_tmux' ssh 2>/dev/null
     end
