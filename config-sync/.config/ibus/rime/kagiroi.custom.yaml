@@ -3,8 +3,8 @@ patch:
     - lua_processor@*shift_schema_switcher
     - ascii_composer
     - recognizer
-    - key_binder
     - lua_processor@*kagiroi/kagiroi_kana_speller
+    - key_binder
     - speller
     - punctuator
     - selector
