@@ -3,6 +3,8 @@ set -eu
 
 repo_url="${ZSHRC_REPO_URL:-https://github.com/hykilpikonna/zshrc}"
 repo_dir="${ZSHRC_INSTALL_DIR:-$HOME/zshrc}"
+default_submodules="plugins/zsh-autosuggestions plugins/nanorc plugins/find-the-command"
+rime_submodules="config-sync/.config/ibus/rime/_submodules/rime-ice config-sync/.config/ibus/rime/_submodules/rime-kagiroi"
 
 log() {
   printf '[zshrc] %s\n' "$*"
@@ -113,6 +115,30 @@ install_bootstrap_dependencies() {
   fi
 }
 
+is_enabled() {
+  case "${1:-}" in
+    1 | true | TRUE | yes | YES | on | ON)
+      return 0
+      ;;
+  esac
+
+  return 1
+}
+
+install_repo_submodules() {
+  log 'Installing shell plugin submodules.'
+  # shellcheck disable=SC2086
+  git -C "$repo_dir" submodule update --init --recursive --depth 1 -- $default_submodules
+
+  if is_enabled "${ZSHRC_INSTALL_RIME_SUBMODULES:-}"; then
+    log 'Installing Rime submodules.'
+    # shellcheck disable=SC2086
+    git -C "$repo_dir" submodule update --init --recursive --depth 1 -- $rime_submodules
+  else
+    log 'Skipping Rime submodules. Set ZSHRC_INSTALL_RIME_SUBMODULES=1 to include them.'
+  fi
+}
+
 addline() {
   file="$1"
   line="$2"
@@ -135,7 +161,8 @@ old_pwd="$(pwd)"
 cd "$HOME"
 
 log "Cloning $repo_url into $repo_dir."
-git clone --depth 1 --recurse-submodules --shallow-submodules "$repo_url" "$repo_dir"
+git clone --depth 1 "$repo_url" "$repo_dir"
+install_repo_submodules
 
 if [ "$repo_dir" = "$HOME/zshrc" ]; then
   addline "$HOME/.zshrc" 'SCR="$HOME/zshrc/scripts"'

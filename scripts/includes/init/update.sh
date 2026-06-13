@@ -33,19 +33,95 @@ prefix="&7[&3zshrc&7]"
 remote_ref="${ZSHRC_UPDATE_REF:-origin/master}"
 lock_dir="$repo_root/.git/zshrc-update.lock"
 notify_file="$repo_root/.git/zshrc-update-notification"
+_zshrc_update_default_submodules=(
+    plugins/zsh-autosuggestions
+    plugins/nanorc
+    plugins/find-the-command
+)
+_zshrc_update_rime_submodules=(
+    config-sync/.config/ibus/rime/_submodules/rime-ice
+    config-sync/.config/ibus/rime/_submodules/rime-kagiroi
+)
 
-if ! mkdir "$lock_dir" 2>/dev/null; then
+_zshrc_update_lock_mtime() {
+    command stat -c %Y "$lock_dir" 2>/dev/null || command stat -f %m "$lock_dir" 2>/dev/null
+}
+
+_zshrc_update_lock_stale() {
+    [[ -d "$lock_dir" ]] || return 1
+
+    local now mtime stale_seconds
+    stale_seconds="${ZSHRC_UPDATE_LOCK_STALE_SECONDS:-1800}"
+    now="$(date +%s 2>/dev/null)" || return 1
+    mtime="$(_zshrc_update_lock_mtime)" || return 1
+
+    [[ "$now" == <-> && "$mtime" == <-> && "$stale_seconds" == <-> ]] || return 1
+    (( now - mtime > stale_seconds ))
+}
+
+_zshrc_update_make_lock() {
+    if mkdir "$lock_dir" 2>/dev/null; then
+        print -r -- "$$" >| "$lock_dir/owner" 2>/dev/null || true
+        return 0
+    fi
+
+    if _zshrc_update_lock_stale; then
+        rm -rf "$lock_dir" 2>/dev/null || return 1
+        if mkdir "$lock_dir" 2>/dev/null; then
+            print -r -- "$$" >| "$lock_dir/owner" 2>/dev/null || true
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+if ! _zshrc_update_make_lock; then
     cd "$old_pwd" 2>/dev/null
     return 0 2>/dev/null || exit 0
 fi
 _zshrc_update_cleanup() {
-    rmdir "$lock_dir" 2>/dev/null
+    rm -rf "$lock_dir" 2>/dev/null
     cd "$old_pwd" 2>/dev/null
 }
 trap _zshrc_update_cleanup EXIT INT TERM
 
 _zshrc_write_update_notification() {
     printf '%s\n' "$1" >| "$notify_file" 2>/dev/null || true
+}
+
+_zshrc_update_enabled() {
+    case "$1" in
+        1|true|TRUE|yes|YES|on|ON) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+_zshrc_update_rime_submodules_enabled() {
+    if [[ -n "$ZSHRC_UPDATE_RIME_SUBMODULES" ]]; then
+        _zshrc_update_enabled "$ZSHRC_UPDATE_RIME_SUBMODULES"
+        return
+    fi
+
+    if [[ -n "$ZSHRC_INSTALL_RIME_SUBMODULES" ]]; then
+        _zshrc_update_enabled "$ZSHRC_INSTALL_RIME_SUBMODULES"
+        return
+    fi
+
+    local path
+    for path in "${_zshrc_update_rime_submodules[@]}"; do
+        [[ -e "$repo_root/$path/.git" ]] && return 0
+    done
+
+    return 1
+}
+
+_zshrc_update_submodules() {
+    git submodule update --init --recursive --depth 1 -- "${_zshrc_update_default_submodules[@]}" || return 1
+
+    if _zshrc_update_rime_submodules_enabled; then
+        git submodule update --init --recursive --depth 1 -- "${_zshrc_update_rime_submodules[@]}" || return 1
+    fi
 }
 
 _zshrc_stash_created=0
@@ -96,7 +172,7 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
         color "$prefix &cRepo history changed. Resetting local zshrc to $remote_ref..."
 
         _zshrc_stash_if_needed
-        if git reset --hard "$remote_ref" && git submodule update --init --recursive --depth 1; then
+        if git reset --hard "$remote_ref" && _zshrc_update_submodules; then
             if _zshrc_restore_stash; then
                 _zshrc_write_update_notification "Updated after history rewrite. Open a new shell to load the latest rc."
                 color "$prefix &aUpdated after history rewrite. Open a new shell to load the latest rc."
@@ -116,7 +192,7 @@ if git fetch origin --quiet && git rev-parse --verify --quiet "$remote_ref" >/de
 
             # Try to fast-forward without invoking git pull's merge/rebase behavior.
             _zshrc_stash_if_needed
-            if git merge --ff-only "$remote_ref" && git submodule update --init --recursive --depth 1; then
+            if git merge --ff-only "$remote_ref" && _zshrc_update_submodules; then
                 if _zshrc_restore_stash; then
                     _zshrc_write_update_notification "Updated. Open a new shell to load the latest rc."
                     color "$prefix &aUpdated. Open a new shell to load the latest rc."
@@ -137,8 +213,10 @@ elif [[ -n "$ZSHRC_UPDATE_VERBOSE" ]]; then
     color "$prefix &cUpdate check failed!"
 fi
 
+unset -f _zshrc_update_lock_mtime _zshrc_update_lock_stale _zshrc_update_make_lock 2>/dev/null
+unset -f _zshrc_update_enabled _zshrc_update_rime_submodules_enabled _zshrc_update_submodules 2>/dev/null
 unset -f _zshrc_stash_if_needed _zshrc_restore_stash _zshrc_trim_git_history _zshrc_write_update_notification 2>/dev/null
 _zshrc_update_cleanup
 trap - EXIT INT TERM
 unset -f _zshrc_update_cleanup 2>/dev/null
-unset _zshrc_stash_created _zshrc_update_ok remote_ref reslog lock_dir notify_file repo_root old_pwd
+unset _zshrc_stash_created _zshrc_update_ok _zshrc_update_default_submodules _zshrc_update_rime_submodules remote_ref reslog lock_dir notify_file repo_root old_pwd

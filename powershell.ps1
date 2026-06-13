@@ -1006,18 +1006,6 @@ function global:prompt {
 
     Write-Host -NoNewline (pwdd)
 
-    $vcs = Get-VcsPromptState
-    if ($vcs) {
-        [Console]::Write(' ')
-        Write-PromptText '[' $vcs.Color
-        Write-PromptText $vcs.Segment $vcs.Color
-        if ($vcs.Pr) {
-            Write-PromptText ' ' $vcs.Color
-            Write-PromptText "#$($vcs.Pr.Number)" $vcs.Pr.Color
-        }
-        Write-PromptText ']' $vcs.Color
-    }
-
     return "`n> "
 }
 
@@ -1040,16 +1028,86 @@ function Start-ZshrcAutoUpdate {
         $oldLocation = Get-Location
         Set-Location -LiteralPath $Root
         $lockDir = Join-Path $Root '.git/zshrc-update.lock'
+        $lockStaleSeconds = 1800
+        $defaultSubmodules = @(
+            'plugins/zsh-autosuggestions',
+            'plugins/nanorc',
+            'plugins/find-the-command'
+        )
+        $rimeSubmodules = @(
+            'config-sync/.config/ibus/rime/_submodules/rime-ice',
+            'config-sync/.config/ibus/rime/_submodules/rime-kagiroi'
+        )
 
-        try {
-            New-Item -ItemType Directory -Path $lockDir -ErrorAction Stop | Out-Null
-        } catch {
+        function Test-UpdateLockStale {
+            if (-not (Test-Path -LiteralPath $lockDir -PathType Container)) { return $false }
+
+            try {
+                $lockItem = Get-Item -LiteralPath $lockDir -ErrorAction Stop
+                return (([DateTime]::UtcNow - $lockItem.LastWriteTimeUtc).TotalSeconds -gt $lockStaleSeconds)
+            } catch {
+                return $false
+            }
+        }
+
+        function New-UpdateLock {
+            try {
+                New-Item -ItemType Directory -Path $lockDir -ErrorAction Stop | Out-Null
+            } catch {
+                if (-not (Test-UpdateLockStale)) { return $false }
+
+                Remove-Item -LiteralPath $lockDir -Recurse -Force -ErrorAction SilentlyContinue
+                try {
+                    New-Item -ItemType Directory -Path $lockDir -ErrorAction Stop | Out-Null
+                } catch {
+                    return $false
+                }
+            }
+
+            $ownerFile = Join-Path $lockDir 'owner'
+            Set-Content -LiteralPath $ownerFile -Value "$PID" -Encoding ASCII -Force -ErrorAction SilentlyContinue
+            return $true
+        }
+
+        if (-not (New-UpdateLock)) {
             Set-Location -LiteralPath ($oldLocation.Path)
             return
         }
 
         $stashCreated = $false
         function Invoke-UpdateGit { & $git @args }
+        function Test-UpdateFlagEnabled {
+            param([AllowEmptyString()][string]$Value)
+            return $Value -match '^(1|true|yes|on)$'
+        }
+        function Test-UpdateRimeSubmodules {
+            if ($env:ZSHRC_UPDATE_RIME_SUBMODULES) {
+                return (Test-UpdateFlagEnabled $env:ZSHRC_UPDATE_RIME_SUBMODULES)
+            }
+            if ($env:ZSHRC_INSTALL_RIME_SUBMODULES) {
+                return (Test-UpdateFlagEnabled $env:ZSHRC_INSTALL_RIME_SUBMODULES)
+            }
+
+            foreach ($path in $rimeSubmodules) {
+                $submoduleGit = Join-Path (Join-Path $Root $path) '.git'
+                if (Test-Path -LiteralPath $submoduleGit) { return $true }
+            }
+
+            return $false
+        }
+        function Update-RepoSubmodules {
+            $defaultSubmoduleArgs = @('submodule', 'update', '--init', '--recursive', '--depth', '1', '--') + $defaultSubmodules
+            Invoke-UpdateGit @defaultSubmoduleArgs *> $null
+            if ($LASTEXITCODE -ne 0) { return $false }
+
+            if (Test-UpdateRimeSubmodules) {
+                $rimeSubmoduleArgs = @('submodule', 'update', '--init', '--recursive', '--depth', '1', '--') + $rimeSubmodules
+                Invoke-UpdateGit @rimeSubmoduleArgs *> $null
+                if ($LASTEXITCODE -ne 0) { return $false }
+            }
+
+            return $true
+        }
         function Test-UpdateDirty {
             Invoke-UpdateGit diff --quiet --ignore-submodules -- *> $null
             if ($LASTEXITCODE -ne 0) { return $true }
@@ -1108,8 +1166,7 @@ function Start-ZshrcAutoUpdate {
                     Save-UpdateStash
                     Invoke-UpdateGit reset --hard $RemoteRef *> $null
                     if ($LASTEXITCODE -eq 0) {
-                        Invoke-UpdateGit submodule update --init --recursive --depth 1 *> $null
-                        if ($LASTEXITCODE -eq 0) {
+                        if (Update-RepoSubmodules) {
                             if (Restore-UpdateStash) {
                                 Write-UpdateNotification 'Updated after history rewrite. Open a new shell to load the latest rc.'
                             } else {
@@ -1128,8 +1185,7 @@ function Start-ZshrcAutoUpdate {
                         Save-UpdateStash
                         Invoke-UpdateGit merge --ff-only $RemoteRef *> $null
                         if ($LASTEXITCODE -eq 0) {
-                            Invoke-UpdateGit submodule update --init --recursive --depth 1 *> $null
-                            if ($LASTEXITCODE -eq 0) {
+                            if (Update-RepoSubmodules) {
                                 if (Restore-UpdateStash) {
                                     Write-UpdateNotification 'Updated. Open a new shell to load the latest rc.'
                                 } else {
@@ -1150,7 +1206,7 @@ function Start-ZshrcAutoUpdate {
                 Write-Output 'Update check failed.'
             }
         } finally {
-            Remove-Item -LiteralPath $lockDir -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $lockDir -Recurse -Force -ErrorAction SilentlyContinue
             Set-Location -LiteralPath ($oldLocation.Path)
         }
     } | Out-Null
