@@ -135,7 +135,7 @@ install_repo_submodules() {
     # shellcheck disable=SC2086
     git -C "$repo_dir" submodule update --init --recursive --depth 1 -- $rime_submodules
   else
-    log 'Skipping Rime submodules. Set ZSHRC_INSTALL_RIME_SUBMODULES=1 to include them.'
+    log 'Skipping Rime submodules. Set ZSHRC_INSTALL_RIME_SUBMODULES=1 before install or run install-rime-submodules later.'
   fi
 }
 

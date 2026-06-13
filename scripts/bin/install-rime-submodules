@@ -1,0 +1,73 @@
+#!/usr/bin/env sh
+set -eu
+
+rime_submodules="config-sync/.config/ibus/rime/_submodules/rime-ice config-sync/.config/ibus/rime/_submodules/rime-kagiroi"
+
+usage() {
+  cat <<'EOF'
+Usage: install-rime-submodules [--status]
+
+Install the optional Rime config submodules skipped by the default zshrc
+installer.
+
+Options:
+  --status   Show Rime submodule status without installing
+  -h, --help Show this help
+EOF
+}
+
+die() {
+  printf 'install-rime-submodules: %s\n' "$*" >&2
+  exit 1
+}
+
+have() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+status_only=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --status)
+      status_only=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      die "unknown option: $1"
+      ;;
+  esac
+done
+
+have git || die 'git is required.'
+
+repo_dir=''
+if [ -n "${ZSHRC_ROOT:-}" ] && [ -d "$ZSHRC_ROOT/.git" ]; then
+  repo_dir="$ZSHRC_ROOT"
+elif [ -n "${SCR:-}" ]; then
+  repo_dir="$(git -C "$SCR" rev-parse --show-toplevel 2>/dev/null || true)"
+fi
+
+if [ -z "$repo_dir" ]; then
+  script_dir="$(CDPATH= cd "$(dirname "$0")" && pwd -P)" || die 'could not resolve script directory.'
+  repo_dir="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null || true)"
+fi
+
+[ -n "$repo_dir" ] || die 'could not find the zshrc git checkout.'
+[ -f "$repo_dir/.gitmodules" ] || die "no .gitmodules found in $repo_dir."
+
+if [ "$status_only" -eq 1 ]; then
+  # shellcheck disable=SC2086
+  git -C "$repo_dir" submodule status --recursive -- $rime_submodules
+  exit
+fi
+
+printf '[zshrc] Installing optional Rime submodules.\n'
+# shellcheck disable=SC2086
+git -C "$repo_dir" submodule sync --recursive -- $rime_submodules >/dev/null
+# shellcheck disable=SC2086
+git -C "$repo_dir" submodule update --init --recursive --depth 1 -- $rime_submodules
+printf '[zshrc] Rime submodules installed.\n'
