@@ -1,0 +1,12 @@
+patch:
+  engine/processors:
+    - lua_processor@*shift_schema_switcher
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - lua_processor@*kagiroi/kagiroi_kana_speller
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor

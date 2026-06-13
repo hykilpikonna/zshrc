@@ -7,3 +7,9 @@
 [submodule "plugins/find-the-command"]
 	path = plugins/find-the-command
 	url = https://github.com/pkasemir/find-the-command
+[submodule "config-sync/.config/ibus/rime/_submodules/rime-ice"]
+	path = config-sync/.config/ibus/rime/_submodules/rime-ice
+	url = https://github.com/iDvel/rime-ice
+[submodule "config-sync/.config/ibus/rime/_submodules/rime-kagiroi"]
+	path = config-sync/.config/ibus/rime/_submodules/rime-kagiroi
+	url = https://github.com/rimeinn/rime-kagiroi

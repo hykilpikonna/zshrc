@@ -1,0 +1,24 @@
+patch:
+  engine/processors:
+    - lua_processor@*shift_schema_switcher
+    - lua_processor@*select_character
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  schema/dependencies/+:
+    - latex
+  engine/translators/+:
+    - reverse_lookup_translator
+    - lua_translator@date_translator
+  recognizer/patterns/reverse_lookup: "^\\\\.+$"
+  abc_segmentor/extra_tags:
+    - reverse_lookup
+  reverse_lookup:
+    dictionary: latex
+    enable_completion: false
+    tips: latex
