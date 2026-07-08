@@ -1,5 +1,15 @@
 # Modern unix replacements.
-modern-replace ls eza 'ls -h --color=auto' eza
+if test (uname -s) = Darwin
+    if has eza
+        alias ls eza
+    else if has exa
+        alias ls exa
+    else
+        alias ls 'ls -hG'
+    end
+else
+    modern-replace ls eza 'ls -h --color=auto' eza
+end
 modern-replace df duf 'df -h' duf
 modern-replace cat bat cat bat
 modern-replace man tldr man tldr

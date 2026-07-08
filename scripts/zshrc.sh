@@ -308,7 +308,17 @@ modern-replace() {
 for f in "$SCR/includes/"*.*sh; do source "$f"; done
 for f in "$SCR/includes/later/"*.*sh; do source "$f"; done
 
-modern-replace 'ls' 'eza' 'ls -h --color=auto'
+if [[ $OSTYPE == 'darwin'* ]]; then
+    if command -v 'eza' &> /dev/null; then
+        alias ls='eza'
+    elif command -v 'exa' &> /dev/null; then
+        alias ls='exa'
+    else
+        alias ls='ls -hG'
+    fi
+else
+    modern-replace 'ls' 'eza' 'ls -h --color=auto'
+fi
 modern-replace 'df' 'duf' 'df -h'
 modern-replace 'cat' 'bat'
 modern-replace 'man' 'tldr'
