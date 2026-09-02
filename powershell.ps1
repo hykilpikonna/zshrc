@@ -426,7 +426,6 @@ function Get-WeaselRimeUserDir {
 
     return (Join-Path $env:APPDATA 'Rime')
 }
-
 function Sync-WeaselRimeConfig {
     $rimeDir = Get-WeaselRimeUserDir
     if (-not $rimeDir) { return }
@@ -436,26 +435,27 @@ function Sync-WeaselRimeConfig {
 
     $item = Get-Item -LiteralPath $rimeDir -Force -ErrorAction SilentlyContinue
     if ($item -and ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return }
-
-    if (has color) { color '&7[&3zshrc&7] &cWeasel Rime dir is not linked, creating junction' | Write-Host }
-    else { Write-Host '[zshrc] Weasel Rime dir is not linked, creating junction' }
-
-    if (Test-Path -LiteralPath $rimeDir) {
-        $backup = "$rimeDir.bak"
-        Write-Host "> Moving existing $rimeDir to $backup..."
-        Move-Item -LiteralPath $rimeDir -Destination $backup -Force
-    } else {
-        $parent = Split-Path -Parent $rimeDir
-        if ($parent -and -not (Test-Path -LiteralPath $parent)) {
-            New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    try {
+        if (Test-Path -LiteralPath $rimeDir) {
+            $backup = "$rimeDir.bak"
+            Write-Host "> Moving existing $rimeDir to $backup..."
+            Move-Item -LiteralPath $rimeDir -Destination $backup -Force -ErrorAction Stop
+        } else {
+            $parent = Split-Path -Parent $rimeDir
+            if ($parent -and -not (Test-Path -LiteralPath $parent)) {
+                New-Item -ItemType Directory -Path $parent -Force | Out-Null
+            }
         }
+
+        Write-Host "> Creating junction $rimeDir -> $syncSource..."
+        New-Item -ItemType Junction -Path $rimeDir -Value $syncSource -ErrorAction Stop | Out-Null
+    } catch {
+        Write-Warning "Failed to link Weasel Rime dir: $_"
+        Write-Warning "Close Weasel (tray icon -> Exit), then run 'Sync-WeaselRimeConfig' to retry."
+        return
     }
 
-    Write-Host "> Creating junction $rimeDir -> $syncSource..."
-    New-Item -ItemType Junction -Path $rimeDir -Value $syncSource | Out-Null
-
-    if (has color) { color '&7[&3zshrc&7] &aDone! Restart Weasel to reload the config.' | Write-Host }
-    else { Write-Host '[zshrc] Done! Restart Weasel to reload the config.' }
+    Write-Host '[zshrc] Done! Restart Weasel to reload the config.'
 }
 
 if ($IsWindows -or -not (Get-Variable IsWindows -ErrorAction SilentlyContinue)) {
