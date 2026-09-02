@@ -1,0 +1,32 @@
+# Rime schema
+# encoding: utf-8
+# LaTeX symbols as regular words, generated from latex.dict.yaml
+# (backslash stripped: \lambda -> lambda). No reverse_lookup needed.
+
+schema:
+  schema_id: latex_plain
+  name: LaTeX symbols (plain)
+  version: "1.0"
+  description: |
+    LaTeX math symbols merged into the host schema as regular table words.
+    Type 'lambda' -> λ. Loaded via rime_ice.custom.yaml as a table_translator.
+
+engine:
+  processors:
+    - speller
+    - navigator
+  segmentors:
+    - abc_segmentor
+  translators:
+    - table_translator
+
+speller:
+  alphabet: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  initials: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  auto_select: false
+
+translator:
+  dictionary: latex_plain
+  enable_sentence: false
+  enable_completion: true
+  enable_user_dict: false

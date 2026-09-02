@@ -11,13 +11,12 @@ patch:
     - navigator
     - express_editor
   schema/dependencies/+:
-    - latex
+    - latex_plain
   engine/translators/+:
-    - reverse_lookup_translator
-  recognizer/patterns/reverse_lookup: '^\\'
-  abc_segmentor/extra_tags:
-    - reverse_lookup
-  reverse_lookup:
-    dictionary: latex
-    enable_completion: false
-    tips: latex
+    - table_translator@latex_plain
+  latex_plain:
+    dictionary: latex_plain
+    enable_sentence: false
+    enable_completion: true
+    enable_user_dict: false
+    initial_quality: 1
