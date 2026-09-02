@@ -14,7 +14,7 @@ patch:
     - latex
   engine/translators/+:
     - reverse_lookup_translator
-  recognizer/patterns/reverse_lookup: "^\\\\.+$"
+  recognizer/patterns/reverse_lookup: '^\\'
   abc_segmentor/extra_tags:
     - reverse_lookup
   reverse_lookup:
