@@ -98,6 +98,8 @@ alias please='sudo'
 if [[ "$IS_SANDBOX" == "1" ]]; then
     alias codex='codex --dangerously-bypass-approvals-and-sandbox'
     alias claude='claude --dangerously-skip-permissions'
+    alias agy='agy --dangerously-skip-permissions'
+    alias opencode='opencode --yolo'
 fi
 
 alias du='du -h'

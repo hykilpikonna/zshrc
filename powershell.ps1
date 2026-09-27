@@ -212,6 +212,13 @@ function mkdirs {
 function open { Invoke-Item @args }
 Set-Alias -Scope Global -Name clr -Value Clear-Host -Force
 
+if ($env:IS_SANDBOX -eq '1' -or $IS_SANDBOX -eq '1') {
+    Register-ForwardingFunction -Name codex -Command codex -PrefixArgs @('--dangerously-bypass-approvals-and-sandbox')
+    Register-ForwardingFunction -Name claude -Command claude -PrefixArgs @('--dangerously-skip-permissions')
+    Register-ForwardingFunction -Name agy -Command agy -PrefixArgs @('--dangerously-skip-permissions')
+    Register-ForwardingFunction -Name opencode -Command opencode -PrefixArgs @('--yolo')
+}
+
 function colors {
     color '&000&111&222&333&444&555&666&777&888&999&aaa&bbb&ccc&ddd&eee&fff'
 }

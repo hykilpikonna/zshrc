@@ -50,6 +50,8 @@ alias please sudo
 if test "$IS_SANDBOX" = 1
     alias codex 'codex --dangerously-bypass-approvals-and-sandbox'
     alias claude 'claude --dangerously-skip-permissions'
+    alias agy 'agy --dangerously-skip-permissions'
+    alias opencode 'opencode --yolo'
 end
 
 alias du 'du -h'
