@@ -16,7 +16,11 @@ modern-replace man tldr man tldr
 modern-replace top btop top btop
 modern-replace nano micro nano micro
 modern-replace curl curlie curl curlie
-modern-replace pacman paru 'pacman --color always' 'paru --color always'
+if test (id -u) -ne 0
+    modern-replace pacman paru 'sudo pacman --color always' 'paru --color always'
+else
+    modern-replace pacman paru 'pacman --color always' 'paru --color always'
+end
 modern-replace vi nvim vi nvim
 modern-replace vim nvim vim nvim
 modern-replace code visual-studio-code-electron code visual-studio-code-electron

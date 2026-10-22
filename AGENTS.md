@@ -70,6 +70,9 @@ small regressions can break login shells, SSH sessions, prompts, or update flow.
   user specifically wanted hostname/username to remain non-RGB.
 - Avoid aliases/functions that shadow PowerShell semantics in surprising ways.
   If wrapping an external command, remove conflicting aliases first.
+- The user is the sole user and does not use PowerShell on Linux. Do not add
+  Unix-facing package manager aliases (such as `sudo` wrappers for `dnf`, `apt`,
+  `pacman`, etc.) or Linux system administration aliases to PowerShell.
 
 ## Git Helpers
 

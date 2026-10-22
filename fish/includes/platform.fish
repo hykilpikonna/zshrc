@@ -8,11 +8,13 @@ alias jctlog 'jctl --output cat -f -u'
 if has pacman
     if test (id -u) -eq 0
         alias upgrade 'pacman -Syu'
+        alias install 'pacman -Sy'
+        alias uninstall 'pacman -Rsn'
     else
         alias upgrade 'sudo pacman -Syu'
+        alias install 'sudo pacman -Sy'
+        alias uninstall 'sudo pacman -Rsn'
     end
-    alias install 'pacman -Sy'
-    alias uninstall 'pacman -Rsn'
     alias list-unused 'pacman -Qdtq'
 end
 

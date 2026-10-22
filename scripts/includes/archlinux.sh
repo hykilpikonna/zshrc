@@ -1,7 +1,7 @@
 if command -v pacman &> /dev/null; then
     alias upgrade="${ZSHRC_SUDO}pacman -Syu"
-    alias install='pacman -Sy'
-    alias uninstall='pacman -Rsn'
+    alias install="${ZSHRC_SUDO}pacman -Sy"
+    alias uninstall="${ZSHRC_SUDO}pacman -Rsn"
     alias list-unused='pacman -Qdtq'
 fi
 

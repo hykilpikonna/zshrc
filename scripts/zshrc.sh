@@ -181,7 +181,27 @@ alias ufw="sudo ufw"
 alias nginx="sudo nginx"
 alias certbot="sudo certbot"
 alias apt="sudo apt"
+alias apt-get="sudo apt-get"
+alias aptitude="sudo aptitude"
 alias dpkg="sudo dpkg"
+alias dnf="sudo dnf"
+alias dnf5="sudo dnf5"
+alias microdnf="sudo microdnf"
+alias yum="sudo yum"
+alias zypper="sudo zypper"
+alias pacman="sudo pacman"
+alias apk="sudo apk"
+alias opkg="sudo opkg"
+alias rpm="sudo rpm"
+alias emerge="sudo emerge"
+alias xbps-install="sudo xbps-install"
+alias xbps-remove="sudo xbps-remove"
+alias xbps-reconfigure="sudo xbps-reconfigure"
+alias eopkg="sudo eopkg"
+alias swupd="sudo swupd"
+alias slackpkg="sudo slackpkg"
+alias urpmi="sudo urpmi"
+alias urpme="sudo urpme"
 else
 alias sctl="systemctl"
 alias sctlu="systemctl --user"
@@ -330,7 +350,7 @@ modern-replace 'top' 'btop'
 # modern-replace 'grep' 'rg'
 modern-replace 'nano' 'micro'
 modern-replace 'curl' 'curlie'
-modern-replace 'pacman' 'paru' 'pacman --color always' 'paru --color always'
+modern-replace 'pacman' 'paru' "${ZSHRC_SUDO}pacman --color always" 'paru --color always'
 modern-replace 'vi' 'nvim'
 modern-replace 'vim' 'nvim'
 # modern-replace 'wget' 'aria2c'
