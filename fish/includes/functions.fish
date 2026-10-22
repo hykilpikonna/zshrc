@@ -351,3 +351,63 @@ function modern-replace --description 'Alias a command to a modern replacement w
         alias "$orig_cmd" "$orig_cmd_with_args"
     end
 end
+
+function sudo --wraps sudo --description 'Run sudo with user PATH and fish function support'
+    if test (count $argv) -eq 0
+        command sudo
+        return
+    end
+
+    set -l cmd_idx 1
+    while test $cmd_idx -le (count $argv)
+        set -l arg $argv[$cmd_idx]
+        switch $arg
+            case --
+                set cmd_idx (math $cmd_idx + 1)
+                break
+            case -u -g -p -h -C -c -T -R
+                set cmd_idx (math $cmd_idx + 2)
+            case '-*'
+                set cmd_idx (math $cmd_idx + 1)
+            case '*'
+                break
+        end
+    end
+
+    if test $cmd_idx -gt (count $argv)
+        command sudo $argv
+        return
+    end
+
+    set -l cmd $argv[$cmd_idx]
+    if test "$cmd" = sudo
+        command sudo $argv
+        return
+    end
+
+    set -l sudo_flags
+    if test $cmd_idx -gt 1
+        set sudo_flags $argv[1..(math $cmd_idx - 1)]
+    end
+    set -l target_args $argv[(math $cmd_idx + 1)..-1]
+
+    # 1. If it is an external binary in user PATH, resolve its path and preserve PATH
+    set -l full_bin (command -s -- $cmd)
+    if test -n "$full_bin" -a -x "$full_bin"
+        command sudo $sudo_flags env "PATH=$PATH" $full_bin $target_args
+        return
+    end
+
+    # 2. If it is a fish function/alias not found on disk, execute inside root fish
+    if functions -q -- $cmd
+        set -l func_def (functions -- $cmd | string collect)
+        set -l escaped_args
+        for a in $target_args
+            set -a escaped_args (string escape -- $a)
+        end
+        command sudo $sudo_flags fish -c "$func_def; $cmd $escaped_args"
+        return
+    end
+
+    command sudo $argv
+end
