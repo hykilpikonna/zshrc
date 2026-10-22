@@ -16,13 +16,13 @@ for include in \
     core \
     aliases \
     functions \
-    platform \
     config-sync \
     docker-nix \
     modern \
     session \
     git \
     prompt \
+    platform \
     final
     source "$FISHRC_DIR/includes/$include.fish"
 end
