@@ -1028,7 +1028,200 @@ function Show-ZshrcUpdateNotification {
     [Console]::WriteLine()
 }
 
+$global:_DOTENV_AUTO = if ($null -ne $env:PWSHRC_DOTENV_AUTO) { $env:PWSHRC_DOTENV_AUTO } else { 'on' }
+$global:_DOTENV_ACTIVE_FILE = $null
+$global:_DOTENV_ACTIVE_MTIME = $null
+$global:_DOTENV_ADDED_VARS = [System.Collections.Generic.List[string]]::new()
+$global:_DOTENV_MODIFIED_VARS = [System.Collections.Generic.Dictionary[string, string]]::new()
+
+function Write-DotEnvLog {
+    param([string]$message, [string]$colorHex = '00FF00')
+    if ($env:PWSHRC_DOTENV_QUIET -eq '1' -or $env:DOTENV_QUIET -eq '1') { return }
+    Write-PromptAnsiText '[' 90
+    Write-PromptText 'dotenv' '55CDFC'
+    Write-PromptAnsiText '] ' 90
+    Write-PromptText $message $colorHex
+    [Console]::WriteLine()
+}
+
+function Unload-DotEnv {
+    if (-not $global:_DOTENV_ACTIVE_FILE) { return }
+
+    $oldFile = $global:_DOTENV_ACTIVE_FILE
+    foreach ($varName in $global:_DOTENV_ADDED_VARS) {
+        Remove-Item -Path "env:$varName" -ErrorAction SilentlyContinue
+    }
+    foreach ($entry in $global:_DOTENV_MODIFIED_VARS.GetEnumerator()) {
+        [System.Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+    }
+
+    $global:_DOTENV_ACTIVE_FILE = $null
+    $global:_DOTENV_ACTIVE_MTIME = $null
+    $global:_DOTENV_ADDED_VARS.Clear()
+    $global:_DOTENV_MODIFIED_VARS.Clear()
+
+    $displayPath = $oldFile
+    if ($displayPath.StartsWith($HOME)) {
+        $displayPath = '~' + $displayPath.Substring($HOME.Length)
+    }
+    Write-DotEnvLog "Unloaded $displayPath" 'CCCCCC'
+}
+
+function Load-DotEnv {
+    param([string]$targetFile)
+    if (-not (Test-Path -LiteralPath $targetFile)) { return }
+
+    Unload-DotEnv
+
+    $fileInfo = [System.IO.FileInfo]::new($targetFile)
+    if (-not $fileInfo.Exists) { return }
+
+    $lines = [System.IO.File]::ReadAllLines($targetFile)
+    foreach ($rawLine in $lines) {
+        $line = $rawLine.Trim()
+        if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
+        if ($line -match '^(?:export\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$') {
+            $key = $Matches[1]
+            $val = $Matches[2].Trim()
+
+            if ($val.StartsWith('"') -and $val.EndsWith('"') -and $val.Length -ge 2) {
+                $val = $val.Substring(1, $val.Length - 2)
+            } elseif ($val.StartsWith("'") -and $val.EndsWith("'") -and $val.Length -ge 2) {
+                $val = $val.Substring(1, $val.Length - 2)
+            } else {
+                $val = ($val -replace '\s+#.*$', '').Trim()
+            }
+
+            if ($val.Contains('$')) {
+                $val = [System.Text.RegularExpressions.Regex]::Replace($val, '\$(?:\{([a-zA-Z_][a-zA-Z0-9_]*)\}|([a-zA-Z_][a-zA-Z0-9_]*))', {
+                    param($m)
+                    $name = if ($m.Groups[1].Success) { $m.Groups[1].Value } else { $m.Groups[2].Value }
+                    $v = [System.Environment]::GetEnvironmentVariable($name)
+                    if ($null -ne $v) { $v } else { '' }
+                })
+            }
+
+            $existingVal = [System.Environment]::GetEnvironmentVariable($key)
+            if ($null -ne $existingVal) {
+                if (-not $global:_DOTENV_MODIFIED_VARS.ContainsKey($key)) {
+                    $global:_DOTENV_MODIFIED_VARS[$key] = $existingVal
+                }
+            } else {
+                if (-not $global:_DOTENV_ADDED_VARS.Contains($key)) {
+                    $global:_DOTENV_ADDED_VARS.Add($key)
+                }
+            }
+
+            [System.Environment]::SetEnvironmentVariable($key, $val)
+        }
+    }
+
+    $global:_DOTENV_ACTIVE_FILE = $targetFile
+    $global:_DOTENV_ACTIVE_MTIME = $fileInfo.LastWriteTimeUtc.Ticks
+
+    $displayPath = $targetFile
+    if ($displayPath.StartsWith($HOME)) {
+        $displayPath = '~' + $displayPath.Substring($HOME.Length)
+    }
+    Write-DotEnvLog "Loaded $displayPath" '00FF00'
+}
+
+function Find-DotEnv {
+    $current = (Get-Location).Path
+    $homeDir = $HOME
+    while ($current) {
+        $candidate = Join-Path $current '.env'
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            return $candidate
+        }
+        if ($current -eq $homeDir) {
+            break
+        }
+        $parent = Split-Path -Parent $current
+        if (-not $parent -or $parent -eq $current) {
+            break
+        }
+        $current = $parent
+    }
+    return $null
+}
+
+function Update-DotEnv {
+    if ($global:_DOTENV_AUTO -ne 'on') {
+        if ($global:_DOTENV_ACTIVE_FILE) {
+            Unload-DotEnv
+        }
+        return
+    }
+
+    $found = Find-DotEnv
+    if ($found) {
+        $fi = [System.IO.FileInfo]::new($found)
+        $mtime = if ($fi.Exists) { $fi.LastWriteTimeUtc.Ticks } else { 0L }
+        if ($found -ne $global:_DOTENV_ACTIVE_FILE -or $mtime -ne $global:_DOTENV_ACTIVE_MTIME) {
+            Load-DotEnv $found
+        }
+    } elseif ($global:_DOTENV_ACTIVE_FILE) {
+        Unload-DotEnv
+    }
+}
+
+function dotenv-auto {
+    param([string]$Action = 'status')
+    switch ($Action) {
+        'on' {
+            $global:_DOTENV_AUTO = 'on'
+            $env:PWSHRC_DOTENV_AUTO = 'on'
+            Update-DotEnv
+            Write-DotEnvLog 'Automatic .env sourcing enabled.' '00FF00'
+        }
+        'off' {
+            $global:_DOTENV_AUTO = 'off'
+            $env:PWSHRC_DOTENV_AUTO = 'off'
+            Unload-DotEnv
+            Write-DotEnvLog 'Automatic .env sourcing disabled.' 'FF5555'
+        }
+        'status' {
+            if ($global:_DOTENV_AUTO -eq 'on') {
+                if ($global:_DOTENV_ACTIVE_FILE) {
+                    Write-DotEnvLog "Auto dotenv: on (active: $global:_DOTENV_ACTIVE_FILE)" '00FF00'
+                } else {
+                    Write-DotEnvLog 'Auto dotenv: on (no active .env)' '00FF00'
+                }
+            } else {
+                Write-DotEnvLog 'Auto dotenv: off' 'FF5555'
+            }
+        }
+        default {
+            Write-Host 'Usage: dotenv-auto {on|off|status}'
+        }
+    }
+}
+
+function dotenv {
+    param([string]$Action = 'status')
+    switch ($Action) {
+        'reload' {
+            if ($global:_DOTENV_ACTIVE_FILE) {
+                Load-DotEnv $global:_DOTENV_ACTIVE_FILE
+            } else {
+                Update-DotEnv
+            }
+        }
+        'unload' {
+            Unload-DotEnv
+        }
+        { $_ -in 'status', 'on', 'off' } {
+            dotenv-auto $Action
+        }
+        default {
+            Write-Host 'Usage: dotenv {status|reload|unload|on|off}'
+        }
+    }
+}
+
 function global:prompt {
+    Update-DotEnv
     $hostName = [System.Net.Dns]::GetHostName() -replace '^HyDEV-', ''
     $date = Get-Date
 
@@ -1305,6 +1498,7 @@ if (Get-Module -ListAvailable -Name PSColor) {
 }
 
 git-id-prompt
+Update-DotEnv
 Start-ZshrcAutoUpdate
 
 $extraRc = Join-Path $HOME 'extra.rc.ps1'

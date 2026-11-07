@@ -55,6 +55,7 @@ small regressions can break login shells, SSH sessions, prompts, or update flow.
   PowerShell.
 - `git-env-auto {on|off|status}` is fish-only and should automatically enter
   `git-env` inside git worktrees.
+- `dotenv-auto {on|off|status}` controls automatic direnv-like `.env` sourcing.
 
 ### PowerShell
 
@@ -73,6 +74,18 @@ small regressions can break login shells, SSH sessions, prompts, or update flow.
 - The user is the sole user and does not use PowerShell on Linux. Do not add
   Unix-facing package manager aliases (such as `sudo` wrappers for `dnf`, `apt`,
   `pacman`, etc.) or Linux system administration aliases to PowerShell.
+
+## Dotenv (.env Auto-Sourcing)
+
+- Works like direnv: automatically sources `.env` when entering a directory tree,
+  and un-sources it when leaving.
+- Subdirectories inside a project keep the nearest `.env` active.
+- Un-sourcing restores previously existing variables (like `PATH`) to their
+  pre-directory values and unsets variables added by the `.env`.
+- Reloads automatically when the `.env` file's mtime changes.
+- Sourcing notifications can be silenced with `ZSHRC_DOTENV_QUIET=1` or
+  `DOTENV_QUIET=1`.
+- User commands: `dotenv-auto {on|off|status}` and `dotenv {status|reload|unload|on|off}`.
 
 ## Git Helpers
 

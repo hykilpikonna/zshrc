@@ -22,6 +22,7 @@ for include in \
     session \
     git \
     prompt \
+    dotenv \
     platform \
     final
     source "$FISHRC_DIR/includes/$include.fish"
