@@ -155,7 +155,7 @@ function __fishrc_prompt_pr_state --description 'Set GitHub PR prompt state for 
     if test -z "$pr_line"; and test -n "$branch_remote"; and test -n "$branch_head"; and test "$branch_head" != "$branch_merge"
         set -l remote_url (__fishrc_git_remote_url "$branch_remote")
         set -l remote_owner (__fishrc_github_owner_from_url "$remote_url")
-        if test -n "$remote_owner"
+        if test -n "$remote_owner"; and test "$remote_owner:$branch_head" != "$repo_owner:$branch"
             set pr_line (__fishrc_prompt_pr_by_head "$remote_owner" "$branch_head")
         end
     end

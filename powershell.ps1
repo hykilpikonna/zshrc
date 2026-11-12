@@ -823,7 +823,7 @@ function Get-PromptPrState {
             $branchHead = $branchMerge.Substring('refs/heads/'.Length)
             $remoteUrl = Get-GitRemoteUrl $branchRemote
             $remoteOwner = Get-GithubOwnerFromRemoteUrl $remoteUrl
-            if ($remoteOwner) { $pr = Get-PromptPrByHead $remoteOwner $branchHead }
+            if ($remoteOwner -and ("$remoteOwner`:$branchHead" -ne "$repoOwner`:$Branch")) { $pr = Get-PromptPrByHead $remoteOwner $branchHead }
         }
     }
 
@@ -1146,6 +1146,8 @@ function Find-DotEnv {
     return $null
 }
 
+$global:_DOTENV_LAST_PWD = ''
+
 function Update-DotEnv {
     if ($global:_DOTENV_AUTO -ne 'on') {
         if ($global:_DOTENV_ACTIVE_FILE) {
@@ -1153,6 +1155,8 @@ function Update-DotEnv {
         }
         return
     }
+
+    $global:_DOTENV_LAST_PWD = $PWD.Path
 
     $found = Find-DotEnv
     if ($found) {
@@ -1221,7 +1225,20 @@ function dotenv {
 }
 
 function global:prompt {
-    Update-DotEnv
+    if ($global:_DOTENV_AUTO -eq 'on') {
+        if ($global:_DOTENV_ACTIVE_FILE) {
+            $fi = [System.IO.FileInfo]::new($global:_DOTENV_ACTIVE_FILE)
+            if ($fi.Exists) {
+                if ($fi.LastWriteTimeUtc.Ticks -ne $global:_DOTENV_ACTIVE_MTIME) {
+                    Load-DotEnv $global:_DOTENV_ACTIVE_FILE
+                }
+            } else {
+                Update-DotEnv
+            }
+        } elseif ($PWD.Path -ne $global:_DOTENV_LAST_PWD) {
+            Update-DotEnv
+        }
+    }
     $hostName = [System.Net.Dns]::GetHostName() -replace '^HyDEV-', ''
     $date = Get-Date
 

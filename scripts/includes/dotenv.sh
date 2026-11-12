@@ -5,6 +5,7 @@ typeset -g _ZSHRC_DOTENV_ACTIVE_MTIME=""
 typeset -gA _ZSHRC_DOTENV_MODIFIED_VARS
 typeset -ga _ZSHRC_DOTENV_ADDED_VARS
 typeset -g _ZSHRC_DOTENV_AUTO="${ZSHRC_DOTENV_AUTO:-on}"
+typeset -g _ZSHRC_DOTENV_LAST_PWD=""
 
 zmodload -F zsh/stat b:zstat 2>/dev/null
 
@@ -117,6 +118,8 @@ _zshrc_dotenv_update() {
         return 0
     fi
 
+    _ZSHRC_DOTENV_LAST_PWD="$PWD"
+
     local found_file
     found_file="$(_zshrc_dotenv_find)"
 
@@ -128,6 +131,23 @@ _zshrc_dotenv_update() {
         fi
     elif [[ -n "$_ZSHRC_DOTENV_ACTIVE_FILE" ]]; then
         _zshrc_dotenv_unload
+    fi
+}
+
+_zshrc_dotenv_on_chpwd() {
+    _zshrc_dotenv_update
+}
+
+_zshrc_dotenv_on_precmd() {
+    [[ "$_ZSHRC_DOTENV_AUTO" == "on" ]] || return 0
+    if [[ -n "$_ZSHRC_DOTENV_ACTIVE_FILE" ]]; then
+        local current_mtime
+        current_mtime="$(_zshrc_dotenv_get_mtime "$_ZSHRC_DOTENV_ACTIVE_FILE")"
+        if [[ "$current_mtime" != "$_ZSHRC_DOTENV_ACTIVE_MTIME" ]]; then
+            _zshrc_dotenv_load "$_ZSHRC_DOTENV_ACTIVE_FILE"
+        fi
+    elif [[ "$PWD" != "$_ZSHRC_DOTENV_LAST_PWD" ]]; then
+        _zshrc_dotenv_update
     fi
 }
 
@@ -208,9 +228,9 @@ dotenv() {
 
 if [[ -o interactive ]]; then
     autoload -Uz add-zsh-hook
-    add-zsh-hook -d chpwd _zshrc_dotenv_update 2>/dev/null
-    add-zsh-hook chpwd _zshrc_dotenv_update
-    add-zsh-hook -d precmd _zshrc_dotenv_update 2>/dev/null
-    add-zsh-hook precmd _zshrc_dotenv_update
+    add-zsh-hook -d chpwd _zshrc_dotenv_on_chpwd 2>/dev/null
+    add-zsh-hook chpwd _zshrc_dotenv_on_chpwd
+    add-zsh-hook -d precmd _zshrc_dotenv_on_precmd 2>/dev/null
+    add-zsh-hook precmd _zshrc_dotenv_on_precmd
     _zshrc_dotenv_update
 fi

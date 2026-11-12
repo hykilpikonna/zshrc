@@ -6,6 +6,7 @@ set -g __fishrc_dotenv_active_mtime ""
 set -g __fishrc_dotenv_added_vars
 set -g __fishrc_dotenv_modified_vars
 set -g __fishrc_dotenv_modified_vals
+set -g __fishrc_dotenv_last_pwd ""
 
 function __fishrc_dotenv_log
     if test "$FISHRC_DOTENV_QUIET" = 1 -o "$DOTENV_QUIET" = 1
@@ -153,12 +154,16 @@ function __fishrc_dotenv_load --description 'Load environment variables from .en
 end
 
 function __fishrc_dotenv_update --description 'Refresh automatic dotenv state'
+    status is-interactive; or return 0
+
     if test "$__fishrc_dotenv_auto" != on
         if test -n "$__fishrc_dotenv_active_file"
             __fishrc_dotenv_unload
         end
         return 0
     end
+
+    set -g __fishrc_dotenv_last_pwd "$PWD"
 
     set -l found_file (__fishrc_dotenv_find)
     if test -n "$found_file"
@@ -172,11 +177,19 @@ function __fishrc_dotenv_update --description 'Refresh automatic dotenv state'
 end
 
 function __fishrc_dotenv_on_pwd --on-variable PWD --description 'Refresh automatic dotenv after cd'
-    __fishrc_dotenv_update
+    test "$PWD" != "$__fishrc_dotenv_last_pwd"; and __fishrc_dotenv_update
 end
 
 function __fishrc_dotenv_on_prompt --on-event fish_prompt --description 'Refresh automatic dotenv before prompt'
-    __fishrc_dotenv_update
+    test "$__fishrc_dotenv_auto" = on; or return 0
+    if test -n "$__fishrc_dotenv_active_file"
+        set -l current_mtime (__fishrc_dotenv_get_mtime "$__fishrc_dotenv_active_file")
+        if test "$current_mtime" != "$__fishrc_dotenv_active_mtime"
+            __fishrc_dotenv_load "$__fishrc_dotenv_active_file"
+        end
+    else if test "$PWD" != "$__fishrc_dotenv_last_pwd"
+        __fishrc_dotenv_update
+    end
 end
 
 function dotenv-auto --description 'Toggle automatic .env sourcing'

@@ -50,6 +50,14 @@ _zshrc_update_lock_mtime() {
 _zshrc_update_lock_stale() {
     [[ -d "$lock_dir" ]] || return 1
 
+    local owner_pid
+    if [[ -f "$lock_dir/owner" ]]; then
+        owner_pid="$(<"$lock_dir/owner")"
+        if [[ "$owner_pid" == <-> ]] && ! kill -0 "$owner_pid" 2>/dev/null; then
+            return 0
+        fi
+    fi
+
     local now mtime stale_seconds
     stale_seconds="${ZSHRC_UPDATE_LOCK_STALE_SECONDS:-1800}"
     now="$(date +%s 2>/dev/null)" || return 1
@@ -156,7 +164,6 @@ _zshrc_trim_git_history() {
     git reflog expire --expire=now --expire-unreachable=now --all >/dev/null 2>&1 || true
     git gc --prune=now >/dev/null 2>&1 || true
     git submodule foreach --recursive '
-        git fetch --quiet --depth 1 --prune origin >/dev/null 2>&1 || :
         git reflog expire --expire=now --expire-unreachable=now --all >/dev/null 2>&1 || :
         git gc --prune=now >/dev/null 2>&1 || :
     ' >/dev/null 2>&1 || true
